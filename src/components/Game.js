@@ -3,6 +3,7 @@ import Background from './Background';
 import Character from './Character';
 import DialogueBox from './DialogueBox';
 import Choices from './Choices';
+import styles from './Game.module.css';
 import roomBackground from '../assets/oneroom.png';
 import dorimSmile from '../assets/dorim_smile.png';
 import dorimSad from '../assets/dorim_sad.png';
@@ -74,37 +75,33 @@ const Game = () => {
     }
   };
   return (
-    <div style={{
-      position: 'relative',
-      width: '100vw',
-      height: '100vh',
-      backgroundColor: '#eee',
-      overflow: 'hidden'
-    }}>
-      <Background 
-        imageUrl={roomBackground}
-      />
-      {currentLine.character && currentLine.character !== '나' && currentLine.type !== 'narrator' && (
-        <Character 
-          imageUrl={currentLine.character in characterSprites ? 
-            characterSprites[currentLine.character][currentLine.expression || 'normal'] : 
-            dorimSmile
-          }
-          name={currentLine.character}
+    <div className={styles.gameContainer}>
+      <div className={styles.gameArea}>
+        <Background 
+          imageUrl={roomBackground}
         />
-      )}
-      {currentLine.type === 'choice' ? (
-        <Choices
-          choices={currentLine.choices}
-          onChoiceSelect={handleChoiceSelect}
-        />
-      ) : (
-        <DialogueBox 
-          characterName={currentLine.type === 'narrator' ? null : currentLine.character}
-          dialogueText={currentLine.text}
-          onNext={handleNext}
-        />
-      )}
+        {currentLine.character && currentLine.character !== '나' && currentLine.type !== 'narrator' && (
+          <Character 
+            imageUrl={currentLine.character in characterSprites ? 
+              characterSprites[currentLine.character][currentLine.expression || 'normal'] : 
+              dorimSmile
+            }
+            name={currentLine.character}
+          />
+        )}
+        {currentLine.type === 'choice' ? (
+          <Choices
+            choices={currentLine.choices}
+            onChoiceSelect={handleChoiceSelect}
+          />
+        ) : (
+          <DialogueBox 
+            characterName={currentLine.type === 'narrator' ? null : currentLine.character}
+            dialogueText={currentLine.text}
+            onNext={handleNext}
+          />
+        )}
+      </div>
     </div>
   );
 };
