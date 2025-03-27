@@ -5,6 +5,8 @@ import Background from './Background';
 import Character from './Character';
 import DialogueBox from './DialogueBox';
 import Choices from './Choices';
+import useScriptLoader from '../hooks/useScriptLoader'; // useScriptLoader 훅 import
+import useGameState from '../hooks/useGameState'; // useGameState 훅 import
 import styles from './Game.module.css'; // CSS 모듈 import 확인
 import roomBackground from '../assets/oneroom.png';
 import dorimSmile from '../assets/dorim_smile.png';
@@ -21,72 +23,18 @@ const characterSprites = {
 };
 
 const Game = () => {
-  // scriptData, isLoadingScript state 추가
-  const [scriptData, setScriptData] = useState([]);
-  const [isLoadingScript, setIsLoadingScript] = useState(true);
-
-  // --- 상태 변수 초기화 (localStorage 로드) ---
-  const [currentScriptIndex, setCurrentScriptIndex] = useState(0); // 초기값은 로딩 후 설정
-  const [gameFlags, setGameFlags] = useState({}); // 초기값은 로딩 후 설정
-
-  // 로컬 스토리지에서 데이터 로드 (useEffect 사용, 컴포넌트 마운트 시 1회 실행)
-  useEffect(() => {
-    console.log('게임 상태 로드 시도...');
-    const savedData = localStorage.getItem(SAVE_KEY);
-    let loadedIndex = 0;
-    let loadedFlags = {};
-
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        // currentScriptIndex 로드 및 유효성 검사
-        if (typeof parsedData.currentScriptIndex === 'number' && parsedData.currentScriptIndex >= 0) {
-          loadedIndex = parsedData.currentScriptIndex;
-          console.log('저장된 인덱스 로드:', loadedIndex);
-        } else {
-          console.warn('저장된 currentScriptIndex가 유효하지 않습니다:', parsedData.currentScriptIndex);
-        }
-        // gameFlags 로드 및 유효성 검사 (객체 형태인지)
-        if (typeof parsedData.gameFlags === 'object' && parsedData.gameFlags !== null) {
-          loadedFlags = parsedData.gameFlags;
-          console.log('저장된 플래그 로드:', loadedFlags);
-        } else if (parsedData.gameFlags !== undefined) { // gameFlags 키는 있는데 객체가 아닌 경우 경고
-          console.warn('저장된 gameFlags가 유효한 객체가 아닙니다:', parsedData.gameFlags);
-        }
-      } catch (e) {
-        console.error('저장된 데이터 파싱 오류:', e);
-      }
-    } else {
-      console.log('저장된 데이터 없음, 초기 상태 사용');
-    }
-
-    // 상태 업데이트
-    setCurrentScriptIndex(loadedIndex);
-    setGameFlags(loadedFlags);
-
-  }, []); // 빈 배열: 마운트 시 1회 실행
+  // --- 커스텀 Hook 사용 ---
+  const { scriptData, isLoadingScript } = useScriptLoader(); // 스크립트 로딩 훅 호출
+  const {
+    currentScriptIndex,
+    gameFlags,
+    setCurrentScriptIndex,
+    setGameFlags,
+    saveGame, // 저장 함수 가져오기
+    loadGame  // 불러오기 함수 가져오기
+  } = useGameState(scriptData); // 게임 상태 훅 호출 (scriptData 전달)
 
   // currentLine 계산은 로딩 완료 및 상태 로드 후로 이동
-
-  // --- 스크립트 데이터 로딩 ---
-  useEffect(() => {
-    fetch('/script.json') // public 폴더 기준 경로
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        setScriptData(data);
-        setIsLoadingScript(false);
-        console.log('스크립트 로딩 완료');
-      })
-      .catch(error => {
-        console.error('스크립트 로딩 실패:', error);
-        setIsLoadingScript(false); // 에러 발생 시에도 로딩 상태는 해제
-      });
-  }, []); // 마운트 시 1회 실행
 
   // --- BGM 자동 재생 시도 및 정리 ---
   useEffect(() => {
@@ -99,63 +47,8 @@ const Game = () => {
     };
   }, []); // 빈 배열: 마운트/언마운트 시 1회 실행
 
-  // --- 저장/불러오기 함수 ---
-  const handleSaveGame = () => {
-    if (isLoadingScript) {
-      alert('스크립트 로딩 중에는 저장할 수 없습니다.');
-      return;
-    }
-    try {
-      // gameFlags도 함께 저장
-      const dataToSave = { currentScriptIndex, gameFlags };
-      localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave));
-      console.log('게임 저장 완료:', dataToSave);
-      alert('게임이 저장되었습니다!'); // 간단한 피드백
-    } catch (e) {
-      console.error('게임 저장 실패:', e);
-      alert('게임 저장에 실패했습니다.');
-    }
-  };
-
-  const handleLoadGame = () => {
-    if (isLoadingScript) {
-      alert('스크립트 로딩 중에는 불러올 수 없습니다.');
-      return;
-    }
-    console.log('게임 불러오기 시도...');
-    const savedData = localStorage.getItem(SAVE_KEY);
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        // 불러온 인덱스가 유효한 숫자인지, 그리고 현재 로드된 스크립트 범위 내인지 확인
-        if (typeof parsedData.currentScriptIndex === 'number' &&
-            parsedData.currentScriptIndex >= 0 &&
-            (scriptData.length === 0 || parsedData.currentScriptIndex < scriptData.length)) { // 스크립트 로딩 전에도 인덱스 유효성 검사 가능하도록 수정
-          setCurrentScriptIndex(parsedData.currentScriptIndex);
-          console.log('인덱스 불러오기 완료:', parsedData.currentScriptIndex);
-
-          // gameFlags 불러오기 및 상태 업데이트
-          if (typeof parsedData.gameFlags === 'object' && parsedData.gameFlags !== null) {
-            setGameFlags(parsedData.gameFlags);
-            console.log('플래그 불러오기 완료:', parsedData.gameFlags);
-          } else {
-            setGameFlags({}); // 저장된 플래그가 없거나 유효하지 않으면 초기화
-            console.log('저장된 플래그 없음 또는 유효하지 않음, 플래그 초기화');
-          }
-          alert('게임을 불러왔습니다!');
-        } else {
-           console.warn('저장된 인덱스가 유효하지 않거나 스크립트 범위를 벗어납니다:', parsedData.currentScriptIndex);
-           alert('유효하지 않은 저장 데이터입니다.');
-        }
-      } catch (e) {
-        console.error('저장된 데이터 파싱 오류:', e);
-        alert('저장된 데이터를 불러오는 데 실패했습니다.');
-      }
-    } else {
-      console.log('저장된 데이터 없음');
-      alert('저장된 게임 데이터가 없습니다.');
-    }
-  };
+  // --- 저장/불러오기 함수는 useGameState 훅으로 이동 ---
+  // handleSaveGame, handleLoadGame 제거
 
   // 로딩 중 표시
   if (isLoadingScript) {
@@ -256,10 +149,10 @@ const Game = () => {
     // --- JSX 구조 (className 적용 방식은 styles 객체 사용으로 가정) ---
     <div className={styles.gameContainer}>
       <div className={styles.gameArea}>
-        {/* 저장/불러오기 버튼 추가 */}
+        {/* 저장/불러오기 버튼 (훅에서 가져온 함수 사용) */}
         <div className={styles.menuButtons}>
-          <button onClick={handleSaveGame} className={styles.menuButton}>저장</button>
-          <button onClick={handleLoadGame} className={styles.menuButton}>불러오기</button>
+          <button onClick={saveGame} className={styles.menuButton} disabled={isLoadingScript}>저장</button>
+          <button onClick={loadGame} className={styles.menuButton} disabled={isLoadingScript}>불러오기</button>
         </div>
 
         <Background imageUrl={roomBackground} />
