@@ -1,4 +1,4 @@
-.choices {
+.choicesContainer {
   position: absolute;
   bottom: 5%;
   left: 50%;
@@ -6,12 +6,13 @@
   width: 80%;
   display: flex;
   flex-direction: column;
-  gap: 2%;
+  gap: 20%;
   z-index: 2;
 }
 
 .choiceButton {
   padding: 18px 25px;
+  margin-bottom: 5vh;  /* Using viewport height units instead */
   background-color: rgba(0, 0, 0, 0.7);
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 10px;
