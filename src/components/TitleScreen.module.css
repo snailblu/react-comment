@@ -1,0 +1,42 @@
+.titleScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #282c34; /* 예시 배경색 */
+  color: white;
+  text-align: center;
+}
+
+.title {
+  font-size: 3rem;
+  margin-bottom: 2rem;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.menuButton {
+  padding: 0.8rem 1.5rem;
+  font-size: 1.2rem;
+  color: white;
+  background-color: #61dafb; /* 예시 버튼 색상 */
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.menuButton:hover {
+  background-color: #4fa8c5; /* 호버 시 색상 변경 */
+}
+
+.menuButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

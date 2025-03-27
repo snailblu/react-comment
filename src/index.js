@@ -4,12 +4,16 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
+import { SettingsProvider } from './contexts/SettingsContext'; // Import SettingsProvider
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      {/* Wrap App with SettingsProvider */}
+      <SettingsProvider>
+        <App />
+      </SettingsProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

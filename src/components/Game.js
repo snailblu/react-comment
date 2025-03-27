@@ -5,6 +5,7 @@ import Background from './Background';
 import Character from './Character';
 import DialogueBox from './DialogueBox';
 import Choices from './Choices';
+import SettingsMenu from './SettingsMenu'; // SettingsMenu import 추가
 import useScriptLoader from '../hooks/useScriptLoader'; // useScriptLoader 훅 import
 import useGameState from '../hooks/useGameState'; // useGameState 훅 import
 import styles from './Game.module.css'; // CSS 모듈 import 확인
@@ -23,6 +24,9 @@ const characterSprites = {
 };
 
 const Game = () => {
+  // --- 상태 추가 ---
+  const [showSettings, setShowSettings] = useState(false); // 설정 메뉴 표시 상태
+
   // --- 커스텀 Hook 사용 ---
   const { scriptData, isLoadingScript } = useScriptLoader(); // 스크립트 로딩 훅 호출
   const {
@@ -149,10 +153,12 @@ const Game = () => {
     // --- JSX 구조 (className 적용 방식은 styles 객체 사용으로 가정) ---
     <div className={styles.gameContainer}>
       <div className={styles.gameArea}>
-        {/* 저장/불러오기 버튼 (훅에서 가져온 함수 사용) */}
+        {/* 저장/불러오기/설정 버튼 */}
         <div className={styles.menuButtons}>
           <button onClick={saveGame} className={styles.menuButton} disabled={isLoadingScript}>저장</button>
           <button onClick={loadGame} className={styles.menuButton} disabled={isLoadingScript}>불러오기</button>
+          {/* 설정 버튼 추가 */}
+          <button onClick={() => setShowSettings(true)} className={styles.menuButton}>설정</button>
         </div>
 
         <Background imageUrl={roomBackground} />
@@ -177,6 +183,9 @@ const Game = () => {
           />
         )}
       </div>
+
+      {/* 설정 메뉴 조건부 렌더링 */}
+      {showSettings && <SettingsMenu onClose={() => setShowSettings(false)} />}
     </div>
   );
 };

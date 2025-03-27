@@ -1,7 +1,7 @@
 import { Howl, Howler } from 'howler'; // Import Howler
 
-const desiredBgmVolume = 0.5; // 기본 BGM 볼륨
-const desiredSfxVolume = 0.8; // 기본 SFX 볼륨
+let desiredBgmVolume = 0.5; // 기본 BGM 볼륨 (let으로 변경)
+let desiredSfxVolume = 0.8; // 기본 SFX 볼륨 (let으로 변경)
 
 // --- BGM 정의 ---
 const bgmTracks = {
@@ -145,18 +145,37 @@ export const playSfx = (soundName) => {
   }
 };
 
-// --- 볼륨 조절 함수들 (이전과 동일) ---
-export const setBgmVolume = (volume) => {
-  // desiredBgmVolume = volume; // 목표 볼륨 업데이트 (주석 처리: 현재 로직에서는 사용되지 않음)
-  if (currentBgm && !isMutedForAutoplay) { // 음소거 상태 아닐때만 적용
-    currentBgm.volume(volume);
+// --- 새로운 전역 볼륨 조절 함수들 ---
+
+// 외부에서 BGM 볼륨을 설정하는 함수
+export const setAudioManagerBgmVolume = (volume) => {
+  const newVolume = Math.max(0, Math.min(1, volume)); // 0과 1 사이로 제한
+  desiredBgmVolume = newVolume; // 목표 볼륨 업데이트
+  console.log(`Desired BGM Volume set to: ${newVolume}`);
+  // 현재 재생 중이고, 자동재생 음소거 상태가 아닐 때만 즉시 볼륨 적용
+  if (currentBgm && !isMutedForAutoplay) {
+    // 진행 중인 페이드가 있다면 중지하고 새 볼륨 적용
+    currentBgm.off('fade');
+    currentBgm.volume(newVolume);
+    console.log(`Applied BGM Volume immediately: ${newVolume}`);
+  } else if (currentBgm && isMutedForAutoplay) {
+    console.log('BGM Volume changed, but currently muted for autoplay.');
+    // 음소거 상태일 때는 desiredBgmVolume만 업데이트하고,
+    // signalInteraction 시 playBgm 내부 로직이 desiredBgmVolume을 사용함.
+    // 또는 여기서 currentBgm.volume(0)을 명시적으로 설정할 수도 있음 (현재 playBgm 로직과 일관성 유지)
+    currentBgm.volume(0); // 음소거 상태 유지
   }
 };
 
-// 효과음 볼륨 조절 함수
-export const setSfxVolume = (soundName, volume) => {
-  const sound = sfxSounds[soundName];
-  if (sound) {
-    sound.volume(volume);
-  }
+// 외부에서 SFX 볼륨을 설정하는 함수
+export const setAudioManagerSfxVolume = (volume) => {
+  const newVolume = Math.max(0, Math.min(1, volume)); // 0과 1 사이로 제한
+  desiredSfxVolume = newVolume; // 목표 볼륨 업데이트
+  // 로드된 모든 SFX 사운드의 볼륨을 즉시 변경
+  Object.values(sfxSounds).forEach(sound => {
+    sound.volume(newVolume);
+  });
+  console.log(`SFX Volume set to: ${newVolume}`);
 };
+
+// 기존의 개별 볼륨 조절 함수는 제거합니다.

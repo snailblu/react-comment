@@ -1,0 +1,70 @@
+.settingsOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* 반투명 검은색 배경 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* 다른 요소들 위에 표시 */
+}
+
+.settingsMenu {
+  background-color: white;
+  padding: 20px 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* 항목 간 간격 */
+}
+
+.settingsMenu h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+.settingItem {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 레이블, 슬라이더, 퍼센트 간 간격 */
+}
+
+.settingItem label {
+  min-width: 100px; /* 레이블 너비 고정 */
+  text-align: right;
+  color: #555;
+}
+
+.settingItem input[type="range"] {
+  flex-grow: 1; /* 슬라이더가 남은 공간 차지 */
+  cursor: pointer;
+}
+
+.settingItem span {
+  min-width: 40px; /* 퍼센트 표시 공간 */
+  text-align: right;
+  font-family: monospace; /* 숫자 가독성 */
+  color: #333;
+}
+
+.closeButton {
+  margin-top: 15px;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: center; /* 버튼 중앙 정렬 */
+  transition: background-color 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: #0056b3;
+}
