@@ -1,13 +1,13 @@
 import React from 'react';
-import './Background.css';
+import styles from './Background.module.css';
 
 const Background = ({ imageUrl }) => {
   return (
-    <div className="background">
+    <div className={styles.background}>
       <img
         src={imageUrl}
         alt="Background"
-        className="background__image"
+        className={styles.background__image}
       />
     </div>
   );

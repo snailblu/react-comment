@@ -24,12 +24,12 @@ const script = [
     id: 's7_choice',
     type: 'choice',
     choices: [
-      { id: 'c1', text: '좋아! 재밌겠다!' },
-      { id: 'c2', text: '선택지는 어떻게 만드는데?' }
+      { id: 'c1', text: '좋아! 재밌겠다!', nextId: 'c1_result' },
+      { id: 'c2', text: '선택지는 어떻게 만드는데?', nextId: 'c2_result' }
     ]
   },
-  { id: 'c1_result', type: 'dialogue', character: '앨리스', expression: 'happy', text: '역시! 너도 해보고 싶었구나!' },
-  { id: 'c2_result', type: 'dialogue', character: '앨리스', expression: 'normal', text: '음, 버튼을 만들고 클릭하면 다음 대사 ID를 찾아가는 거지.' },
+  { id: 'c1_result', type: 'dialogue', character: '앨리스', expression: 'happy', text: '역시! 너도 해보고 싶었구나!', nextId: 's8' },
+  { id: 'c2_result', type: 'dialogue', character: '앨리스', expression: 'normal', text: '음, 버튼을 만들고 클릭하면 다음 대사 ID를 찾아가는 거지.', nextId: 's8' },
   { id: 's8', type: 'dialogue', character: '앨리스', text: '이런 식으로 분기를 만들 수 있어.' }
 ];
 
@@ -37,18 +37,34 @@ const Game = () => {
   const [currentScriptIndex, setCurrentScriptIndex] = useState(0);
   const currentLine = script[currentScriptIndex];
 
-  const handleChoiceSelect = (choiceId) => {
-    const resultIndex = script.findIndex(line => line.id === `${choiceId}_result`);
-    if (resultIndex !== -1) {
-      setCurrentScriptIndex(resultIndex);
+  const handleChoiceSelect = (choiceId, nextId) => {
+    if (nextId) {
+      const nextIndex = script.findIndex(line => line.id === nextId);
+      if (nextIndex !== -1) {
+        setCurrentScriptIndex(nextIndex);
+      } else {
+        console.log('다음 대사를 찾을 수 없습니다!');
+      }
     } else {
-      console.log('선택지에 대한 결과를 찾을 수 없습니다!');
+      const resultIndex = script.findIndex(line => line.id === `${choiceId}_result`);
+      if (resultIndex !== -1) {
+        setCurrentScriptIndex(resultIndex);
+      } else {
+        console.log('선택지에 대한 결과를 찾을 수 없습니다!');
+      }
     }
   };
 
   const handleNext = () => {
     if (currentLine.type === 'choice') {
       return; // 선택지 화면에서는 클릭으로 넘어가지 않도록 함
+    }
+    if (currentLine.nextId) {
+      const nextIndex = script.findIndex(line => line.id === currentLine.nextId);
+      if (nextIndex !== -1) {
+        setCurrentScriptIndex(nextIndex);
+        return;
+      }
     }
     if (currentScriptIndex < script.length - 1) {
       setCurrentScriptIndex(prevIndex => prevIndex + 1);

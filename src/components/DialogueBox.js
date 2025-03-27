@@ -1,15 +1,15 @@
 import React from 'react';
-import './DialogueBox.css';
+import styles from './DialogueBox.module.css';
 
 const DialogueBox = ({ characterName, dialogueText, onNext }) => {
   return (
-    <div className="dialogue-box" onClick={onNext}>
+    <div className={styles.dialogueBox} onClick={onNext}>
       {characterName && (
-        <div className="dialogue-box__character-name">
+        <div className={styles.dialogueBox__characterName}>
           {characterName}
         </div>
       )}
-      <div className="dialogue-box__text">
+      <div className={styles.dialogueBox__text}>
         {dialogueText}
       </div>
     </div>

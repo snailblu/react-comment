@@ -1,14 +1,14 @@
 import React from 'react';
-import './Choices.css';
+import styles from './Choices.module.css';
 
 const Choices = ({ choices, onChoiceSelect }) => {
   return (
-    <div className="choices-container">
+    <div className={styles.choicesContainer}>
       {choices.map(choice => (
         <button
           key={choice.id}
-          className="choice-button"
-          onClick={() => onChoiceSelect(choice.id)}
+          className={styles.choiceButton}
+          onClick={() => onChoiceSelect(choice.id, choice.nextId)}
         >
           {choice.text}
         </button>

@@ -1,13 +1,13 @@
 import React from 'react';
-import './Character.css';
+import styles from './Character.module.css';
 
 const Character = ({ imageUrl, name }) => {
   return (
-    <div className="character">
+    <div className={styles.character}>
       <img
         src={imageUrl}
         alt={name}
-        className="character__image"
+        className={styles.character__image}
       />
     </div>
   );
