@@ -1,0 +1,83 @@
+.phoneChatContainer {
+  width: 300px; /* 예시 너비 */
+  height: 500px; /* 예시 높이 */
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9; /* 밝은 배경색 */
+  overflow: hidden;
+  position: absolute; /* 다른 요소 위에 표시되도록 (임시) */
+  top: 50px; /* 예시 위치 */
+  right: 50px; /* 예시 위치 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chatHeader {
+  background-color: #ececec; /* 헤더 배경색 */
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
+
+.messageList {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 메시지 간 간격 */
+}
+
+.messageBubble {
+  padding: 8px 12px;
+  border-radius: 15px;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.messageBubble.me {
+  background-color: #fee500; /* 카카오톡 노란색 */
+  color: #3c1e1e; /* 어두운 갈색 텍스트 */
+  align-self: flex-end;
+  border-bottom-right-radius: 3px; /* 말꼬리 효과 */
+}
+
+.messageBubble.other {
+  background-color: #ffffff; /* 흰색 배경 */
+  color: #000000; /* 검은색 텍스트 */
+  align-self: flex-start;
+  border: 1px solid #eee;
+  border-bottom-left-radius: 3px; /* 말꼬리 효과 */
+}
+
+.inputArea {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+  background-color: #ffffff;
+}
+
+.textInput {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  margin-right: 8px;
+  outline: none;
+}
+
+.sendButton {
+  padding: 8px 15px;
+  background-color: #fee500; /* 카카오톡 노란색 */
+  color: #3c1e1e;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.sendButton:hover {
+  background-color: #fdd835; /* 약간 어두운 노란색 */
+}

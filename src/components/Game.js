@@ -7,6 +7,7 @@ import Character from './Character';
 import DialogueBox from './DialogueBox';
 import Choices from './Choices';
 import SettingsMenu from './SettingsMenu'; // SettingsMenu import 추가
+import PhoneChat from './PhoneChat'; // PhoneChat 컴포넌트 추가
 import useScriptLoader from '../hooks/useScriptLoader'; // useScriptLoader 훅 import
 import useGameState from '../hooks/useGameState'; // useGameState 훅 import
 import styles from './Game.module.css'; // CSS 모듈 import 확인
@@ -191,6 +192,9 @@ const Game = () => {
             onNext={handleNext} // handleNext 전달
           />
         )}
+
+        {/* PhoneChat 컴포넌트 추가 */}
+        <PhoneChat />
       </div>
 
       {/* 설정 메뉴 조건부 렌더링 */}
