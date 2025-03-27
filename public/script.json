@@ -1,0 +1,19 @@
+[
+  { "id": "s1", "type": "dialogue", "character": "앨리스", "expression": "normal", "text": "이제 조건부 렌더링을 써볼까?" },
+  { "id": "s2", "type": "dialogue", "character": "나", "text": "조건부 렌더링? 그게 뭔데?" },
+  { "id": "s3", "type": "dialogue", "character": "앨리스", "expression": "happy", "text": "응! 특정 조건일 때만 캐릭터를 보여주거나 표정을 바꾸는 거지!" },
+  { "id": "s4", "type": "narrator", "text": "(앨리스는 신나게 설명하기 시작했다.)" },
+  { "id": "s5", "type": "dialogue", "character": "앨리스", "expression": "normal", "text": "다시 원래 표정으로 돌아왔어." },
+  { "id": "s6", "type": "dialogue", "character": "앨리스", "expression": "normal", "text": "이제 선택지를 만들어 볼까?" },
+  {
+    "id": "s7_choice",
+    "type": "choice",
+    "choices": [
+      { "id": "c1", "text": "좋아! 재밌겠다!", "nextId": "c1_result" },
+      { "id": "c2", "text": "선택지는 어떻게 만드는데?", "nextId": "c2_result" }
+    ]
+  },
+  { "id": "c1_result", "type": "dialogue", "character": "앨리스", "expression": "happy", "text": "역시! 너도 해보고 싶었구나!", "nextId": "s8_common" },
+  { "id": "c2_result", "type": "dialogue", "character": "앨리스", "expression": "normal", "text": "음, 버튼을 만들고 클릭하면 다음 대사 ID를 찾아가는 거지.", "nextId": "s8_common" },
+  { "id": "s8_common", "type": "dialogue", "character": "앨리스", "text": "이런 식으로 분기를 만들 수 있어." }
+]

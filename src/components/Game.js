@@ -11,6 +11,8 @@ import dorimSmile from '../assets/dorim_smile.png';
 import dorimSad from '../assets/dorim_sad.png';
 // unmuteAfterInteraction import 제거
 
+// script 배열 정의 제거됨
+
 const characterSprites = {
   '앨리스': {
     normal: dorimSad,
@@ -18,31 +20,32 @@ const characterSprites = {
   }
 };
 
-const script = [
-  // ... (스크립트 내용은 이전과 동일) ...
-  { id: 's1', type: 'dialogue', character: '앨리스', expression: 'normal', text: '이제 조건부 렌더링을 써볼까?' },
-  { id: 's2', type: 'dialogue', character: '나', text: '조건부 렌더링? 그게 뭔데?' },
-  { id: 's3', type: 'dialogue', character: '앨리스', expression: 'happy', text: '응! 특정 조건일 때만 캐릭터를 보여주거나 표정을 바꾸는 거지!' },
-  { id: 's4', type: 'narrator', text: '(앨리스는 신나게 설명하기 시작했다.)' },
-  { id: 's5', type: 'dialogue', character: '앨리스', expression: 'normal', text: '다시 원래 표정으로 돌아왔어.' },
-  { id: 's6', type: 'dialogue', character: '앨리스', expression: 'normal', text: '이제 선택지를 만들어 볼까?' },
-  {
-    id: 's7_choice',
-    type: 'choice',
-    choices: [
-      { id: 'c1', text: '좋아! 재밌겠다!', nextId: 'c1_result' },
-      { id: 'c2', text: '선택지는 어떻게 만드는데?', nextId: 'c2_result' }
-    ]
-  },
-  { id: 'c1_result', type: 'dialogue', character: '앨리스', expression: 'happy', text: '역시! 너도 해보고 싶었구나!', nextId: 's8_common' },
-  { id: 'c2_result', type: 'dialogue', character: '앨리스', expression: 'normal', text: '음, 버튼을 만들고 클릭하면 다음 대사 ID를 찾아가는 거지.', nextId: 's8_common' },
-  { id: 's8_common', type: 'dialogue', character: '앨리스', text: '이런 식으로 분기를 만들 수 있어.' } // 공통 라인 ID 변경됨
-];
-
 const Game = () => {
-  // audioUnmuted state 제거
+  // scriptData, isLoadingScript state 추가
+  const [scriptData, setScriptData] = useState([]);
+  const [isLoadingScript, setIsLoadingScript] = useState(true);
   const [currentScriptIndex, setCurrentScriptIndex] = useState(0);
-  const currentLine = script[currentScriptIndex];
+  // currentLine 계산은 로딩 완료 후로 이동
+
+  // --- 스크립트 데이터 로딩 ---
+  useEffect(() => {
+    fetch('/script.json') // public 폴더 기준 경로
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        setScriptData(data);
+        setIsLoadingScript(false);
+        console.log('스크립트 로딩 완료');
+      })
+      .catch(error => {
+        console.error('스크립트 로딩 실패:', error);
+        setIsLoadingScript(false); // 에러 발생 시에도 로딩 상태는 해제
+      });
+  }, []); // 마운트 시 1회 실행
 
   // --- BGM 자동 재생 시도 및 정리 ---
   useEffect(() => {
@@ -55,18 +58,39 @@ const Game = () => {
     };
   }, []); // 빈 배열: 마운트/언마운트 시 1회 실행
 
+  // 로딩 중 표시
+  if (isLoadingScript) {
+    return <div>Loading script...</div>;
+  }
+
+  // 로딩 완료 후 로직 (scriptData 사용)
+  // currentLine 계산 시 scriptData 유효성 및 인덱스 범위 확인
+  const currentLine = scriptData && scriptData.length > currentScriptIndex ? scriptData[currentScriptIndex] : null;
+
+  // currentLine이 null일 경우 렌더링하지 않거나 다른 처리 추가
+  if (!currentLine) {
+      // 스크립트 로딩은 완료되었지만 currentLine을 찾을 수 없는 경우 (예: 스크립트 끝)
+      // 또는 로딩 실패 후 isLoadingScript가 false가 된 경우 scriptData가 비어있을 수 있음
+      if (scriptData.length === 0 && !isLoadingScript) {
+          return <div>Error: Failed to load script data.</div>;
+      }
+      // 정상적으로 스크립트 끝에 도달한 경우
+      return <div>Script ended.</div>; // 또는 다른 종료 화면
+  }
+
+
   // --- 상호작용 핸들러 ---
   const handleNext = () => {
     signalInteraction(); // 첫 상호작용 시 오디오 활성화 신호 보내기
     if (currentLine.type === 'choice') return;
     playSfx('click'); // 효과음 재생 추가!
 
-    // ... (nextId 또는 인덱스 증가 로직 - 이전과 동일) ...
     let nextIndex = -1;
+    // scriptData 사용하도록 수정
     if (currentLine.nextId) {
-      nextIndex = script.findIndex(line => line.id === currentLine.nextId);
+      nextIndex = scriptData.findIndex(line => line.id === currentLine.nextId);
       if (nextIndex === -1) console.warn(`nextId '${currentLine.nextId}' 찾기 실패!`);
-    } else if (currentScriptIndex < script.length - 1) {
+    } else if (currentScriptIndex < scriptData.length - 1) { // scriptData.length 사용
       nextIndex = currentScriptIndex + 1;
     }
 
@@ -79,14 +103,14 @@ const Game = () => {
     playSfx('click'); // 효과음 재생 추가!
 
     let nextIndex = -1;
-    // 선택지 객체에 nextId가 있으면 우선 사용
+    // scriptData 사용하도록 수정
     if (nextId) {
-        nextIndex = script.findIndex(line => line.id === nextId);
+        nextIndex = scriptData.findIndex(line => line.id === nextId);
         if (nextIndex === -1) console.warn(`선택지의 nextId '${nextId}' 찾기 실패!`);
     }
     // nextId가 없으면 기존 방식 사용 (선택 사항)
     // else {
-    //   nextIndex = script.findIndex(line => line.id === `${choiceId}_result`);
+    //   nextIndex = scriptData.findIndex(line => line.id === `${choiceId}_result`);
     //   if (nextIndex === -1) console.warn(`선택지 결과 ID '${choiceId}_result' 찾기 실패!`);
     // }
 
@@ -95,10 +119,10 @@ const Game = () => {
     } else {
       console.log('선택지에 대한 다음 대사를 찾을 수 없습니다!');
       // 선택지 이후 진행이 막히면 안되므로, 다음 라인으로 넘어가는 기본 로직 추가 고려
-      if (currentScriptIndex < script.length - 1) {
+      if (currentScriptIndex < scriptData.length - 1) { // scriptData.length 사용
          setCurrentScriptIndex(prevIndex => prevIndex + 1);
       } else {
-         console.log('스크립트 끝!');
+         console.log('스크립트 끝!'); // 스크립트 끝 처리
       }
     }
   };
