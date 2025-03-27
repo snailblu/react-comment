@@ -24,28 +24,49 @@ const Game = () => {
   // scriptData, isLoadingScript state 추가
   const [scriptData, setScriptData] = useState([]);
   const [isLoadingScript, setIsLoadingScript] = useState(true);
-  // useState 초기값 함수 형태로 변경
-  const [currentScriptIndex, setCurrentScriptIndex] = useState(() => {
+
+  // --- 상태 변수 초기화 (localStorage 로드) ---
+  const [currentScriptIndex, setCurrentScriptIndex] = useState(0); // 초기값은 로딩 후 설정
+  const [gameFlags, setGameFlags] = useState({}); // 초기값은 로딩 후 설정
+
+  // 로컬 스토리지에서 데이터 로드 (useEffect 사용, 컴포넌트 마운트 시 1회 실행)
+  useEffect(() => {
     console.log('게임 상태 로드 시도...');
     const savedData = localStorage.getItem(SAVE_KEY);
+    let loadedIndex = 0;
+    let loadedFlags = {};
+
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData);
-        // 저장된 인덱스가 유효한 숫자인지 확인
+        // currentScriptIndex 로드 및 유효성 검사
         if (typeof parsedData.currentScriptIndex === 'number' && parsedData.currentScriptIndex >= 0) {
-          console.log('저장된 데이터 로드 성공:', parsedData.currentScriptIndex);
-          return parsedData.currentScriptIndex;
+          loadedIndex = parsedData.currentScriptIndex;
+          console.log('저장된 인덱스 로드:', loadedIndex);
         } else {
           console.warn('저장된 currentScriptIndex가 유효하지 않습니다:', parsedData.currentScriptIndex);
+        }
+        // gameFlags 로드 및 유효성 검사 (객체 형태인지)
+        if (typeof parsedData.gameFlags === 'object' && parsedData.gameFlags !== null) {
+          loadedFlags = parsedData.gameFlags;
+          console.log('저장된 플래그 로드:', loadedFlags);
+        } else if (parsedData.gameFlags !== undefined) { // gameFlags 키는 있는데 객체가 아닌 경우 경고
+          console.warn('저장된 gameFlags가 유효한 객체가 아닙니다:', parsedData.gameFlags);
         }
       } catch (e) {
         console.error('저장된 데이터 파싱 오류:', e);
       }
+    } else {
+      console.log('저장된 데이터 없음, 초기 상태 사용');
     }
-    console.log('저장된 데이터 없음 또는 유효하지 않음, 처음부터 시작');
-    return 0; // 저장된 값 없거나 유효하지 않으면 0 반환
-  });
-  // currentLine 계산은 로딩 완료 후로 이동
+
+    // 상태 업데이트
+    setCurrentScriptIndex(loadedIndex);
+    setGameFlags(loadedFlags);
+
+  }, []); // 빈 배열: 마운트 시 1회 실행
+
+  // currentLine 계산은 로딩 완료 및 상태 로드 후로 이동
 
   // --- 스크립트 데이터 로딩 ---
   useEffect(() => {
@@ -85,7 +106,8 @@ const Game = () => {
       return;
     }
     try {
-      const dataToSave = { currentScriptIndex };
+      // gameFlags도 함께 저장
+      const dataToSave = { currentScriptIndex, gameFlags };
       localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave));
       console.log('게임 저장 완료:', dataToSave);
       alert('게임이 저장되었습니다!'); // 간단한 피드백
@@ -108,9 +130,18 @@ const Game = () => {
         // 불러온 인덱스가 유효한 숫자인지, 그리고 현재 로드된 스크립트 범위 내인지 확인
         if (typeof parsedData.currentScriptIndex === 'number' &&
             parsedData.currentScriptIndex >= 0 &&
-            parsedData.currentScriptIndex < scriptData.length) { // scriptData.length 확인 추가
+            (scriptData.length === 0 || parsedData.currentScriptIndex < scriptData.length)) { // 스크립트 로딩 전에도 인덱스 유효성 검사 가능하도록 수정
           setCurrentScriptIndex(parsedData.currentScriptIndex);
-          console.log('게임 불러오기 완료:', parsedData.currentScriptIndex);
+          console.log('인덱스 불러오기 완료:', parsedData.currentScriptIndex);
+
+          // gameFlags 불러오기 및 상태 업데이트
+          if (typeof parsedData.gameFlags === 'object' && parsedData.gameFlags !== null) {
+            setGameFlags(parsedData.gameFlags);
+            console.log('플래그 불러오기 완료:', parsedData.gameFlags);
+          } else {
+            setGameFlags({}); // 저장된 플래그가 없거나 유효하지 않으면 초기화
+            console.log('저장된 플래그 없음 또는 유효하지 않음, 플래그 초기화');
+          }
           alert('게임을 불러왔습니다!');
         } else {
            console.warn('저장된 인덱스가 유효하지 않거나 스크립트 범위를 벗어납니다:', parsedData.currentScriptIndex);
@@ -182,6 +213,14 @@ const Game = () => {
     //   if (nextIndex === -1) console.warn(`선택지 결과 ID '${choiceId}_result' 찾기 실패!`);
     // }
 
+    // 선택지 ID를 gameFlags에 기록
+    setGameFlags(prevFlags => ({
+      ...prevFlags,
+      previousChoice: choiceId // 'previousChoice' 키에 선택지 ID 저장
+    }));
+    console.log(`선택됨: ${choiceId}, 플래그 업데이트:`, { ...gameFlags, previousChoice: choiceId });
+
+
     if (nextIndex !== -1) {
       setCurrentScriptIndex(nextIndex);
     } else {
@@ -203,6 +242,14 @@ const Game = () => {
       return characterSprites[currentLine.character][expression] || characterSprites[currentLine.character]['normal'];
   };
   const characterImageUrl = getCharacterImageUrl();
+
+  // --- 조건부 대사 결정 로직 ---
+  let dialogueTextToShow = currentLine.text; // 기본 텍스트
+  if (currentLine.condition && gameFlags[currentLine.condition.flag] === currentLine.condition.value) {
+    // 조건 객체가 있고, 해당 플래그 값이 조건 값과 일치하면
+    dialogueTextToShow = currentLine.altText || currentLine.text; // altText 사용 (없으면 기본 텍스트)
+    console.log(`조건 만족 (${currentLine.condition.flag} === ${currentLine.condition.value}), 대체 텍스트 표시: ${dialogueTextToShow}`);
+  }
 
 
   return (
@@ -232,7 +279,7 @@ const Game = () => {
         ) : (
           <DialogueBox
             characterName={currentLine.type === 'narrator' ? null : currentLine.character}
-            dialogueText={currentLine.text}
+            dialogueText={dialogueTextToShow} // 조건부로 결정된 텍스트 전달
             onNext={handleNext} // handleNext 전달
           />
         )}

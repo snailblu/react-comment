@@ -15,5 +15,12 @@
   },
   { "id": "c1_result", "type": "dialogue", "character": "앨리스", "expression": "happy", "text": "역시! 너도 해보고 싶었구나!", "nextId": "s8_common" },
   { "id": "c2_result", "type": "dialogue", "character": "앨리스", "expression": "normal", "text": "음, 버튼을 만들고 클릭하면 다음 대사 ID를 찾아가는 거지.", "nextId": "s8_common" },
-  { "id": "s8_common", "type": "dialogue", "character": "앨리스", "text": "이런 식으로 분기를 만들 수 있어." }
+  {
+    "id": "s8_common",
+    "type": "dialogue",
+    "character": "앨리스",
+    "text": "이런 식으로 분기를 만들 수 있어. (기본)",
+    "condition": { "flag": "previousChoice", "value": "c1" },
+    "altText": "좋아! 를 선택했었구나! 이런 식으로 분기를 만들었어."
+  }
 ]
