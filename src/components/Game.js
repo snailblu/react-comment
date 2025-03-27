@@ -5,13 +5,13 @@ import Background from './Background';
 import Character from './Character';
 import DialogueBox from './DialogueBox';
 import Choices from './Choices';
-import styles from './Game.module.css';
+import styles from './Game.module.css'; // CSS 모듈 import 확인
 import roomBackground from '../assets/oneroom.png';
 import dorimSmile from '../assets/dorim_smile.png';
 import dorimSad from '../assets/dorim_sad.png';
 // unmuteAfterInteraction import 제거
 
-// script 배열 정의 제거됨
+const SAVE_KEY = 'saveDataVn'; // 로컬 스토리지 키 정의
 
 const characterSprites = {
   '앨리스': {
@@ -24,7 +24,27 @@ const Game = () => {
   // scriptData, isLoadingScript state 추가
   const [scriptData, setScriptData] = useState([]);
   const [isLoadingScript, setIsLoadingScript] = useState(true);
-  const [currentScriptIndex, setCurrentScriptIndex] = useState(0);
+  // useState 초기값 함수 형태로 변경
+  const [currentScriptIndex, setCurrentScriptIndex] = useState(() => {
+    console.log('게임 상태 로드 시도...');
+    const savedData = localStorage.getItem(SAVE_KEY);
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        // 저장된 인덱스가 유효한 숫자인지 확인
+        if (typeof parsedData.currentScriptIndex === 'number' && parsedData.currentScriptIndex >= 0) {
+          console.log('저장된 데이터 로드 성공:', parsedData.currentScriptIndex);
+          return parsedData.currentScriptIndex;
+        } else {
+          console.warn('저장된 currentScriptIndex가 유효하지 않습니다:', parsedData.currentScriptIndex);
+        }
+      } catch (e) {
+        console.error('저장된 데이터 파싱 오류:', e);
+      }
+    }
+    console.log('저장된 데이터 없음 또는 유효하지 않음, 처음부터 시작');
+    return 0; // 저장된 값 없거나 유효하지 않으면 0 반환
+  });
   // currentLine 계산은 로딩 완료 후로 이동
 
   // --- 스크립트 데이터 로딩 ---
@@ -57,6 +77,54 @@ const Game = () => {
       stopBgm(); // 언마운트 시 정지
     };
   }, []); // 빈 배열: 마운트/언마운트 시 1회 실행
+
+  // --- 저장/불러오기 함수 ---
+  const handleSaveGame = () => {
+    if (isLoadingScript) {
+      alert('스크립트 로딩 중에는 저장할 수 없습니다.');
+      return;
+    }
+    try {
+      const dataToSave = { currentScriptIndex };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave));
+      console.log('게임 저장 완료:', dataToSave);
+      alert('게임이 저장되었습니다!'); // 간단한 피드백
+    } catch (e) {
+      console.error('게임 저장 실패:', e);
+      alert('게임 저장에 실패했습니다.');
+    }
+  };
+
+  const handleLoadGame = () => {
+    if (isLoadingScript) {
+      alert('스크립트 로딩 중에는 불러올 수 없습니다.');
+      return;
+    }
+    console.log('게임 불러오기 시도...');
+    const savedData = localStorage.getItem(SAVE_KEY);
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        // 불러온 인덱스가 유효한 숫자인지, 그리고 현재 로드된 스크립트 범위 내인지 확인
+        if (typeof parsedData.currentScriptIndex === 'number' &&
+            parsedData.currentScriptIndex >= 0 &&
+            parsedData.currentScriptIndex < scriptData.length) { // scriptData.length 확인 추가
+          setCurrentScriptIndex(parsedData.currentScriptIndex);
+          console.log('게임 불러오기 완료:', parsedData.currentScriptIndex);
+          alert('게임을 불러왔습니다!');
+        } else {
+           console.warn('저장된 인덱스가 유효하지 않거나 스크립트 범위를 벗어납니다:', parsedData.currentScriptIndex);
+           alert('유효하지 않은 저장 데이터입니다.');
+        }
+      } catch (e) {
+        console.error('저장된 데이터 파싱 오류:', e);
+        alert('저장된 데이터를 불러오는 데 실패했습니다.');
+      }
+    } else {
+      console.log('저장된 데이터 없음');
+      alert('저장된 게임 데이터가 없습니다.');
+    }
+  };
 
   // 로딩 중 표시
   if (isLoadingScript) {
@@ -141,6 +209,12 @@ const Game = () => {
     // --- JSX 구조 (className 적용 방식은 styles 객체 사용으로 가정) ---
     <div className={styles.gameContainer}>
       <div className={styles.gameArea}>
+        {/* 저장/불러오기 버튼 추가 */}
+        <div className={styles.menuButtons}>
+          <button onClick={handleSaveGame} className={styles.menuButton}>저장</button>
+          <button onClick={handleLoadGame} className={styles.menuButton}>불러오기</button>
+        </div>
+
         <Background imageUrl={roomBackground} />
 
         {currentLine.character && currentLine.character !== '나' && currentLine.type !== 'narrator' && characterImageUrl && (

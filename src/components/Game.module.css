@@ -18,3 +18,29 @@
   background-color: #eee;
   overflow: hidden;
 }
+
+/* 저장/불러오기 버튼 컨테이너 스타일 (예시) */
+.menuButtons {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10; /* 다른 요소들 위에 오도록 */
+  display: flex;
+  gap: 10px;
+}
+
+/* 저장/불러오기 버튼 스타일 (예시) */
+.menuButton {
+  padding: 8px 15px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.menuButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
