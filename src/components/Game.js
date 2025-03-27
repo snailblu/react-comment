@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // useNavigate import 추가
 // audioManager 함수 import 수정
 import { playBgm, stopBgm, playSfx, signalInteraction } from '../utils/audioManager';
 import Background from './Background';
@@ -14,7 +15,7 @@ import dorimSmile from '../assets/dorim_smile.png';
 import dorimSad from '../assets/dorim_sad.png';
 // unmuteAfterInteraction import 제거
 
-const SAVE_KEY = 'saveDataVn'; // 로컬 스토리지 키 정의
+// const SAVE_KEY = 'saveDataVn'; // 더 이상 사용되지 않으므로 제거
 
 const characterSprites = {
   '앨리스': {
@@ -37,6 +38,7 @@ const Game = () => {
     saveGame, // 저장 함수 가져오기
     loadGame  // 불러오기 함수 가져오기
   } = useGameState(scriptData); // 게임 상태 훅 호출 (scriptData 전달)
+  const navigate = useNavigate(); // useNavigate 훅 사용
 
   // currentLine 계산은 로딩 완료 및 상태 로드 후로 이동
 
@@ -90,8 +92,13 @@ const Game = () => {
       nextIndex = currentScriptIndex + 1;
     }
 
-    if (nextIndex !== -1) setCurrentScriptIndex(nextIndex);
-    else console.log('스크립트 끝!');
+    if (nextIndex !== -1) {
+      setCurrentScriptIndex(nextIndex);
+    } else {
+      // 스크립트 끝 처리
+      alert('스크립트가 종료되었습니다.');
+      navigate('/'); // 타이틀 화면으로 이동
+    }
   };
 
   const handleChoiceSelect = (choiceId, nextId) => { // nextId 인자 추가됨 (Choices 컴포넌트도 수정 필요할 수 있음)
@@ -126,7 +133,9 @@ const Game = () => {
       if (currentScriptIndex < scriptData.length - 1) { // scriptData.length 사용
          setCurrentScriptIndex(prevIndex => prevIndex + 1);
       } else {
-         console.log('스크립트 끝!'); // 스크립트 끝 처리
+         // 스크립트 끝 처리
+         alert('스크립트가 종료되었습니다.');
+         navigate('/'); // 타이틀 화면으로 이동
       }
     }
   };
