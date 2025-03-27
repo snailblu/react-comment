@@ -5,10 +5,11 @@ import DialogueBox from './DialogueBox';
 import Choices from './Choices';
 import roomBackground from '../assets/oneroom.png';
 import dorimSmile from '../assets/dorim_smile.png';
+import dorimSad from '../assets/dorim_sad.png';
 
 const characterSprites = {
   '앨리스': {
-    normal: dorimSmile,
+    normal: dorimSad,
     happy: dorimSmile // 실제로는 다른 표정 이미지를 사용해야 합니다
   }
 };
