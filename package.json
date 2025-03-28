@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@radix-ui/react-separator": "^1.1.2",
-    "@supabase/supabase-js": "^2.49.3",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",

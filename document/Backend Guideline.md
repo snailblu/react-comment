@@ -1,331 +1,226 @@
 # 1. 개요
 
-이 문서는 Opinion Manipulation Game의 백엔드 구조를 정의합니다. Supabase를 활용해 데이터베이스, 인증, 실시간 업데이트, 서버리스 함수를 구현하며, 게임의 스토리 진행, 댓글 알바 미션, 여론 계산, 엔딩 처리를 지원합니다. 백엔드는 프론트엔드와 RESTful API 및 실시간 구독을 통해 상호작용합니다.
+이 문서는 Opinion Manipulation Game의 데이터 관리 및 로직 구조를 정의합니다. 게임은 클라이언트 측(브라우저)에서 대부분의 로직을 처리하며, 브라우저의 로컬 저장소(LocalStorage)를 사용하여 게임 상태와 진행 상황을 저장합니다. LLM API는 클라이언트에서 직접 호출됩니다.
 
 ---
 
 # 2. 기술 스택
 
-- 백엔드 플랫폼: Supabase
+- 주 로직 처리: React (클라이언트 측 JavaScript)
     
-- 데이터베이스: PostgreSQL (Supabase 제공)
+- 데이터 저장소: 브라우저 LocalStorage
     
-- 서버리스 함수: Supabase Edge Functions (Deno 기반)
+- LLM 통합: Google Gemini (또는 대체 오픈소스 모델, 클라이언트에서 직접 호출)
     
-- LLM 통합: Google Gemini (또는 대체 오픈소스 모델)
-    
-- 스토리지: Supabase Storage (이미지, 자산 저장)
-    
-- 인증: Supabase Auth (선택 사항, 필요 시)
+- 정적 자산 서빙: 웹 서버 (예: `npm start`의 개발 서버 또는 정적 호스팅)
     
 
 ---
 
-# 3. 데이터베이스 스키마
+# 3. 로컬 데이터 구조
 
-Supabase의 PostgreSQL을 기반으로 테이블을 설계합니다. 각 테이블은 게임의 핵심 데이터를 관리합니다.
+브라우저의 LocalStorage를 사용하여 게임 데이터를 관리합니다. 데이터는 주로 JSON 형태로 직렬화되어 저장됩니다.
 
-## 3.1 테이블 정의
+## 3.1 저장 데이터 예시 (`localStorage` 키 기준)
 
-episodes
+`game_save_slot_1` (슬롯 1~4)
 
-- 설명: 게임의 에피소드 데이터 저장.
+- 설명: 플레이어 진행 상황 저장.
     
-- 컬럼:
+- 구조 (JSON):
     
-    - id (UUID, PK): 에피소드 고유 ID
-        
-    - title (TEXT): 에피소드 제목
-        
-    - intro_dialogues (JSONB): 인트로 대화 데이터
-        
-    - ending_dialogues (JSONB): 엔딩 대화 데이터
-        
-    - mission_id (UUID, FK): 연결된 미션 ID
-        
+    ```json
+    {
+      "episodeId": "episode-1",
+      "sceneIndex": 5,
+      "opinionStats": {
+        "mission-1": { "positive": 30, "negative": 60, "neutral": 10, "attemptsLeft": 2 }
+      },
+      "playerChoices": {
+        "episode-1-choice-1": "optionA"
+      },
+      "settings": { "language": "ko", "volume": 0.8 },
+      "updatedAt": "2025-03-28T17:00:00Z"
+    }
+    ```
+    
 
-missions
+`game_settings`
 
-- 설명: 댓글 알바 미션의 목표, 키워드, 조건 저장.
+- 설명: 기본 게임 설정 (언어, 볼륨 등).
     
-- 컬럼:
+- 구조 (JSON):
     
-    - id (UUID, PK): 미션 고유 ID
-        
-    - title (TEXT): 미션 제목
-        
-    - goal (JSONB): 목표 (예: { "negative": 70 })
-        
-    - keywords (TEXT[]): 필수 키워드 배열
-        
-    - conditions (TEXT[]): 조건 (예: "탑스타 피해 없음")
-        
-    - max_attempts (INTEGER): 최대 댓글 시도 횟수
-        
+    ```json
+    { "language": "ko", "volume": 0.8 }
+    ```
+    
 
-opinions
-
-- 설명: 현재 여론 상태 저장 및 실시간 업데이트.
-    
-- 컬럼:
-    
-    - id (UUID, PK): 여론 상태 ID
-        
-    - mission_id (UUID, FK): 연결된 미션 ID
-        
-    - positive (INTEGER): 긍정 비율 (%)
-        
-    - negative (INTEGER): 부정 비율 (%)
-        
-    - neutral (INTEGER): 중립 비율 (%)
-        
-    - updated_at (TIMESTAMP): 마지막 업데이트 시간
-        
-
-comments
-
-- 설명: 플레이어 및 NPC 댓글 저장.
-    
-- 컬럼:
-    
-    - id (UUID, PK): 댓글 ID
-        
-    - mission_id (UUID, FK): 연결된 미션 ID
-        
-    - content (TEXT): 댓글 내용
-        
-    - likes (INTEGER): 좋아요 수
-        
-    - is_player (BOOLEAN): 플레이어 작성 여부
-        
-    - created_at (TIMESTAMP): 작성 시간
-        
-
-saves
-
-- 설명: 플레이어 진행 상황 저장 (4개 슬롯).
-    
-- 컬럼:
-    
-    - id (UUID, PK): 저장 ID
-        
-    - slot (INTEGER): 슬롯 번호 (1~4)
-        
-    - episode_id (UUID, FK): 현재 에피소드
-        
-    - mission_progress (JSONB): 미션 진행 상태
-        
-    - updated_at (TIMESTAMP): 저장 시간
-        
-
-endings
-
-- 설명: 엔딩 조건 및 메시지 저장.
-    
-- 컬럼:
-    
-    - id (UUID, PK): 엔딩 ID
-        
-    - type (TEXT): "bad1", "bad2", "normal", "hidden"
-        
-    - message (TEXT): 엔딩 메시지
-        
-    - conditions (JSONB): 트리거 조건 (예: { "all_missions_cleared": true })
-        
+**참고:** 게임 스크립트(대화, 미션 정보, 엔딩 조건 등)는 `public/script.json`과 같은 정적 파일로 관리하고, 게임 시작 시 로드하여 메모리에서 사용합니다.
 
 ---
 
-# 4. API 엔드포인트
+# 4. 핵심 로직 (클라이언트 측)
 
-Supabase의 기본 REST API를 활용하며, 필요 시 Edge Function으로 커스텀 로직 추가.
+게임의 주요 로직은 React 컴포넌트 및 훅 내에서 처리됩니다.
 
-## 4.1 기본 REST API (Supabase 제공)
+## 4.1 주요 로직 함수 (예시)
 
-- GET /episodes: 에피소드 목록 조회
-    
-    - 필터: ?id=eq.{id}
-        
-- GET /missions: 미션 데이터 조회
-    
-    - 필터: ?id=eq.{id}
-        
-- GET /opinions: 여론 상태 조회
-    
-    - 필터: ?mission_id=eq.{id}
-        
-- POST /comments: 댓글 생성
-    
-    - 바디: { "mission_id": UUID, "content": TEXT }
-        
-- GET /saves: 저장 슬롯 조회
-    
-    - 필터: ?slot=eq.{number}
-        
-- UPSERT /saves: 진행 상황 저장/업데이트
-    
-    - 바디: { "slot": INTEGER, "episode_id": UUID, "mission_progress": JSON }
-        
+`updateOpinion(missionId, comment)`
 
-## 4.2 Edge Functions (커스텀 로직)
-
-update-opinion
-
-- 설명: 댓글 제출 시 여론 상태 계산 및 업데이트.
+- 설명: 댓글 제출 시 여론 상태 계산 및 로컬 상태 업데이트.
     
-- 입력: { "mission_id": UUID, "comment": TEXT }
+- 위치: `useGameState` 훅 또는 관련 컨텍스트.
     
 - 로직:
     
-    1. 댓글 키워드/조건 검증.
+    1. 댓글 키워드/조건 검증 (스크립트 데이터 기반).
         
-    2. 여론 비율 계산 (간단한 룰 기반 또는 LLM 활용).
+    2. 여론 비율 계산 (간단한 룰 기반).
         
-    3. opinions 테이블 업데이트.
+    3. `useGameState` 훅의 상태 업데이트.
         
-- 출력: { "positive": INTEGER, "negative": INTEGER, "neutral": INTEGER }
-    
 
-generate-feedback
+`generateFeedback(missionId, commentHistory)`
 
 - 설명: 결과 씬에서 NPC 피드백 생성.
     
-- 입력: { "mission_id": UUID, "comment_history": TEXT[] }
+- 위치: `ResultScene` 컴포넌트 또는 관련 훅.
     
 - 로직:
     
-    1. Gemini API 호출 (또는 대체 LLM).
+    1. 클라이언트에서 직접 Gemini API 호출 (API 키는 환경 변수 사용).
         
-    2. 미션 성과 기반 2문장 피드백 생성.
+    2. 미션 성과 기반 프롬프트 생성 및 API 호출.
         
-- 출력: { "feedback": TEXT }
-    
+    3. 반환된 피드백을 상태에 저장하여 UI에 표시.
+        
 
-## check-ending
+`checkEnding(episodeProgress)`
 
 - 설명: 엔딩 조건 확인 및 결과 반환.
     
-- 입력: { "episode_progress": JSON }
+- 위치: `ResultScene` 또는 `App.tsx`.
     
 - 로직:
     
-    1. endings 테이블 조건과 비교.
+    1. 로드된 스크립트의 엔딩 조건과 현재 게임 상태 비교.
         
-    2. 해당 엔딩 ID 반환.
+    2. 해당하는 엔딩 타입 반환.
         
-- 출력: { "ending_id": UUID }
+
+`saveGame(slot)`
+
+- 설명: 현재 게임 상태를 로컬 저장소에 저장.
     
+- 위치: `SystemMenu` 컴포넌트 또는 `useGameState` 훅.
+    
+- 로직:
+    
+    1. `useGameState` 훅에서 현재 상태 가져오기.
+        
+    2. JSON으로 직렬화하여 `localStorage.setItem()` 호출.
+        
+
+`loadGame(slot)`
+
+- 설명: 로컬 저장소에서 게임 상태 로드.
+    
+- 위치: `TitleScreen` 컴포넌트 또는 `useGameState` 훅.
+    
+- 로직:
+    
+    1. `localStorage.getItem()` 호출 및 JSON 파싱.
+        
+    2. `useGameState` 훅의 상태 업데이트 및 해당 씬으로 이동.
+        
 
 ---
 
-# 5. 실시간 구독
+# 5. 실시간 업데이트
 
-Supabase의 실시간 기능을 활용해 프론트엔드에 즉각적인 업데이트 제공.
-
-## 5.1 구독 대상
-
-- 테이블: opinions
-    
-    - 이벤트: UPDATE
-        
-    - 용도: 댓글 제출 후 여론 상태 실시간 반영.
-        
-- 구현 예시 (프론트엔드에서):
-    
-
-javascript
-
-```javascript
-supabase
-  .channel('opinion-updates')
-  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'opinions' }, (payload) => {
-    updateOpinionState(payload.new);
-  })
-  .subscribe();
-```
+별도의 실시간 구독 메커니즘은 사용하지 않습니다. UI 업데이트는 React의 상태 관리 시스템(`useState`, `useReducer`, Context API 등)을 통해 이루어집니다. 여론 상태 변경 등은 로컬 상태가 업데이트되면 자동으로 UI에 반영됩니다.
 
 ---
 
-# 6. 스토리지
+# 6. 정적 자산 관리
 
-Supabase Storage를 사용해 게임 자산 관리.
+게임에 필요한 이미지, 오디오 등의 자산은 `public` 폴더에 위치시키고, 웹 서버를 통해 정적으로 서빙합니다.
 
-## 6.1 버킷 구조
-
-- 버킷: game-assets
+- 예시 경로: `/characters/char1.png`, `/audio/bgm.mp3`
     
-    - /characters: 캐릭터 스탠딩 이미지 (검은 실루엣)
-        
-    - /backgrounds: 배경 이미지
-        
-    - /ui: UI 요소 (버튼, 전화 테마 등)
-        
-
-## 6.2 접근 제어
-
-- 정책: 공개 읽기 전용 (SELECT 허용, 쓰기는 서버에서만).
-    
-- URL 예시: supabase.storage.from('game-assets').getPublicUrl('characters/char1.png')
+- 접근: React 컴포넌트에서 상대 경로 또는 절대 경로(`/`)를 사용하여 직접 참조합니다.
     
 
 ---
 
 # 7. 보안
 
-- Row-Level Security (RLS):
+- API 키 관리:
     
-    - saves: 슬롯별 사용자 접근 제한 (인증 필요 시 auth.uid() 기반).
+    - LLM API 키는 `.env` 파일에 저장하고, 빌드 시 환경 변수(`process.env.REACT_APP_LLM_API_KEY`)로 주입합니다.
         
-    - comments: 미션별 댓글만 조회 가능 (mission_id 필터링).
+    - **주의:** 클라이언트 측 코드에 API 키가 직접 노출될 수 있으므로, API 키에 사용량 제한 또는 특정 도메인 제한 등의 보안 설정을 적용하는 것이 중요합니다.
         
-- API 키: .env에 저장, 프론트엔드에서 안전하게 호출.
-    
-- 입력 검증: Edge Function에서 댓글 내용 검증 (공격적 표현 필터링).
+- 입력 검증: 댓글 등 사용자 입력은 클라이언트 측에서 기본적인 유효성 검사(길이 제한 등)를 수행합니다.
     
 
 ---
 
 # 8. 성능 최적화
 
-- 인덱싱: mission_id, episode_id에 인덱스 추가.
+- React 최적화: `React.memo`, `useMemo`, `useCallback` 등을 활용하여 불필요한 리렌더링 방지.
     
-- 캐싱: 자주 조회되는 episodes 데이터는 Edge Function에서 캐시.
+- 코드 스플리팅: React Router 등을 사용하여 씬별로 코드를 분할 로딩.
     
-- 배치 처리: 댓글 제출 시 여론 계산을 배치로 처리해 부하 감소.
+- 자산 최적화: 이미지 압축, 오디오 포맷 최적화.
+    
+- LocalStorage 사용 주의: 너무 크거나 복잡한 데이터를 자주 저장/로드하면 성능에 영향을 줄 수 있으므로 필요한 데이터만 관리합니다.
     
 
 ---
 
 # 9. LLM 통합 (Google Gemini)
 
-- 호출: Edge Function에서 Gemini API 호출.
+- 호출: 클라이언트 측 JavaScript (`fetch` API 사용)에서 직접 Gemini API 호출.
     
-- 예시 (Deno):
+- 예시 (React 컴포넌트 내):
     
 
 javascript
 
 ```javascript
-Deno.serve(async (req) => {
-  const { mission_id, comment_history } = await req.json();
-  const response = await fetch('https://gemini-api-endpoint', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${Deno.env.get('GEMINI_API_KEY')}` },
-    body: JSON.stringify({ prompt: `Generate feedback for ${comment_history}` }),
-  });
-  const feedback = await response.json();
-  return new Response(JSON.stringify({ feedback }), { status: 200 });
-});
+const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+
+async function fetchFeedback(commentHistory) {
+  try {
+    const response = await fetch('https://gemini-api-endpoint', { // 실제 엔드포인트로 변경 필요
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        // Gemini API 키 인증 방식에 따라 헤더 구성 (예: 'x-goog-api-key': apiKey)
+      },
+      body: JSON.stringify({ prompt: `Generate feedback for ${commentHistory}` }), // API 요구사항에 맞게 수정
+    });
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`);
+    }
+    const data = await response.json();
+    setFeedback(data.feedback); // 상태 업데이트
+  } catch (error) {
+    console.error("Failed to fetch feedback:", error);
+    // 오류 처리 로직
+  }
+}
 ```
 
-- 대체: 비용 절감 시 Mistral 또는 LLaMA 로컬 실행 고려.
+- 대체: 비용 절감 또는 오프라인 지원 필요 시, WebAssembly 기반의 경량 로컬 모델 실행 고려 (기술적 복잡도 높음).
     
 
 ---
 
 # 10. 배포 및 모니터링
 
-- 배포: Supabase 대시보드에서 테이블, 함수, 정책 관리.
+- 배포: 빌드된 정적 파일(HTML, CSS, JS)을 Netlify, Vercel, GitHub Pages 등 정적 호스팅 서비스에 배포.
     
-- 모니터링: Supabase 로그로 API 호출 및 오류 추적.
-    
-- 백업: PostgreSQL 자동 백업 설정.
+- 모니터링: 브라우저 개발자 도구(콘솔, 네트워크 탭)를 사용하여 클라이언트 측 오류 및 성능 추적. 필요 시 Sentry 등 프론트엔드 에러 로깅 서비스 도입 고려.

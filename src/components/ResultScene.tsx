@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/supabase'; // Supabase 클라이언트 import, 확장자 제거
-import { useLocation, useNavigate } from 'react-router-dom'; // useLocation, useNavigate 추가
+// import { supabase } from '../services/supabase'; // Supabase 클라이언트 import 제거
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface Feedback {
   npc_name: string;
@@ -25,28 +25,24 @@ const ResultScene: React.FC = () => { // Props 제거
       setIsLoading(true);
       setError(null);
       try {
-        // 'generate-feedback' 함수 호출
-        const { data, error: functionError } = await supabase.functions.invoke('generate-feedback', {
-          // 필요하다면 missionId 또는 다른 데이터를 body로 전달
-          // body: { missionId },
-        });
+        // TODO: 클라이언트 측에서 LLM API 직접 호출 로직 구현
+        console.log('ResultScene: Fetching feedback (placeholder)...');
+        // 임시 목업 데이터 설정
+        await new Promise(resolve => setTimeout(resolve, 500)); // 가짜 로딩 시간
+        const mockFeedback: Feedback = {
+          npc_name: "임시 NPC",
+          message: "임시 피드백 메시지입니다. LLM 연동이 필요합니다."
+        };
+        setFeedback(mockFeedback);
 
-        if (functionError) {
-          throw functionError;
-        }
-
-        if (data) {
-          setFeedback(data as Feedback);
-        } else {
-          throw new Error('No feedback data received');
-        }
       } catch (err: any) {
-        console.error('Error fetching feedback:', err);
-        setError(`피드백을 불러오는 중 오류 발생: ${err.message}`);
+        console.error('Error fetching feedback (placeholder):', err);
+        setError(`피드백을 불러오는 중 오류 발생 (임시): ${err.message}`);
       } finally {
         setIsLoading(false);
       }
     };
+
 
     // missionId가 유효할 때만 fetchFeedback 호출
     if (missionId !== undefined) {
@@ -68,27 +64,19 @@ const ResultScene: React.FC = () => { // Props 제거
       setIsCheckingEnding(true);
       setError(null);
       try {
-        console.log('Checking final ending...');
-        // 'check-ending' 함수 호출
-        const { data: endingResult, error: functionError } = await supabase.functions.invoke('check-ending', {
-          // 필요하다면 플레이어 상태나 ID 전달
-          // body: { playerId: '...' }
-        });
+        console.log('Checking final ending (placeholder)...');
+        // TODO: 클라이언트 측 엔딩 확인 로직 구현
+        // 게임 상태(episodeProgress 등)를 기반으로 엔딩 타입 결정
+        await new Promise(resolve => setTimeout(resolve, 300)); // 가짜 로딩 시간
+        const mockEndingType = "normal"; // 임시 엔딩 타입
 
-        if (functionError) {
-          throw functionError;
-        }
+        console.log('Ending type determined (placeholder):', mockEndingType);
+        // 결과에 따라 EndingScene으로 이동
+        navigate('/ending', { state: { endingType: mockEndingType } });
 
-        if (endingResult && endingResult.endingType) {
-          console.log('Ending type received:', endingResult.endingType);
-          // 결과에 따라 EndingScene으로 이동
-          navigate('/ending', { state: { endingType: endingResult.endingType } });
-        } else {
-          throw new Error('Invalid ending data received');
-        }
       } catch (err: any) {
-        console.error('Error checking ending:', err);
-        setError(`최종 엔딩 확인 중 오류 발생: ${err.message}`);
+        console.error('Error checking ending (placeholder):', err);
+        setError(`최종 엔딩 확인 중 오류 발생 (임시): ${err.message}`);
         setIsCheckingEnding(false); // 에러 발생 시 로딩 상태 해제
       }
       // 성공 시 navigate 하므로 별도 로딩 해제 불필요

@@ -12,7 +12,7 @@ import PhoneChat from './PhoneChat'; // PhoneChat 컴포넌트 추가
 import useEpisodeLoader from '../hooks/useEpisodeLoader'; // useEpisodeLoader 훅 import 추가
 // useGameState 훅 및 관련 타입 import
 import useGameState, { ScriptLine, GameFlags, ChoiceOption } from '../hooks/useGameState'; // ScriptData 제거 (이제 EpisodeData 사용)
-import styles from './Game.module.css'; // CSS 모듈 import 확인
+import styles from './StoryScene.module.css'; // CSS 모듈 import 경로 수정
 import roomBackground from '../assets/oneroom.png';
 import dorimSmile from '../assets/dorim_smile.png';
 import dorimSad from '../assets/dorim_sad.png';
@@ -26,19 +26,28 @@ interface CharacterSpriteMap {
 }
 
 const characterSprites: CharacterSpriteMap = {
-  '앨리스': {
+  '앨리스': { // 기존 앨리스 정의 (테스트용으로 남겨두거나 삭제 가능)
     normal: dorimSad,
     happy: dorimSmile,
-    // 다른 표정 추가 가능
   },
+  '도림': { // 도림 캐릭터 추가
+    normal: dorimSad, // 기본 표정 (일단 sad 이미지 사용, 필요시 변경)
+    sad: dorimSad,
+    smile: dorimSmile,
+    // 필요에 따라 다른 표정 추가
+  },
+  '세영': {
+    // 세영 캐릭터 스프라이트 추가 (필요하다면)
+  }
   // 다른 캐릭터 추가 가능
 };
 
 
-const Game: React.FC = () => { // 컴포넌트 타입 명시
+const StoryScene: React.FC = () => { // 컴포넌트 이름 변경: Game -> StoryScene
   // --- 상태 추가 ---
   const [showSettings, setShowSettings] = useState(false); // 설정 메뉴 표시 상태
   const [notificationMessage, setNotificationMessage] = useState(''); // 상단 알림 메시지 상태 추가
+  const [showPhoneChat, setShowPhoneChat] = useState(false); // 디티알톡 표시 상태 추가 (기본값: 숨김)
 
   // --- 커스텀 Hook 사용 ---
   // TODO: 현재는 테스트용 ID 사용. 라우팅 또는 상태 관리 통해 동적으로 받아와야 함.
@@ -64,17 +73,22 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
 
   // --- BGM 자동 재생 시도 및 정리 ---
   useEffect(() => {
-    console.log('Game Component 마운트 - BGM 재생 시도');
+    console.log('StoryScene Component 마운트 - BGM 재생 시도'); // 로그 메시지 변경
     playBgm('mainTheme'); // 마운트 시 재생 시도 (음소거 상태일 수 있음)
 
     return () => {
-      console.log('Game Component 언마운트 - BGM 정지');
+      console.log('StoryScene Component 언마운트 - BGM 정지'); // 로그 메시지 변경
       stopBgm(); // 언마운트 시 정지
     };
   }, []); // 빈 배열: 마운트/언마운트 시 1회 실행
 
   // --- 저장/불러오기 함수는 useGameState 훅으로 이동 ---
   // handleSaveGame, handleLoadGame 제거
+
+  // --- 디티알톡 토글 함수 ---
+  const togglePhoneChat = () => {
+    setShowPhoneChat(prevShow => !prevShow);
+  };
 
   // 로딩 중 표시
   if (isLoadingEpisode) {
@@ -116,11 +130,35 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
       nextIndex = currentScriptIndex + 1;
     }
 
+    // nextScene 확인 및 처리 추가
+    const currentDialogue = currentLine as ScriptLine; // 타입 단언
+    // const currentDialogue = currentLine as ScriptLine; // 중복 선언 제거
+    if (currentDialogue.nextScene) {
+      console.log(`다음 씬으로 이동: ${currentDialogue.nextScene}`);
+      const missionId = episodeData?.mission_id; // 현재 에피소드의 mission_id 가져오기
+      if (currentDialogue.nextScene === 'comment') {
+        if (missionId) {
+          navigate(`/comment/${missionId}`); // missionId를 포함하여 코멘트 씬으로 이동
+        } else {
+          console.error("Mission ID를 찾을 수 없어 CommentScene으로 이동할 수 없습니다.");
+          // missionId가 없을 경우의 처리 (예: 에러 메시지 표시, 타이틀로 이동 등)
+          navigate('/');
+        }
+      } else {
+        console.warn(`알 수 없는 nextScene 값: ${currentDialogue.nextScene}`);
+        // 기본적으로 타이틀로 이동하거나 다른 처리
+        navigate('/');
+      }
+      return; // 씬 이동 후 함수 종료
+    }
+
+    // nextScene이 없을 경우 기존 로직 수행
     if (nextIndex !== -1) {
       setCurrentScriptIndex(nextIndex);
     } else {
-      // 스크립트 끝 처리
-      alert('스크립트가 종료되었습니다.');
+      // 스크립트 끝 처리 (nextScene 없이 끝나는 경우)
+      console.log('스크립트가 종료되었습니다. (nextScene 없음)');
+      // alert('스크립트가 종료되었습니다.'); // alert 대신 콘솔 로그 사용 또는 다른 UI 피드백 고려
       navigate('/'); // 타이틀 화면으로 이동
     }
   };
@@ -151,16 +189,45 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
     console.log(`선택됨: ${choiceId}, 플래그 업데이트:`, { ...gameFlags, previousChoice: choiceId });
 
 
+    // nextIndex로 다음 대사 찾기
+    const nextDialogue = nextIndex !== -1 ? currentEpisodeScript[nextIndex] : null;
+
+    // 다음 대사에 nextScene이 있는지 확인
+    // 다음 대사에 nextScene이 있는지 확인
+    if (nextDialogue && nextDialogue.nextScene) {
+        console.log(`선택지 결과 후 다음 씬으로 이동: ${nextDialogue.nextScene}`);
+        const missionId = episodeData?.mission_id; // 현재 에피소드의 mission_id 가져오기
+        if (nextDialogue.nextScene === 'comment') {
+          if (missionId) {
+            navigate(`/comment/${missionId}`); // missionId를 포함하여 코멘트 씬으로 이동
+          } else {
+            console.error("Mission ID를 찾을 수 없어 CommentScene으로 이동할 수 없습니다.");
+            navigate('/');
+          }
+        } else {
+            console.warn(`알 수 없는 nextScene 값: ${nextDialogue.nextScene}`);
+            navigate('/'); // 기본적으로 타이틀로 이동
+        }
+        // 플래그는 업데이트하고 씬 이동
+        return;
+    }
+
+    // nextScene이 없거나 다음 대사를 찾지 못한 경우
     if (nextIndex !== -1) {
       setCurrentScriptIndex(nextIndex);
     } else {
-      console.log('선택지에 대한 다음 대사를 찾을 수 없습니다!');
+      console.log('선택지에 대한 다음 대사를 찾을 수 없습니다! (nextScene 없음)');
       // 선택지 이후 진행이 막히면 안되므로, 다음 라인으로 넘어가는 기본 로직 추가 고려
-      if (currentScriptIndex < currentEpisodeScript.length - 1) { // currentEpisodeScript.length 사용
-         setCurrentScriptIndex(prevIndex => prevIndex + 1);
+      // (nextScene이 없다는 것은 일반적으로 스크립트가 계속되어야 함을 의미할 수 있음)
+      // 하지만 현재 로직은 다음 ID를 못 찾으면 종료시키므로, 일단 유지
+      // TODO: 기획에 따라 선택지 후 nextId가 없을 때의 처리 방식 재검토 필요
+      if (currentScriptIndex < currentEpisodeScript.length - 1) {
+         console.warn(`선택지 nextId '${nextId}'에 해당하는 대사를 찾지 못했지만, 다음 순서 대사로 이동합니다.`);
+         setCurrentScriptIndex(prevIndex => prevIndex + 1); // 임시 방편으로 다음 순서로
       } else {
          // 스크립트 끝 처리
-         alert('스크립트가 종료되었습니다.');
+         console.log('스크립트가 종료되었습니다. (선택지 후 nextId 없음)');
+         // alert('스크립트가 종료되었습니다.');
          navigate('/'); // 타이틀 화면으로 이동
       }
     }
@@ -204,16 +271,20 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
 
   return (
     // --- JSX 구조 (className 적용 방식은 styles 객체 사용으로 가정) ---
-    <div className={styles.gameContainer}>
-      <div className={styles.gameArea}>
-        {/* 저장/불러오기/설정 버튼 */}
-        <div className={styles.menuButtons}>
-          {/* disabled 상태를 isLoadingEpisode 기준으로 변경 */}
-          <button onClick={saveGame} className={styles.menuButton} disabled={isLoadingEpisode}>저장</button>
-          <button onClick={loadGame} className={styles.menuButton} disabled={isLoadingEpisode}>불러오기</button>
-          {/* 설정 버튼 추가 */}
-          <button onClick={() => setShowSettings(true)} className={styles.menuButton}>설정</button>
-        </div>
+    <div className={styles.storySceneContainer}> {/* 클래스 이름 변경 */}
+      <div className={styles.storyArea}> {/* 클래스 이름 변경 */}
+          {/* 저장/불러오기/설정/디티알톡 토글 버튼 */}
+          <div className={styles.menuButtons}>
+            {/* disabled 상태를 isLoadingEpisode 기준으로 변경 */}
+            <button onClick={saveGame} className={styles.menuButton} disabled={isLoadingEpisode}>저장</button>
+            <button onClick={loadGame} className={styles.menuButton} disabled={isLoadingEpisode}>불러오기</button>
+            {/* 설정 버튼 추가 */}
+            <button onClick={() => setShowSettings(true)} className={styles.menuButton}>설정</button>
+            {/* 디티알톡 토글 버튼 추가 */}
+            <button onClick={togglePhoneChat} className={styles.menuButton}>
+              {showPhoneChat ? '디티알톡 숨기기' : '디티알톡 보이기'}
+            </button>
+          </div>
 
         {/* 상단 알림 메시지 */}
         {notificationMessage && (
@@ -248,8 +319,8 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
           />
         )}
 
-        {/* PhoneChat 컴포넌트 추가 */}
-        <PhoneChat />
+        {/* PhoneChat 컴포넌트 조건부 렌더링 */}
+        {showPhoneChat && <PhoneChat />}
       </div>
 
       {/* 설정 메뉴 조건부 렌더링 */}
@@ -258,4 +329,4 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
   );
 };
 
-export default Game;
+export default StoryScene; // export 이름 변경

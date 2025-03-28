@@ -1,17 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/supabase'; // Supabase 클라이언트 import, 확장자 제거
-import { useLocation, useNavigate } from 'react-router-dom'; // useLocation, useNavigate 추가
+// import { supabase } from '../services/supabase'; // Supabase 클라이언트 import 제거
+import { useLocation, useNavigate } from 'react-router-dom';
 
+// 로컬 script.json 파일의 엔딩 데이터 구조 정의 (예시)
+// 실제 script.json 구조에 맞게 조정 필요
 interface EndingData {
-  id: number;
-  type: string;
-  title: string | null;
-  message: string;
-  image_url: string | null;
-  created_at: string;
+  type: string; // 엔딩 타입 (e.g., "normal", "hidden")
+  title?: string; // 엔딩 제목 (선택적)
+  message: string; // 엔딩 메시지
+  image_url?: string; // 엔딩 이미지 URL (선택적)
 }
 
-// EndingSceneProps 제거
+// script.json 파일 내 엔딩 데이터 구조 정의 (예시)
+interface ScriptEndingsData {
+  [endingType: string]: EndingData;
+}
+
+// script.json 파일 전체 구조에 endings 포함 가정
+interface ScriptData {
+  // episodes: { ... }; // 기존 에피소드 데이터
+  endings: ScriptEndingsData; // 엔딩 데이터 추가
+}
 
 const EndingScene: React.FC = () => { // Props 제거
   const location = useLocation(); // useLocation 훅 사용
@@ -24,48 +33,45 @@ const EndingScene: React.FC = () => { // Props 제거
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchEnding = async () => {
+    // endingType이 유효할 때만 데이터 로드 시도
+    if (!endingType) {
+      setIsLoading(false);
+      setError('엔딩 타입을 찾을 수 없습니다.');
+      console.error('Ending type not found in location state');
+      return;
+    }
+
+    const loadEndingData = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const { data, error: fetchError } = await supabase
-          .from('endings')
-          .select('*')
-          .eq('type', endingType)
-          .limit(1) // 해당 타입의 첫 번째 엔딩만 가져옴
-          .single(); // 단일 결과 기대
-
-        if (fetchError) {
-          // 'PGRST116' 코드는 결과가 없을 때 발생
-          if (fetchError.code === 'PGRST116') {
-            throw new Error(`'${endingType}' 타입의 엔딩을 찾을 수 없습니다.`);
-          }
-          throw fetchError;
+        // public/script.json 파일 fetch
+        const response = await fetch('/script.json');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch script.json: ${response.statusText}`);
         }
+        // script.json 전체 데이터 로드 (endings 포함 가정)
+        const scriptData: ScriptData = await response.json();
+
+        // script.json에서 해당 endingType의 데이터 찾기 (endingType이 string임을 보장)
+        const data = scriptData.endings?.[endingType];
 
         if (data) {
-          setEnding(data as EndingData);
+          setEnding(data);
+          console.log('EndingScene: Ending loaded successfully from script.json:', data);
         } else {
-          // single() 사용 시 data가 null이고 에러가 없으면 결과가 없는 것
-           throw new Error(`'${endingType}' 타입의 엔딩을 찾을 수 없습니다.`);
+          throw new Error(`'${endingType}' 타입의 엔딩을 script.json에서 찾을 수 없습니다.`);
         }
       } catch (err: any) {
-        console.error('Error fetching ending:', err);
+        console.error('Error loading ending from script.json:', err);
         setError(`엔딩 정보를 불러오는 중 오류 발생: ${err.message}`);
       } finally {
         setIsLoading(false);
       }
     };
 
-    // endingType이 유효할 때만 fetchEnding 호출
-    if (endingType) {
-      fetchEnding();
-    } else {
-      // endingType이 없으면 로딩 상태 해제 및 에러 설정
-      setIsLoading(false);
-      setError('엔딩 타입을 찾을 수 없습니다.');
-      console.error('Ending type not found in location state');
-    }
+    loadEndingData(); // 함수 이름 수정: fetchEnding -> loadEndingData
+
   }, [endingType]); // endingType이 변경될 때마다 엔딩 다시 로드
 
   // 타이틀 화면으로 돌아가는 함수

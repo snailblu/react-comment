@@ -1,46 +1,34 @@
 import './App.css';
+import './App.css';
 import React from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom'; // useNavigate 추가
-import Game from './components/Game';
+import StoryScene from './components/StoryScene'; // Game -> StoryScene 변경
 import TitleScreen from './components/TitleScreen';
 import CommentScene from './components/CommentScene';
-import ResultScene from './components/ResultScene'; // ResultScene import 추가
-import EndingScene from './components/EndingScene'; // EndingScene import 추가
+import ResultScene from './components/ResultScene';
+import EndingScene from './components/EndingScene';
+// Removed duplicate import: import CommentScene from './components/CommentScene';
 
 function App() {
-  const navigate = useNavigate(); // useNavigate 훅 사용
+  // const navigate = useNavigate(); // navigate는 아직 사용되지 않으므로 주석 처리 또는 제거 가능
 
-  // 테스트용 미션 ID
-  const testMissionId = 'a1b2c3d4-e5f6-7890-1234-567890abcdef';
-
-  // 미션 완료 핸들러 수정
-  const handleMissionComplete = (success: boolean) => {
-    console.log(`Mission Complete: ${success}`);
-    if (success) {
-      // 성공 시 ResultScene으로 이동 (missionId 전달)
-      navigate('/result', { state: { missionId: testMissionId } });
-    } else {
-      // 실패 시 EndingScene으로 이동 (bad_ending 타입 전달)
-      navigate('/ending', { state: { endingType: 'bad_ending' } });
-    }
-  };
+  // testMissionId 및 handleMissionComplete 제거됨
 
   return (
     <div className="App">
       {/* Set up routes */}
       <Routes>
-        {/* 루트 경로를 CommentScene으로 유지 (테스트용) */}
-        <Route
-          path="/"
-          element={<CommentScene missionId={testMissionId} onMissionComplete={handleMissionComplete} />}
-        />
-        {/* ResultScene 라우트 추가 */}
+        {/* 루트 경로를 TitleScreen으로 변경 */}
+        <Route path="/" element={<TitleScreen />} />
+        {/* CommentScene 라우트 수정 (missionId 및 핸들러 제거 - 추후 필요시 재설정) */}
+        <Route path="/comment/:missionId" element={<CommentScene />} /> {/* 예시: missionId를 URL 파라미터로 받도록 변경 */}
+        {/* ResultScene 라우트 유지 */}
         <Route path="/result" element={<ResultScene />} />
-        {/* EndingScene 라우트 추가 */}
+        {/* EndingScene 라우트 유지 */}
         <Route path="/ending" element={<EndingScene />} />
-        {/* 기존 경로 유지 */}
-        <Route path="/title" element={<TitleScreen />} />
-        <Route path="/game" element={<Game />} />
+        {/* 기존 /title 경로는 루트로 대체되었으므로 제거 가능 */}
+        {/* <Route path="/title" element={<TitleScreen />} /> */}
+        <Route path="/game" element={<StoryScene />} /> {/* Game -> StoryScene 변경 */}
       </Routes>
     </div>
   );

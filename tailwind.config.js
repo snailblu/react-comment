@@ -71,6 +71,10 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      // Add Playfair Display font family
+      fontFamily: {
+        playfair: ['"Playfair Display"', 'serif'], // Use quotes for multi-word font names
+      },
     },
   },
   plugins: [require("tailwindcss-animate")], // Add the animate plugin

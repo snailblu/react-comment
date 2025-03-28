@@ -1,18 +1,23 @@
 import { useState, useEffect } from 'react';
-import { getEpisodeData } from '../services/supabase';
+// import { getEpisodeData } from '../services/supabase'; // Supabase 의존성 제거
 import { ScriptLine } from './useGameState'; // useGameState에서 ScriptLine 타입 가져오기
 
-// getEpisodeData가 반환하는 데이터 구조 정의
-// supabase.ts의 select 쿼리와 episodes 테이블 스키마 기반
+// 로컬 script.json 파일의 에피소드 데이터 구조 정의
 interface EpisodeData {
   id: string;
-  title: string | null;
-  intro_dialogues: ScriptLine[] | null; // intro_dialogues가 ScriptLine 배열이라고 가정
-  ending_dialogues: ScriptLine[] | null; // ending_dialogues가 ScriptLine 배열이라고 가정
+  title: string; // title은 null이 아니라고 가정
+  intro_dialogues: ScriptLine[]; // intro_dialogues가 ScriptLine 배열이라고 가정
+  ending_dialogues: ScriptLine[]; // ending_dialogues가 ScriptLine 배열이라고 가정
+  mission_id: string; // 미션 ID 추가 (script.json 구조에 따라 조정 필요)
+}
+
+// script.json 파일 전체 구조 정의 (에피소드 ID를 키로 사용)
+interface ScriptData {
+  [episodeId: string]: EpisodeData;
 }
 
 /**
- * episodeId를 기반으로 Supabase에서 에피소드 데이터를 로드합니다.
+ * episodeId를 기반으로 로컬 script.json에서 에피소드 데이터를 로드합니다.
  * @param episodeId 로드할 에피소드의 ID.
  * @returns {{ episodeData: EpisodeData | null, isLoadingEpisode: boolean }} 에피소드 데이터와 로딩 상태.
  */
@@ -31,21 +36,28 @@ const useEpisodeLoader = (episodeId: string | null) => {
 
     const loadData = async () => {
       setIsLoadingEpisode(true);
-      console.log(`useEpisodeLoader: Loading episode ${episodeId}...`);
+      console.log(`useEpisodeLoader: Loading episode ${episodeId} from script.json...`);
       try {
-        // getEpisodeData의 반환 타입에 따라 타입 단언 필요할 수 있음
-        const data = await getEpisodeData(episodeId) as EpisodeData | null;
+        // public/script.json 파일 fetch
+        const response = await fetch('/script.json');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch script.json: ${response.statusText}`);
+        }
+        const scriptData: ScriptData = await response.json();
+
+        // 해당 episodeId의 데이터 찾기
+        const data = scriptData[episodeId];
+
         if (data) {
           // 필요시 데이터 유효성 검사 또는 변환
-          // 현재는 data.intro_dialogues가 스크립트 배열이라고 가정
           setEpisodeData(data);
-          console.log('useEpisodeLoader: Episode loaded successfully:', data);
+          console.log('useEpisodeLoader: Episode loaded successfully from script.json:', data);
         } else {
-          console.error(`useEpisodeLoader: Episode ${episodeId} not found or failed to load.`);
+          console.error(`useEpisodeLoader: Episode ${episodeId} not found in script.json.`);
           setEpisodeData(null);
         }
       } catch (error) {
-        console.error('useEpisodeLoader: Error loading episode:', error);
+        console.error('useEpisodeLoader: Error loading episode from script.json:', error);
         setEpisodeData(null);
       } finally {
         setIsLoadingEpisode(false);

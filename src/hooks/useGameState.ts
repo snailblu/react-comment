@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, Dispatch, SetStateAction } from 'react';
+// SceneType import 추가
+import { SceneType } from '../types';
 
 // --- 타입 정의 (export 추가) ---
 
@@ -23,6 +25,7 @@ export interface ScriptLine { // export 추가
   };
   altText?: string;
   expression?: string;
+  nextScene?: SceneType; // 다음 씬 타입 추가
   // 필요한 다른 속성 추가 가능
 }
 

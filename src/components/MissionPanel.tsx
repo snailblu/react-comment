@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/supabase';
 import {
   Card,
   CardContent,
@@ -9,54 +8,53 @@ import {
 import { Skeleton } from "./ui/skeleton";
 import { Badge } from "./ui/badge"; // Import Badge
 import { Separator } from "./ui/separator"; // Import Separator
+import { Mission } from '../types'; // Import Mission from types (MissionData -> Mission)
 
 interface MissionPanelProps {
   missionId: string | null; // Allow null missionId
 }
 
-interface MissionData {
-  title: string | null;
-  goal: any | null; // JSONB 타입, 구체적인 구조 정의 필요
-  keywords: string[] | null;
-  conditions: string[] | null;
-  max_attempts: number | null;
-}
+// MissionData interface moved to src/types/index.ts
 
 const MissionPanel: React.FC<MissionPanelProps> = ({ missionId }) => {
-  const [missionData, setMissionData] = useState<MissionData | null>(null);
+  const [mission, setMission] = useState<Mission | null>(null); // missionData -> mission, MissionData -> Mission
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchMissionData = async () => {
       setIsLoading(true);
-      console.log(`MissionPanel: Fetching data for mission ${missionId}`);
-      try {
-        const { data, error } = await supabase
-          .from('missions')
-          .select('title, goal, keywords, conditions, max_attempts')
-          .eq('id', missionId)
-          .single();
+      setMission(null); // Reset mission data on new missionId (missionData -> mission)
 
-        if (error) throw error;
-        setMissionData(data);
-        console.log('MissionPanel: Mission data loaded:', data);
+      if (!missionId) {
+        console.error("MissionPanel: missionId is null.");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/missions.json'); // Fetch from the new file
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const allMissions: { [key: string]: Mission } = await response.json(); // MissionData -> Mission
+
+        if (allMissions[missionId]) {
+          console.log(`MissionPanel: Loaded data for mission ${missionId} from missions.json`);
+          setMission(allMissions[missionId]); // missionData -> mission
+        } else {
+          console.error(`MissionPanel: Mission data for ${missionId} not found in missions.json.`);
+        }
       } catch (error) {
-        console.error('Error fetching mission data:', error);
-        setMissionData(null);
+        console.error("MissionPanel: Failed to fetch or parse missions.json:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (missionId) {
-      fetchMissionData();
-    } else {
-      setIsLoading(false); // missionId 없으면 로딩 중단
-      setMissionData(null);
-    }
+    fetchMissionData();
   }, [missionId]);
 
-  // goal 객체를 문자열로 표시 (개선된 버전)
+  // goal 객체를 문자열로 표시 (개선된 버전) - 동일하게 유지
   const formatGoal = (goal: any): string => {
     if (!goal) return 'N/A';
     try {
@@ -86,7 +84,7 @@ const MissionPanel: React.FC<MissionPanelProps> = ({ missionId }) => {
     );
   }
 
-  if (!missionData) {
+  if (!mission) { // missionData -> mission
     // Display error within a Card for consistency
     return (
       <Card className="w-full border-destructive">
@@ -100,18 +98,13 @@ const MissionPanel: React.FC<MissionPanelProps> = ({ missionId }) => {
     );
   }
 
-  const goalString = formatGoal(missionData.goal);
-
-  // Remove "테스트 미션: " prefix if it exists
-  const displayTitle = missionData.title?.startsWith('테스트 미션: ')
-    ? missionData.title.substring('테스트 미션: '.length)
-    : missionData.title;
+  const goalString = formatGoal(mission.goal); // missionData -> mission
 
   return (
     <Card className="w-full shadow-lg border border-border/40"> {/* Enhanced shadow and border */}
       <CardHeader className="pb-3"> {/* Reduced bottom padding */}
         <CardTitle className="text-xl font-semibold tracking-tight"> {/* Larger title, adjusted weight/tracking */}
-          {displayTitle || '제목 없음'} {/* Display title without prefix */}
+          {mission.title || '제목 없음'} {/* Use title directly (missionData -> mission) */}
         </CardTitle>
       </CardHeader>
       <Separator /> {/* Separator without margin */}
@@ -120,11 +113,11 @@ const MissionPanel: React.FC<MissionPanelProps> = ({ missionId }) => {
           <strong className="font-medium text-muted-foreground">목표:</strong> {/* Use theme color for label */}
           <p className="mt-1 text-foreground">{goalString}</p> {/* Ensure value text color */}
         </div>
-        {missionData.keywords && missionData.keywords.length > 0 && (
+        {mission.keywords && mission.keywords.length > 0 && ( // missionData -> mission
           <div>
             <strong className="font-medium text-muted-foreground">키워드:</strong>
             <div className="mt-2 flex flex-wrap justify-center gap-2"> {/* Centered keywords */}
-              {missionData.keywords.map((keyword, index) => (
+              {mission.keywords.map((keyword: string, index: number) => ( // Add types (missionData -> mission)
                 <Badge key={index} variant="outline"> {/* Changed variant for subtle look */}
                   {keyword}
                 </Badge>
@@ -132,11 +125,11 @@ const MissionPanel: React.FC<MissionPanelProps> = ({ missionId }) => {
             </div>
           </div>
         )}
-        {missionData.conditions && missionData.conditions.length > 0 && (
+        {mission.conditions && mission.conditions.length > 0 && ( // missionData -> mission
           <div>
             <strong className="font-medium text-muted-foreground">조건:</strong>
             <ul className="list-none pl-4 mt-1 space-y-1 text-foreground"> {/* Removed list-disc and list-inside, added list-none */}
-              {missionData.conditions.map((condition, index) => (
+              {mission.conditions.map((condition: string, index: number) => ( // Add types (missionData -> mission)
                 <li key={index}>{condition}</li>
               ))}
             </ul>

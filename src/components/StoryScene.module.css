@@ -1,4 +1,4 @@
-.gameContainer {
+.storySceneContainer { /* 클래스 이름 변경 */
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -8,7 +8,7 @@
   overflow: hidden;
 }
 
-.gameArea {
+.storyArea { /* 클래스 이름 변경 */
   position: relative;
   width: 100%;
   height: 100%;
