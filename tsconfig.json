@@ -18,7 +18,11 @@
     "resolveJsonModule": true, // .json 모듈 import 허용
     "isolatedModules": true, // 각 파일을 별도의 모듈로 변환
     "noEmit": true, // 컴파일된 출력 파일 생성 안 함 (Babel 등 다른 도구가 처리)
-    "jsx": "react-jsx" // JSX 코드 처리 방식 (React 17+의 새로운 JSX 변환 사용)
+    "jsx": "react-jsx", // JSX 코드 처리 방식 (React 17+의 새로운 JSX 변환 사용)
+    "baseUrl": ".", // 경로 별칭의 기준 디렉토리 설정
+    "paths": { // 경로 별칭 설정
+      "@/*": ["src/*"] // "@"를 "src/" 디렉토리로 매핑
+    }
   },
   "include": [
     "src" // 컴파일 대상 파일이 포함된 디렉토리
