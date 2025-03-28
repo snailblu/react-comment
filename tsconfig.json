@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "es5", // 컴파일될 JavaScript 버전 (ES5는 구형 브라우저 호환성을 위해)
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ], // 컴파일에 포함될 라이브러리 파일 목록
+    "allowJs": true, // JavaScript 파일도 컴파일 허용
+    "skipLibCheck": true, // 모든 선언 파일(*.d.ts)의 타입 검사 건너뛰기
+    "esModuleInterop": true, // CommonJS 모듈을 ES6 모듈처럼 가져올 수 있게 함
+    "allowSyntheticDefaultImports": true, // default export가 없는 모듈에서 default import 허용
+    "strict": true, // 모든 엄격한 타입 검사 옵션 활성화 (권장)
+    "forceConsistentCasingInFileNames": true, // 파일 이름의 대소문자 일관성 강제
+    "noFallthroughCasesInSwitch": true, // switch 문에서 fallthrough case 방지
+    "module": "esnext", // 모듈 코드 생성 방식 (ESNext는 최신 ES 모듈 시스템 사용)
+    "moduleResolution": "node", // 모듈 해석 방식 (Node.js 방식)
+    "resolveJsonModule": true, // .json 모듈 import 허용
+    "isolatedModules": true, // 각 파일을 별도의 모듈로 변환
+    "noEmit": true, // 컴파일된 출력 파일 생성 안 함 (Babel 등 다른 도구가 처리)
+    "jsx": "react-jsx" // JSX 코드 처리 방식 (React 17+의 새로운 JSX 변환 사용)
+  },
+  "include": [
+    "src" // 컴파일 대상 파일이 포함된 디렉토리
+  ]
+}

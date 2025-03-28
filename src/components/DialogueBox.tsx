@@ -1,7 +1,14 @@
 import React from 'react';
 import styles from './DialogueBox.module.css';
 
-const DialogueBox = ({ characterName, dialogueText, onNext }) => {
+// Props 타입 정의
+interface DialogueBoxProps {
+  characterName?: string | null; // 이름은 선택적이거나 null일 수 있음
+  dialogueText: string;
+  onNext: () => void; // 클릭 이벤트 핸들러 함수 타입
+}
+
+const DialogueBox: React.FC<DialogueBoxProps> = ({ characterName, dialogueText, onNext }) => {
   return (
     <div className={styles.dialogueBox} onClick={onNext}>
       {characterName && (

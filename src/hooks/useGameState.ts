@@ -1,28 +1,60 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Dispatch, SetStateAction } from 'react';
+
+// --- 타입 정의 (export 추가) ---
+
+// 선택지 옵션 타입 (Choices.tsx와 일치 또는 공유 타입 파일로 이동 고려)
+export interface ChoiceOption { // export 추가
+  id: string | number;
+  text: string;
+  nextId?: string | number;
+}
+
+// 스크립트 라인 타입
+export interface ScriptLine { // export 추가
+  id: string | number;
+  type: string; // 'dialogue', 'choice', 'narrator' 등
+  character?: string;
+  text?: string;
+  choices?: ChoiceOption[];
+  nextId?: string | number;
+  condition?: {
+    flag: string;
+    value: any; // 조건 값은 다양할 수 있음
+  };
+  altText?: string;
+  expression?: string;
+  // 필요한 다른 속성 추가 가능
+}
+
+// 스크립트 데이터 타입 (ScriptLine 배열)
+export type ScriptData = ScriptLine[]; // export 추가
+
+// 게임 플래그 타입 (문자열 키와 임의의 값)
+export type GameFlags = Record<string, any>; // export 추가
+
+// useGameState Hook 반환 타입
+export interface GameStateHook { // export 추가
+  currentScriptIndex: number;
+  gameFlags: GameFlags;
+  currentEpisodeId: string | null;
+  sceneProgress: string;
+  setCurrentScriptIndex: Dispatch<SetStateAction<number>>;
+  setGameFlags: Dispatch<SetStateAction<GameFlags>>;
+  setCurrentEpisodeId: Dispatch<SetStateAction<string | null>>;
+  setSceneProgress: Dispatch<SetStateAction<string>>;
+  saveGame: () => void;
+  loadGame: () => void;
+}
 
 const SAVE_KEY = 'saveDataVn'; // 로컬 스토리지 키 정의
 
-/**
- * 게임 상태(스크립트 인덱스, 플래그) 및 저장/불러오기 로직을 관리하는 커스텀 Hook.
- * @param {Array} scriptData - 스크립트 데이터 배열 (불러오기 시 인덱스 유효성 검사에 사용).
- * @returns {{
- *   currentScriptIndex: number,
- *   gameFlags: object,
- *   currentEpisodeId: string | null, // 추가
- *   sceneProgress: string, // 추가
- *   setCurrentScriptIndex: Function,
- *   setGameFlags: Function,
- *   setCurrentEpisodeId: Function, // 추가
- *   setSceneProgress: Function, // 추가
- *   saveGame: Function,
- *   loadGame: Function
- * }} 게임 상태 값, 상태 업데이트 함수, 저장/불러오기 함수.
- */
-const useGameState = (scriptData) => {
-  const [currentScriptIndex, setCurrentScriptIndex] = useState(0);
-  const [gameFlags, setGameFlags] = useState({});
-  const [currentEpisodeId, setCurrentEpisodeId] = useState(null); // 현재 에피소드 ID 상태 추가
-  const [sceneProgress, setSceneProgress] = useState('intro'); // 씬 진행 상태 추가 (예: 'intro', 'mission', 'ending')
+// Hook 함수 시그니처에 타입 적용
+const useGameState = (scriptData: ScriptData): GameStateHook => {
+  // useState에 제네릭 타입 적용
+  const [currentScriptIndex, setCurrentScriptIndex] = useState<number>(0);
+  const [gameFlags, setGameFlags] = useState<GameFlags>({});
+  const [currentEpisodeId, setCurrentEpisodeId] = useState<string | null>(null); // 현재 에피소드 ID 상태 추가
+  const [sceneProgress, setSceneProgress] = useState<string>('intro'); // 씬 진행 상태 추가
 
   // --- 로컬 스토리지에서 초기 상태 로드 ---
   useEffect(() => {
@@ -30,12 +62,18 @@ const useGameState = (scriptData) => {
     const savedData = localStorage.getItem(SAVE_KEY);
     let loadedIndex = 0;
     let loadedFlags = {};
-    let loadedEpisodeId = null; // 초기값 설정
-    let loadedSceneProgress = 'intro'; // 초기값 설정
+    let loadedEpisodeId: string | null = null; // 타입 명시
+    let loadedSceneProgress: string = 'intro'; // 타입 명시
 
     if (savedData) {
       try {
-        const parsedData = JSON.parse(savedData);
+        // 파싱된 데이터 타입 정의 (부분적으로)
+        const parsedData: Partial<{
+          currentScriptIndex: number;
+          gameFlags: GameFlags;
+          currentEpisodeId: string | null;
+          sceneProgress: string;
+        }> = JSON.parse(savedData);
 
         // currentScriptIndex 로드 및 유효성 검사
         if (typeof parsedData.currentScriptIndex === 'number' && parsedData.currentScriptIndex >= 0) {

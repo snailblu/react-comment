@@ -1,19 +1,27 @@
-import React, { useContext } from 'react';
+import React, { useContext, ChangeEvent } from 'react'; // ChangeEvent 추가
 import { useNavigate } from 'react-router-dom'; // useNavigate 추가
-import { SettingsContext } from '../contexts/SettingsContext';
+import { SettingsContext, SettingsContextType } from '../contexts/SettingsContext'; // SettingsContextType 추가
 import styles from './SettingsMenu.module.css'; // CSS 모듈 import
 // import useGameState from '../hooks/useGameState'; // 기능 구현 시 필요할 수 있음
 
-const SettingsMenu = ({ onClose }) => { // onClose 함수를 prop으로 받음
-  const { bgmVolume, setBgmVolume, sfxVolume, setSfxVolume } = useContext(SettingsContext);
+// Props 타입 정의
+interface SettingsMenuProps {
+  onClose: () => void; // onClose 함수 타입 정의
+}
+
+const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => { // 컴포넌트 타입 및 props 타입 지정
+  // useContext에 타입 명시
+  const { bgmVolume, setBgmVolume, sfxVolume, setSfxVolume } = useContext<SettingsContextType>(SettingsContext);
   const navigate = useNavigate(); // useNavigate 훅 사용
   // const { saveGame, loadGame } = useGameState(); // 기능 구현 시 필요
 
-  const handleBgmChange = (event) => {
+  // 이벤트 핸들러 파라미터 타입 지정
+  const handleBgmChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBgmVolume(Number(event.target.value));
   };
 
-  const handleSfxChange = (event) => {
+  // 이벤트 핸들러 파라미터 타입 지정
+  const handleSfxChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSfxVolume(Number(event.target.value));
   };
 

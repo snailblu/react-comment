@@ -1,7 +1,13 @@
 import React from 'react';
 import styles from './Character.module.css';
 
-const Character = ({ imageUrl, name }) => {
+// Props 타입 정의
+interface CharacterProps {
+  imageUrl: string;
+  name: string;
+}
+
+const Character: React.FC<CharacterProps> = ({ imageUrl, name }) => {
   return (
     <div className={styles.character}>
       <img

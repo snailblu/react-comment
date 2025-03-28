@@ -9,23 +9,32 @@ import Choices from './Choices';
 import SettingsMenu from './SettingsMenu'; // SettingsMenu import 추가
 import PhoneChat from './PhoneChat'; // PhoneChat 컴포넌트 추가
 import useScriptLoader from '../hooks/useScriptLoader'; // useScriptLoader 훅 import
-import useGameState from '../hooks/useGameState'; // useGameState 훅 import
+// useGameState 훅 및 관련 타입 import
+import useGameState, { ScriptLine, ScriptData, GameFlags, ChoiceOption } from '../hooks/useGameState';
 import styles from './Game.module.css'; // CSS 모듈 import 확인
 import roomBackground from '../assets/oneroom.png';
 import dorimSmile from '../assets/dorim_smile.png';
 import dorimSad from '../assets/dorim_sad.png';
 // unmuteAfterInteraction import 제거
 
-// const SAVE_KEY = 'saveDataVn'; // 더 이상 사용되지 않으므로 제거
+// 캐릭터 스프라이트 타입 정의
+interface CharacterSpriteMap {
+  [characterName: string]: {
+    [expression: string]: string; // expression은 문자열 키, 값은 이미지 경로(string)
+  };
+}
 
-const characterSprites = {
+const characterSprites: CharacterSpriteMap = {
   '앨리스': {
     normal: dorimSad,
-    happy: dorimSmile
-  }
+    happy: dorimSmile,
+    // 다른 표정 추가 가능
+  },
+  // 다른 캐릭터 추가 가능
 };
 
-const Game = () => {
+
+const Game: React.FC = () => { // 컴포넌트 타입 명시
   // --- 상태 추가 ---
   const [showSettings, setShowSettings] = useState(false); // 설정 메뉴 표시 상태
   const [notificationMessage, setNotificationMessage] = useState(''); // 상단 알림 메시지 상태 추가
@@ -64,8 +73,8 @@ const Game = () => {
   }
 
   // 로딩 완료 후 로직 (scriptData 사용)
-  // currentLine 계산 시 scriptData 유효성 및 인덱스 범위 확인
-  const currentLine = scriptData && scriptData.length > currentScriptIndex ? scriptData[currentScriptIndex] : null;
+  // currentLine 계산 시 scriptData 유효성 및 인덱스 범위 확인 (타입 명시)
+  const currentLine: ScriptLine | null = scriptData && scriptData.length > currentScriptIndex ? scriptData[currentScriptIndex] : null;
 
   // currentLine이 null일 경우 렌더링하지 않거나 다른 처리 추가
   if (!currentLine) {
@@ -81,15 +90,19 @@ const Game = () => {
 
   // --- 상호작용 핸들러 ---
   const handleNext = () => {
+    // 함수 시작 시 명시적 타입 가드 (이미 위에서 처리됨)
+    // if (!currentLine) return;
     signalInteraction(); // 첫 상호작용 시 오디오 활성화 신호 보내기
-    if (currentLine.type === 'choice') return;
+    // 타입 체크 후 속성 접근 (타입 단언 사용)
+    if ((currentLine as ScriptLine).type === 'choice') return;
     playSfx('click'); // 효과음 재생 추가!
 
     let nextIndex = -1;
-    // scriptData 사용하도록 수정
-    if (currentLine.nextId) {
-      nextIndex = scriptData.findIndex(line => line.id === currentLine.nextId);
-      if (nextIndex === -1) console.warn(`nextId '${currentLine.nextId}' 찾기 실패!`);
+    // scriptData 사용하도록 수정 (타입 단언 사용)
+    if ((currentLine as ScriptLine).nextId) {
+      // findIndex 콜백 파라미터 타입 지정
+      nextIndex = scriptData.findIndex((line: ScriptLine) => line.id === (currentLine as ScriptLine).nextId);
+      if (nextIndex === -1) console.warn(`nextId '${(currentLine as ScriptLine).nextId}' 찾기 실패!`);
     } else if (currentScriptIndex < scriptData.length - 1) { // scriptData.length 사용
       nextIndex = currentScriptIndex + 1;
     }
@@ -103,14 +116,16 @@ const Game = () => {
     }
   };
 
-  const handleChoiceSelect = (choiceId, nextId) => { // nextId 인자 추가됨 (Choices 컴포넌트도 수정 필요할 수 있음)
+  // handleChoiceSelect 파라미터 타입 지정
+  const handleChoiceSelect = (choiceId: string | number, nextId?: string | number) => {
     signalInteraction(); // 첫 상호작용 시 오디오 활성화 신호 보내기
     playSfx('click'); // 효과음 재생 추가!
 
     let nextIndex = -1;
     // scriptData 사용하도록 수정
     if (nextId) {
-        nextIndex = scriptData.findIndex(line => line.id === nextId);
+        // findIndex 콜백 파라미터 타입 지정
+        nextIndex = scriptData.findIndex((line: ScriptLine) => line.id === nextId);
         if (nextIndex === -1) console.warn(`선택지의 nextId '${nextId}' 찾기 실패!`);
     }
     // nextId가 없으면 기존 방식 사용 (선택 사항)
@@ -143,20 +158,38 @@ const Game = () => {
   };
 
 
-  // ... (캐릭터 이미지 URL 결정 함수 등 - 이전과 동일) ...
-  const getCharacterImageUrl = () => {
-      if (!currentLine.character || !characterSprites[currentLine.character]) return null;
-      const expression = currentLine.expression || 'normal';
-      return characterSprites[currentLine.character][expression] || characterSprites[currentLine.character]['normal'];
+  // ... (캐릭터 이미지 URL 결정 함수 등 - 타입 단언 및 키 존재 확인 추가) ...
+  const getCharacterImageUrl = (): string | null => {
+      // 함수 시작 시 명시적 타입 가드 (이미 위에서 처리됨)
+      // if (!currentLine) return null;
+      const line = currentLine as ScriptLine; // 타입 단언
+
+      // character 속성 null/undefined 체크 강화
+      if (!line.character || !(line.character in characterSprites)) return null; // 키 존재 확인 추가
+
+      const characterName = line.character; // 타입 추론을 위해 변수에 할당
+      // expression 속성 체크 강화
+      const expression = line.expression || 'normal';
+
+      // characterSprites 접근 시 characterName 유효성 확인
+      const characterSpriteSet = characterSprites[characterName];
+      if (!characterSpriteSet) return null; // 안전 장치
+
+      // expression에 해당하는 스프라이트 반환, 없으면 'normal' 반환
+      return characterSpriteSet[expression] || characterSpriteSet['normal'] || null; // 마지막 null은 혹시 모를 경우 대비
   };
   const characterImageUrl = getCharacterImageUrl();
 
-  // --- 조건부 대사 결정 로직 ---
-  let dialogueTextToShow = currentLine.text; // 기본 텍스트
-  if (currentLine.condition && gameFlags[currentLine.condition.flag] === currentLine.condition.value) {
+  // --- 조건부 대사 결정 로직 (타입 단언 사용) ---
+  // currentLine null 체크 후 속성 접근
+  let dialogueTextToShow = (currentLine as ScriptLine).text ?? ''; // 기본 텍스트 (null 방지, nullish coalescing 사용)
+  // currentLine 및 condition 속성 null/undefined 체크 강화
+  // 명시적 타입 가드 추가
+  if (currentLine && (currentLine as ScriptLine).condition && gameFlags[(currentLine as ScriptLine).condition!.flag] === (currentLine as ScriptLine).condition!.value) {
     // 조건 객체가 있고, 해당 플래그 값이 조건 값과 일치하면
-    dialogueTextToShow = currentLine.altText || currentLine.text; // altText 사용 (없으면 기본 텍스트)
-    console.log(`조건 만족 (${currentLine.condition.flag} === ${currentLine.condition.value}), 대체 텍스트 표시: ${dialogueTextToShow}`);
+    // altText, text 접근 시 currentLine은 null이 아님 (타입 단언 사용)
+    dialogueTextToShow = (currentLine as ScriptLine).altText || (currentLine as ScriptLine).text || ''; // altText 사용 (null 방지)
+    console.log(`조건 만족 (${(currentLine as ScriptLine).condition!.flag} === ${(currentLine as ScriptLine).condition!.value}), 대체 텍스트 표시: ${dialogueTextToShow}`);
   }
 
 
@@ -181,21 +214,25 @@ const Game = () => {
 
         <Background imageUrl={roomBackground} />
 
-        {currentLine.character && currentLine.character !== '나' && currentLine.type !== 'narrator' && characterImageUrl && (
+        {/* JSX 내부에서는 상위의 if (!currentLine) return ...; 가드 덕분에 currentLine이 null이 아님 */}
+        {/* 타입 단언 추가 */}
+        {(currentLine as ScriptLine).character && (currentLine as ScriptLine).character !== '나' && (currentLine as ScriptLine).type !== 'narrator' && characterImageUrl && (
           <Character
             imageUrl={characterImageUrl}
-            name={currentLine.character}
+            name={(currentLine as ScriptLine).character!} // non-null assertion 추가
           />
         )}
 
-        {currentLine.type === 'choice' ? (
+        {(currentLine as ScriptLine).type === 'choice' ? (
           <Choices
-            choices={currentLine.choices}
+            // choices가 undefined일 수 있으므로 빈 배열([])로 기본값 제공
+            choices={(currentLine as ScriptLine).choices ?? []}
             onChoiceSelect={handleChoiceSelect} // handleChoiceSelect 전달
           />
         ) : (
           <DialogueBox
-            characterName={currentLine.type === 'narrator' ? null : currentLine.character}
+            // characterName도 타입 단언 사용
+            characterName={(currentLine as ScriptLine).type === 'narrator' ? null : (currentLine as ScriptLine).character}
             dialogueText={dialogueTextToShow} // 조건부로 결정된 텍스트 전달
             onNext={handleNext} // handleNext 전달
           />
