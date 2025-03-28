@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 // import { supabase } from '../services/supabase'; // 주석 처리
 // import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'; // 주석 처리
 import styles from './CommentScene.module.css';
@@ -52,6 +52,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
   const [isCommentListVisible, setIsCommentListVisible] = useState(true); // 댓글 목록 표시 상태 추가
   const [sortOrder, setSortOrder] = useState('등록순'); // 정렬 상태 추가
   const [isMonologueVisible, setIsMonologueVisible] = useState(true); // 독백 표시 상태 추가
+  const mainContentAreaRef = useRef<HTMLDivElement>(null); // mainContentArea 요소에 대한 ref 추가 (이름 변경)
 
   // --- 핸들러 함수들 ---
   const toggleMonologueVisibility = () => {
@@ -59,7 +60,8 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
   };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // gameAreaRef 대신 mainContentAreaRef를 사용하여 스크롤
+    mainContentAreaRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const toggleCommentList = () => {
@@ -101,17 +103,34 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
   useEffect(() => {
     console.log(`CommentScene: Initializing with placeholder data for mission ${missionId}`);
 
-    // 임시 초기 댓글 설정 (닉네임, 랜덤 IP 추가)
+    // 임시 초기 댓글 설정 (닉네임, 랜덤 IP 추가) - 댓글 20개로 확장
     const generateRandomIp = () => `${Math.floor(Math.random() * 100 + 100)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`; // IP 범위 약간 조정
+    const now = Date.now();
     const initialComments: Comment[] = [
-      { id: 'temp-1', nickname: 'ㅇㅇ', ip: generateRandomIp(), content: '정병 있냐', likes: 0, is_player: false, created_at: new Date(Date.now() - 180000).toISOString() },
-      { id: 'temp-2', nickname: '연갤러1', ip: generateRandomIp(), content: '네 다음 댓 법인세보다 못 벌었다며 슴 재무재표들고 헛소리치하던 조선족 습할배ㅋ', likes: 0, is_player: false, created_at: new Date(Date.now() - 120000).toISOString() },
-      { id: 'temp-3', nickname: '연갤러1', ip: generateRandomIp(), content: '타조대가리 새끼 눈귀막고 처말하노ㅋ', likes: 0, is_player: false, created_at: new Date(Date.now() - 60000).toISOString(), isReply: true }, // isReply 추가, 'ㄴ' 제거
-      { id: 'temp-4', nickname: '연갤러2', ip: generateRandomIp(), content: '우와 멋있다.. 혹시 상대가 초딩이어도 전력을 다하는 타입인가요?', likes: 0, is_player: false, created_at: new Date().toISOString() },
+      { id: 'sample-1', nickname: 'ㅇㅇ', ip: generateRandomIp(), content: '솔직히 요즘 아이돌 중에 제일 낫지 않나?', likes: 15, is_player: false, created_at: new Date(now - 300000).toISOString() },
+      { id: 'sample-2', nickname: '뮤직러버', ip: generateRandomIp(), content: '노래는 좋은데 컨셉이 너무 난해함', likes: 8, is_player: false, created_at: new Date(now - 280000).toISOString() },
+      { id: 'sample-3', nickname: '지나가던', ip: generateRandomIp(), content: 'ㄴ 222 노래만 좀 더 대중적으로 뽑으면 좋을 듯', likes: 3, is_player: false, created_at: new Date(now - 275000).toISOString(), isReply: true },
+      { id: 'sample-4', nickname: 'NJZ팬', ip: generateRandomIp(), content: '난해한 게 매력인데 뭘 모르네 ㅉㅉ', likes: 25, is_player: false, created_at: new Date(now - 270000).toISOString(), isReply: true },
+      { id: 'sample-5', nickname: '팩트체커', ip: generateRandomIp(), content: '음방 1위 한번 못해본 그룹 아님?', likes: 2, is_player: false, created_at: new Date(now - 250000).toISOString() },
+      { id: 'sample-6', nickname: 'ㅇㅇ', ip: generateRandomIp(), content: 'ㄴ 팩트) 저번 활동 때 케이블 1위 함', likes: 18, is_player: false, created_at: new Date(now - 245000).toISOString(), isReply: true },
+      { id: 'sample-7', nickname: '안티아님', ip: generateRandomIp(), content: '멤버들 비주얼은 인정 근데 실력이 좀...', likes: 5, is_player: false, created_at: new Date(now - 220000).toISOString() },
+      { id: 'sample-8', nickname: '춤신춤왕', ip: generateRandomIp(), content: '퍼포먼스는 진짜 깔 게 없음. 무대 장인들임.', likes: 30, is_player: false, created_at: new Date(now - 200000).toISOString() },
+      { id: 'sample-9', nickname: 'ㅇㅇ', ip: generateRandomIp(), content: 'ㄴ 춤만 잘 추면 가수냐? 라이브 들어보면 답 나옴', likes: 4, is_player: false, created_at: new Date(now - 195000).toISOString(), isReply: true },
+      { id: 'sample-10', nickname: 'NJZ사랑', ip: generateRandomIp(), content: '라이브도 늘고 있거든? 성장하는 모습이 보기 좋은 거임!', likes: 22, is_player: false, created_at: new Date(now - 190000).toISOString(), isReply: true },
+      { id: 'sample-11', nickname: '알바의심', ip: generateRandomIp(), content: '댓글들 왜 이렇게 빠는 글만 많냐? 소속사에서 관리함?', likes: 1, is_player: false, created_at: new Date(now - 170000).toISOString() },
+      { id: 'sample-12', nickname: '지나가는덕후', ip: generateRandomIp(), content: '얘네 팬덤 화력 장난 아님. 코어 팬 많은 듯.', likes: 12, is_player: false, created_at: new Date(now - 160000).toISOString() },
+      { id: 'sample-13', nickname: 'ㅇㅇ', ip: generateRandomIp(), content: '솔직히 비주얼 원툴 아니냐? 노래는 진짜 별로던데', likes: 6, is_player: false, created_at: new Date(now - 140000).toISOString() },
+      { id: 'sample-14', nickname: '음악평론가인척', ip: generateRandomIp(), content: 'ㄴ 취향 차이 존중 좀. 난 얘네 음악 스타일 좋음.', likes: 9, is_player: false, created_at: new Date(now - 135000).toISOString(), isReply: true },
+      { id: 'sample-15', nickname: '궁금', ip: generateRandomIp(), content: '그래서 다음 컴백 언제 함? 기다리는 중인데', likes: 11, is_player: false, created_at: new Date(now - 120000).toISOString() },
+      { id: 'sample-16', nickname: '정보통', ip: generateRandomIp(), content: '곧 티저 뜰 거라는 썰 있던데... 확실하진 않음', likes: 7, is_player: false, created_at: new Date(now - 110000).toISOString(), isReply: true },
+      { id: 'sample-17', nickname: '해외팬', ip: generateRandomIp(), content: 'NJZ fighting! Love from Brazil ❤️', likes: 28, is_player: false, created_at: new Date(now - 90000).toISOString() },
+      { id: 'sample-18', nickname: '어그로꾼', ip: generateRandomIp(), content: '그래서 얘네가 누군데? 듣보 아님?', likes: 0, is_player: false, created_at: new Date(now - 60000).toISOString() },
+      { id: 'sample-19', nickname: '팩트폭격기', ip: generateRandomIp(), content: 'ㄴ 검색이라도 좀 해보고 와라... 빌보드 차트인도 했는데', likes: 19, is_player: false, created_at: new Date(now - 55000).toISOString(), isReply: true },
+      { id: 'sample-20', nickname: '마무리', ip: generateRandomIp(), content: '결론: 호불호 갈리지만 코어 팬덤 탄탄하고 성장 가능성 있음.', likes: 10, is_player: false, created_at: new Date(now - 30000).toISOString() },
     ];
     setComments(initialComments);
 
-    // 임시 초기 여론 및 시도 횟수 설정
+    // 임시 초기 여론 및 시도 횟수 설정 (댓글 수 증가에 따라 조정 가능)
     const initialOpinion = { positive: 60, negative: 25, neutral: 15 };
     const initialAttempts = 5;
     setOpinion(initialOpinion);
@@ -229,6 +248,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
       )}
 
       {/* 기존 commentSceneWrapper div에 gameArea 스타일 추가 */}
+      {/* ref는 mainContentArea로 이동 */}
       <div className={`${gameStyles.gameArea} ${styles.commentSceneWrapper}`}>
         {/* 왼쪽 사이드 패널 (미션, 여론) - MonologueBox 제거 */}
         <div className={styles.leftSidePanel}>
@@ -243,8 +263,8 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
           </button>
         </div>
 
-        {/* 오른쪽 메인 콘텐츠 영역 */}
-        <div className={styles.mainContentArea}>
+        {/* 오른쪽 메인 콘텐츠 영역에 ref 연결 */}
+        <div ref={mainContentAreaRef} className={styles.mainContentArea}>
           {/* 사이트 이름 헤더 */}
           <div className={styles.siteHeader}>acinside.com 갤러리</div>
           {/* 갤러리 제목 헤더 */}

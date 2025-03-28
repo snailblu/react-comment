@@ -61,3 +61,35 @@
 .emoji {
   font-size: 1.1em; /* 이모지 크기 살짝 키우기 */
 }
+
+/* 누적 막대 그래프 스타일 */
+.stackedBarContainer {
+  display: flex;
+  width: 100%;
+  height: 12px; /* 막대 높이 조정 */
+  border-radius: 6px; /* 약간 더 둥글게 */
+  overflow: hidden; /* 내부 섹션이 넘치지 않도록 */
+  margin-top: 10px; /* 목록과 막대 사이 간격 */
+  margin-bottom: 15px; /* 막대와 남은 시도 사이 간격 */
+  background-color: #f1f3f5; /* 전체 막대 배경색 (옵션) */
+}
+
+.positiveSection,
+.neutralSection,
+.negativeSection {
+  height: 100%;
+  transition: width 0.4s ease-in-out; /* 너비 변경 시 부드러운 애니메이션 */
+  /* 각 섹션 사이에 얇은 구분선을 추가할 수도 있습니다. 예: border-right: 1px solid white; */
+}
+
+.positiveSection {
+  background-color: #3498db; /* 긍정: 파란색 */
+}
+
+.neutralSection {
+  background-color: #95a5a6; /* 중립: 회색 */
+}
+
+.negativeSection {
+  background-color: #e74c3c; /* 부정: 빨간색 */
+}

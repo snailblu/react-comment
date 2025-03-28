@@ -40,7 +40,7 @@ const CommentList: React.FC<CommentListProps> = ({ comments, isVisible }) => { /
     if (isVisible) { // isVisible 조건 추가
       // 약간의 딜레이 후 스크롤해야 애니메이션과 자연스럽게 연동될 수 있음
       timer = setTimeout(() => { // timer에 할당
-        listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        // listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); // 댓글 제출 후 자동 스크롤 제거
       }, 100); // 100ms 딜레이
     }
     // cleanup 함수: 컴포넌트 언마운트 또는 의존성 변경 시 timer 클리어

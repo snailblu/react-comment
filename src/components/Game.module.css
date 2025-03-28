@@ -16,7 +16,7 @@
   max-height: calc(100vw * (9 / 16));
   aspect-ratio: 16 / 9;
   background-color: #eee;
-  overflow: hidden;
+  /* overflow: hidden; <- 제거 */
 }
 
 /* 저장/불러오기 버튼 컨테이너 스타일 (예시) */

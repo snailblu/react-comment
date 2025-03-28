@@ -36,6 +36,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin-right: 10px;
+  text-align: left; /* 왼쪽 정렬 명시적 추가 */
 }
 
 .ipAddress {
