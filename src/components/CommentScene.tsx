@@ -25,7 +25,7 @@ if (!API_KEY) {
   console.error("Gemini API Key not found. Please set REACT_APP_GEMINI_API_KEY in your .env file.");
 }
 const genAI = new GoogleGenerativeAI(API_KEY || ""); // API 키가 없으면 빈 문자열로 초기화 (오류 방지)
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // 사용할 모델 지정
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro-exp-03-25" }); // 사용할 모델 지정
 
 // 안전 설정 (필요에 따라 조정)
 const generationConfig = {
@@ -130,15 +130,37 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       // 응답 텍스트를 줄바꿈 기준으로 나누어 댓글 배열 생성
       const commentTexts = generatedText.split('\n').map(c => c.trim()).filter(c => c.length > 0);
 
-      // Comment 객체로 변환
-      const generatedComments: Comment[] = commentTexts.map((text, index) => ({
-        id: `ai-${Date.now()}-${index}`,
-        content: text,
-        likes: Math.floor(Math.random() * 10), // 임의의 좋아요 수
-        is_player: false,
-        created_at: new Date().toISOString(),
-        // nickname, ip 등은 필요에 따라 추가
-      }));
+      // Comment 객체로 변환 (파싱 로직 추가)
+      const generatedComments: Comment[] = commentTexts.map((text, index) => {
+        // 정규식: 닉네임(xxx.xxx): 댓글 내용
+        // 그룹 1: 닉네임, 그룹 2: IP 주소 (xxx.xxx 형식), 그룹 3: 댓글 내용
+        const match = text.match(/^(.+?)\((\d{1,3}\.\d{1,3})\):\s*(.*)$/);
+
+        if (match) {
+          const [, nickname, ip, content] = match;
+          return {
+            id: `ai-${Date.now()}-${index}`,
+            nickname: nickname.trim(),
+            ip: ip.trim(), // 추출된 IP 사용
+            content: content.trim(), // 추출된 댓글 내용 사용
+            likes: Math.floor(Math.random() * 10), // 임의의 좋아요 수
+            is_player: false,
+            created_at: new Date().toISOString(),
+          };
+        } else {
+          // 형식이 맞지 않는 경우, 전체 텍스트를 content로 사용하고 기본값 설정
+          console.warn(`AI comment format mismatch, using full text as content: "${text}"`);
+          return {
+            id: `ai-${Date.now()}-${index}-fallback`,
+            nickname: '익명AI', // 기본 닉네임
+            ip: '0.0.0', // 기본 IP
+            content: text, // 전체 텍스트를 내용으로
+            likes: Math.floor(Math.random() * 5), // 좋아요 수 약간 낮게
+            is_player: false,
+            created_at: new Date().toISOString(),
+          };
+        }
+      }).filter(comment => comment !== null) as Comment[]; // filter(Boolean)과 유사, null 제거 및 타입 단언
 
       if (generatedComments.length === 0) {
         setMonologue('AI가 댓글을 생성하지 못했습니다. 다시 시도해주세요.');
