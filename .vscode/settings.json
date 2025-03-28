@@ -1,0 +1,20 @@
+{
+  // Deno 기능을 특정 경로에만 활성화
+  "deno.enablePaths": ["supabase/functions"],
+  "deno.lint": true, // Deno linting 활성화 (supabase/functions 내에서만 적용됨)
+  "deno.unstable": true, // 불안정 API 사용 활성화 (supabase/functions 내에서만 적용됨)
+
+  // 기본 TypeScript/JavaScript 포매터를 사용하도록 Deno 포매터 설정 제거
+  // "[typescript]": {
+  //   "editor.defaultFormatter": "denoland.vscode-deno"
+  // },
+  // "[typescriptreact]": {
+  //   "editor.defaultFormatter": "denoland.vscode-deno"
+  // },
+  // "[javascript]": {
+  //   "editor.defaultFormatter": "denoland.vscode-deno"
+  // },
+  // "[javascriptreact]": {
+  //   "editor.defaultFormatter": "denoland.vscode-deno"
+  // }
+}
