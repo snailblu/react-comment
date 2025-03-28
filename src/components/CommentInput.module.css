@@ -1,0 +1,179 @@
+/* DCInside 댓글 입력 스타일 적용 - 2단 레이아웃 */
+.commentInputForm {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: flex; /* 좌우 2단 */
+  gap: 40px; /* 간격 더 늘림 */
+  align-items: flex-start; /* 상단 정렬로 변경 */
+}
+
+/* 왼쪽: 닉네임/비밀번호 */
+.userInfoColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.nicknameSection {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%; /* 부모 너비 채우도록 추가 */
+}
+
+.nicknameInput {
+  /* flex-grow: 1; 제거 */
+  width: 100%; /* 너비 100% 추가 */
+  padding: 5px 25px 5px 5px;
+  border: 1px solid #ccc;
+  border-radius: 0;
+  font-size: 0.85rem;
+  height: 28px; /* 높이 고정 (비밀번호와 맞추기 위해) */
+  box-sizing: border-box;
+}
+
+.defaultNickname { /* 기본 닉네임 스타일 */
+  /* background-color: #eee; 제거 */
+}
+
+.clearNicknameButton { /* X 버튼 스타일 */
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #ddd; /* 배경색 연하게 변경 */
+  color: #888; /* 아이콘 색상 변경 */
+  border: 1px solid #ccc; /* 테두리 추가 */
+  border-radius: 50%; /* 원형 */
+  width: 16px;
+  height: 16px;
+  line-height: 14px; /* 수직 중앙 정렬 */
+  text-align: center;
+  font-size: 0.7rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.clearNicknameButton:hover {
+  background-color: #999;
+}
+
+/* .useGalleryNicknameButton 제거 */
+
+.passwordInput {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 0;
+  font-size: 0.85rem;
+  width: 100%;
+  height: 28px; /* 높이 고정 (닉네임과 맞추기) */
+  box-sizing: border-box;
+}
+
+
+/* 오른쪽: 텍스트 영역 및 하단 컨트롤 */
+.inputArea {
+  flex-grow: 1; /* 남은 공간 모두 차지 */
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* flex item이 부모 너비를 넘지 않도록 */
+}
+
+
+.commentTextarea {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 0;
+  background-color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease-in-out;
+  font-family: inherit;
+  margin-bottom: 5px; /* 하단 컨트롤과의 간격 */
+}
+
+.commentTextarea:focus {
+  outline: none;
+  border-color: #3b4890;
+}
+
+.commentTextarea::placeholder {
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+.commentTextarea:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+/* .controlsArea 제거 */
+
+.bottomControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* 아래 정렬 */
+}
+
+.extraOptions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* .dcconButton 제거 */
+
+/* .helpIcon 제거 */
+
+.submitButtons {
+ display: flex; /* 가로 배치 */
+ align-items: center; /* 세로 중앙 정렬 */
+ gap: 5px;
+}
+
+
+.charCount {
+  font-size: 0.8rem;
+  color: #888;
+  margin-right: 10px; /* 버튼과의 간격 */
+}
+
+.submitButton {
+  padding: 6px 12px; /* 패딩 조정 */
+  /* width 제거 */
+  background-color: #3b4890; /* 진한 파랑 */
+  color: white;
+  border: 1px solid #3b4890;
+  border-radius: 0;
+  font-size: 0.85rem; /* 폰트 크기 조정 */
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  text-align: center;
+}
+
+.recommendButton {
+  background-color: #3b4890; /* 동일한 색상 */
+  border-color: #3b4890;
+}
+
+
+.submitButton:hover:not(:disabled) {
+  background-color: #2f3a75;
+  border-color: #2f3a75;
+}
+
+/* .recommendButton hover 스타일 제거 (동일하게 처리) */
+
+.submitButton:disabled {
+  background-color: #d9dbe8;
+  border-color: #d9dbe8;
+  color: #888;
+  cursor: not-allowed;
+}

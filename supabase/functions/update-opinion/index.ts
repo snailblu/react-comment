@@ -66,29 +66,57 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 1. 현재 여론 상태 가져오기
-    const { data: currentOpinion, error: fetchError } = await supabaseAdmin
+    // 1. 현재 여론 상태 및 남은 시도 횟수 가져오기
+    const { data: currentOpinionData, error: fetchError } = await supabaseAdmin
       .from('opinions')
-      .select('positive, negative, neutral')
+      .select('positive, negative, neutral, current_attempts') // current_attempts 추가
       .eq('mission_id', mission_id)
       .single();
 
-    if (fetchError || !currentOpinion) {
-      console.error("Error fetching current opinion:", fetchError);
+    if (fetchError || !currentOpinionData) {
+      console.error("Error fetching current opinion data:", fetchError);
       // 만약 해당 mission_id의 opinion이 없다면 새로 생성하는 로직 추가 고려
-      return new Response(JSON.stringify({ error: "Failed to fetch current opinion or opinion not found" }), {
+      return new Response(JSON.stringify({ error: "Failed to fetch current opinion data or opinion not found" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // 현재 남은 시도 횟수 확인 및 차감
+    let currentAttempts = currentOpinionData.current_attempts;
+
+    // current_attempts가 null이면 초기값 설정 (예: missions 테이블의 max_attempts 값)
+    // 이 부분은 초기 데이터 생성 시점에 처리하는 것이 더 좋음. 여기서는 일단 0보다 큰지 체크.
+    if (currentAttempts === null || typeof currentAttempts !== 'number') {
+        // 초기값 설정 로직 필요 - 여기서는 임시로 에러 처리
+        console.error("current_attempts is null or not a number for mission:", mission_id);
+        // missions 테이블에서 max_attempts를 가져와서 설정하거나, 기본값 설정
+        // 여기서는 일단 에러로 처리하고, 초기 데이터 생성 로직 보강 필요
+         return new Response(JSON.stringify({ error: "Initial attempts not set for this mission" }), {
+           status: 500,
+           headers: { ...corsHeaders, "Content-Type": "application/json" },
+         });
+        // --- 임시 에러 처리 끝 ---
+        // currentAttempts = 10; // 예시: 기본값 설정
+    }
+
+
+    if (currentAttempts <= 0) {
+      return new Response(JSON.stringify({ error: "No attempts left" }), {
+        status: 400, // 시도 횟수 소진은 클라이언트 오류로 처리
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const newAttempts = currentAttempts - 1; // 시도 횟수 1 차감
 
     // 2. 댓글 기반으로 점수 계산
     const scoreChange = calculateOpinionScore(comment);
 
     // 3. 새로운 여론 비율 계산 (기존 비율에 변화량 적용)
     // 간단하게, 긍정/부정 점수 변화만큼 중립에서 빼거나 더함
-    let newPositive = Math.min(100, Math.max(0, currentOpinion.positive + scoreChange.positive - scoreChange.negative));
-    let newNegative = Math.min(100, Math.max(0, currentOpinion.negative + scoreChange.negative - scoreChange.positive));
+    let newPositive = Math.min(100, Math.max(0, currentOpinionData.positive + scoreChange.positive - scoreChange.negative));
+    let newNegative = Math.min(100, Math.max(0, currentOpinionData.negative + scoreChange.negative - scoreChange.positive));
     // 중립 비율 조정 (합계 100 유지)
     let newNeutral = 100 - newPositive - newNegative;
     // 만약 newNeutral이 음수가 되면, 긍정/부정 비율을 비례적으로 조정 (여기서는 단순화)
@@ -115,6 +143,7 @@ Deno.serve(async (req) => {
         positive: newPositive,
         negative: newNegative,
         neutral: newNeutral,
+        current_attempts: newAttempts, // 차감된 시도 횟수 업데이트
         updated_at: new Date().toISOString(), // 업데이트 시간 기록
       })
       .eq('mission_id', mission_id)

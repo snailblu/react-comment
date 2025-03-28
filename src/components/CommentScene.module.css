@@ -1,0 +1,174 @@
+/* DCInside 스타일 + 좌측 패널 분리 */
+.commentSceneWrapper { /* 전체 레이아웃을 감싸는 새 컨테이너 */
+  display: flex;
+  gap: 20px; /* 좌우 패널 간격 */
+  width: 100%;
+  height: 100%; /* 높이 100% 추가 */
+  /* max-width 제거 또는 조정 (gameArea에서 비율 제어) */
+  margin: 0 auto;
+  padding: 15px;
+  box-sizing: border-box;
+  font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+}
+
+.leftSidePanel {
+  width: 20%; /* 너비를 백분율로 변경 (예: 20%) */
+  min-width: 180px; /* 최소 너비 설정 */
+  flex-shrink: 0;
+  display: flex; /* 내부 요소 세로 정렬 */
+  flex-direction: column;
+  gap: 15px; /* 내부 요소 간격 */
+  /* 필요시 배경색, 테두리 등 추가 */
+  /* 예: border: 1px solid #e5e5e5; padding: 15px; */
+}
+
+.mainContentArea { /* 오른쪽 메인 콘텐츠 영역 */
+  flex-grow: 1;
+  background-color: #fff;
+  border: 1px solid #e5e5e5; /* 메인 영역 테두리 */
+  box-sizing: border-box;
+  height: 100%; /* 높이 100% 추가 */
+  overflow-y: auto; /* 세로 스크롤 추가 */
+}
+
+/* .commentSceneContainer 제거 */
+
+.siteHeader { /* 최상단 사이트 이름 */
+  font-size: 2.0rem;
+  font-weight: bold;
+  color: #000000;
+  padding: 5px 15px; /* 패딩 조정 */
+  border-bottom: 1px solid #eee; /* 옅은 구분선 */
+  text-align: left;
+  font-style: italic; /* 이탤릭체 추가 */
+}
+
+.header { /* 갤러리 제목 (연예인 갤러리) - 복원 */
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #3b4890; /* 디시 블루 */
+  padding: 10px 15px 5px 15px; /* 패딩 조정 */
+  margin-bottom: 0; /* 아래 마진 제거 */
+  text-align: left;
+  border-bottom: 2px solid #3b4890; /* 파란색 구분선 */
+  padding-bottom: 10px; /* 구분선과의 간격 */
+}
+
+.articleTitle { /* 기사 제목 ([일반] ...) */
+  font-size: 1rem;
+  font-weight: bold; /* 볼드체 유지 */
+  color: #000;
+  padding: 15px 15px 5px 15px; /* 아래 패딩 줄임 */
+  /* margin-top 제거 */
+  margin-bottom: 0; /* 아래 마진 제거 */
+  /* border-bottom 없음 */
+  text-align: left;
+}
+
+.articleMeta { /* 작성자 정보 및 시간 */
+  font-size: 0.8rem;
+  color: #888; /* 회색 */
+  padding: 0 15px 15px 15px; /* 위 패딩 0, 좌/우/아래 패딩 */
+  margin-bottom: 15px; /* 기사 내용과의 간격 */
+  border-bottom: 1px solid #eee; /* 메타 정보 아래 구분선 복원 */
+  text-align: left;
+}
+
+.articleMeta span + span { /* 작성자와 시간 사이 간격 */
+  margin-left: 5px;
+}
+
+/* 중복된 .articleTitle 정의 제거됨 */
+
+/* ArticleContent 컴포넌트 */
+/* ArticleContent 자체 스타일 조정 필요 시 */
+
+/* .sideInfoPanel 제거됨 */
+/*
+.sideInfoPanel { ... }
+*/
+
+/* 댓글 목록 헤더 스타일 */
+.commentListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px; /* 아래 요소와의 간격 */
+  border-bottom: 1px solid #ccc; /* 헤더 아래 구분선 */
+  margin-bottom: 10px; /* 댓글 목록과의 간격 */
+}
+
+.commentCount {
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.countNumber {
+  color: red;
+  margin-left: 3px;
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 컨트롤 요소 간 간격 */
+}
+
+.sortDropdown {
+  padding: 3px 5px;
+  border: 1px solid #ccc;
+  font-size: 0.8rem;
+}
+
+.listControls {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.controlButton {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 5px; /* 구분선(|)과의 간격 */
+  color: #888;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.controlButton:hover {
+  text-decoration: underline;
+}
+
+
+.commentListSection {
+  /* border-top 제거 (헤더에서 처리) */
+  padding: 0 15px 15px 15px; /* 위쪽 패딩 제거, 좌우하단 유지 */
+  margin: 0 15px 15px 15px; /* 좌우 마진 추가 */
+}
+
+.commentInputSection {
+  border-top: 1px solid #e5e5e5;
+  background-color: #f8f8f8;
+  padding: 15px;
+  margin: 0 15px 15px 15px; /* 좌우 마진 추가 */
+}
+
+/* 댓글 목록 하단 컨트롤 스타일 */
+.commentListFooter {
+  display: flex;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  padding-top: 10px; /* 댓글 목록과의 간격 */
+  border-top: 1px solid #ccc; /* 상단 구분선 */
+  margin-top: 10px; /* 댓글 목록과의 간격 */
+}
+
+/* .listControls 스타일은 상단과 공유 */
+
+
+.monologueSection {
+  /* leftSidePanel 내부 */
+  margin-top: 0; /* 상단 마진 제거 또는 조정 */
+  padding: 10px;
+  background-color: #f8f8f8; /* 왼쪽 패널 배경과 맞추거나 다르게 설정 */
+  border: 1px dashed #ccc;
+}

@@ -1,0 +1,59 @@
+.articleContainer {
+  padding: 20px;
+  /* border-bottom: 1px solid #e0e0e0; 댓글 목록 구분선 제거 (CommentScene에서 관리) */
+  background-color: #fff;
+}
+
+.articleTitle {
+  margin: 0 0 10px 0;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #222;
+  line-height: 1.4;
+}
+
+.articleBody {
+  margin: 0;
+  font-size: 0.9rem; /* 댓글과 유사한 크기로 조정 */
+  color: #333; /* 기본 텍스트 색상 */
+  line-height: 1.6;
+  font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; /* 폰트 적용 */
+  text-align: left; /* 왼쪽 정렬 */
+  word-break: break-word; /* 줄바꿈 처리 */
+}
+
+.articleImage {
+  display: block; /* 이미지를 블록 요소로 만들어 단독 라인 차지 */
+  max-width: 100%; /* 컨테이너 너비에 맞게 최대 너비 제한 */
+  height: auto; /* 가로세로 비율 유지 */
+  margin: 0 auto 15px auto; /* 위쪽 마진 0, 좌우 자동(중앙 정렬), 아래쪽 마진 */
+  border: 1px solid #eee; /* 옅은 테두리 (선택 사항) */
+}
+
+/* 원본 첨부파일 섹션 스타일 */
+.attachmentSection {
+  margin-top: 20px; /* 본문과의 간격 */
+  padding: 10px; /* 내부 패딩 */
+  border: 1px solid #eee; /* 전체 테두리 */
+  /* border-top 제거 */
+  text-align: left;
+  margin-bottom: 20px; /* 댓글 목록과의 간격 추가 */
+}
+
+.attachmentTitle {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 5px;
+  /* text-align: left; 상위 요소에서 상속받음 */
+}
+
+.attachmentCount {
+  color: red;
+  font-weight: bold;
+}
+
+.attachmentFilename {
+  font-size: 0.85rem;
+  color: #888;
+  /* text-align: left; 상위 요소에서 상속받음 */
+}

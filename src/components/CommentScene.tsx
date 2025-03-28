@@ -1,18 +1,31 @@
-import React, { useState, useEffect, useCallback } from 'react'; // useCallback 추가
-import { supabase } from '../services/supabase'; // supabase 클라이언트 import 추가, 확장자 제거
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'; // Realtime 타입 import 추가
-// import styles from './CommentScene.module.css'; // 추후 CSS 모듈 생성 시 활성화
+import React, { useState, useEffect, useCallback } from 'react';
+// import { supabase } from '../services/supabase'; // 주석 처리
+// import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'; // 주석 처리
+import styles from './CommentScene.module.css';
+import gameStyles from './Game.module.css'; // Game.module.css import 추가 (별칭 사용)
 
 // 필요한 다른 컴포넌트 import (예시)
-// import MissionPanel from './MissionPanel';
-// import OpinionStats from './OpinionStats';
-// import CommentList from './CommentList';
-// import CommentInput from './CommentInput';
-// import MonologueBox from './MonologueBox';
+import MissionPanel from './MissionPanel'; // MissionPanel import 활성화
+import OpinionStats from './OpinionStats'; // OpinionStats import 활성화
+import CommentList from './CommentList';
+import CommentInput from './CommentInput'; // CommentInput import 활성화
+import MonologueBox from './MonologueBox'; // MonologueBox는 이미 사용 중이므로 주석 해제 유지
+import ArticleContent from './ArticleContent'; // ArticleContent import 추가
 
 // 필요한 Hook import (예시)
 // import useGameState from '../hooks/useGameState';
-// import { supabase } from '../services/supabase';
+
+// Comment 데이터 구조 정의
+interface Comment {
+  id: string;
+  nickname?: string; // 닉네임 추가
+  ip?: string; // IP 추가
+  isReply?: boolean; // 대댓글 여부 추가
+  content: string;
+  likes: number;
+  is_player: boolean;
+  created_at: string; // 또는 Date 타입
+}
 
 // opinions 테이블 데이터 구조 인터페이스 정의
 interface OpinionPayload {
@@ -31,11 +44,35 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
   // --- 상태 관리 ---
   // 예: 현재 여론 상태, 남은 시도 횟수, 독백 내용 등
   const [opinion, setOpinion] = useState({ positive: 50, negative: 30, neutral: 20 }); // 임시 초기값
-  // const [comments, setComments] = useState<any[]>([]); // 댓글 목록 - 현재 미사용, 주석 처리 또는 제거
+  const [comments, setComments] = useState<Comment[]>([]); // 댓글 목록 상태 추가
   const [attemptsLeft, setAttemptsLeft] = useState(10); // 임시 초기값
   const [monologue, setMonologue] = useState('');
   const [targetPositiveOpinion] = useState(70); // 임시 미션 목표 (긍정 70% 이상) - setTargetPositiveOpinion 제거
   const [isMissionOver, setIsMissionOver] = useState(false); // 미션 종료 상태 추가
+  const [isCommentListVisible, setIsCommentListVisible] = useState(true); // 댓글 목록 표시 상태 추가
+  const [sortOrder, setSortOrder] = useState('등록순'); // 정렬 상태 추가
+
+  // --- 핸들러 함수들 ---
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const toggleCommentList = () => {
+    setIsCommentListVisible(!isCommentListVisible);
+  };
+
+  const refreshComments = () => {
+    // TODO: 실제 댓글 새로고침 로직 구현 (placeholder 모드에서는 임시)
+    console.log('Refreshing comments (placeholder)...');
+    // 예: fetchInitialComments();
+  };
+
+  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOrder(event.target.value);
+    // TODO: 실제 정렬 로직 구현
+    console.log('Sort order changed:', event.target.value);
+  };
+
 
   // --- 미션 상태 체크 로직 (useCallback으로 감싸기) ---
   const checkMissionStatus = useCallback((currentPositive: number, currentAttempts: number) => {
@@ -55,101 +92,205 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
   }, [isMissionOver, targetPositiveOpinion, onMissionComplete]); // 의존성 배열 추가
 
 
-  // --- 데이터 로딩 및 실시간 구독 ---
+  // --- 데이터 로딩 (임시 데이터 사용) ---
   useEffect(() => {
-    console.log(`CommentScene: Loading data for mission ${missionId}`);
+    console.log(`CommentScene: Initializing with placeholder data for mission ${missionId}`);
 
-    // TODO: missionId로 미션 정보(MissionPanel), 초기 여론(OpinionStats), 댓글(CommentList), 목표(targetPositiveOpinion) 로드
+    // 임시 초기 댓글 설정 (닉네임, 랜덤 IP 추가)
+    const generateRandomIp = () => `${Math.floor(Math.random() * 100 + 100)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`; // IP 범위 약간 조정
+    const initialComments: Comment[] = [
+      { id: 'temp-1', nickname: 'ㅇㅇ', ip: generateRandomIp(), content: '정병 있냐', likes: 0, is_player: false, created_at: new Date(Date.now() - 180000).toISOString() },
+      { id: 'temp-2', nickname: '연갤러1', ip: generateRandomIp(), content: '네 다음 댓 법인세보다 못 벌었다며 슴 재무재표들고 헛소리치하던 조선족 습할배ㅋ', likes: 0, is_player: false, created_at: new Date(Date.now() - 120000).toISOString() },
+      { id: 'temp-3', nickname: '연갤러1', ip: generateRandomIp(), content: '타조대가리 새끼 눈귀막고 처말하노ㅋ', likes: 0, is_player: false, created_at: new Date(Date.now() - 60000).toISOString(), isReply: true }, // isReply 추가, 'ㄴ' 제거
+      { id: 'temp-4', nickname: '연갤러2', ip: generateRandomIp(), content: '우와 멋있다.. 혹시 상대가 초딩이어도 전력을 다하는 타입인가요?', likes: 0, is_player: false, created_at: new Date().toISOString() },
+    ];
+    setComments(initialComments);
 
-    // opinions 테이블 실시간 구독 설정
-    const channel = supabase
-      .channel(`opinion-updates-${missionId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'opinions',
-          filter: `mission_id=eq.${missionId}`, // 해당 미션 ID의 변경만 수신
-        },
-        // payload 타입에 OpinionPayload 적용
-        (payload: RealtimePostgresChangesPayload<OpinionPayload>) => {
-          console.log('Realtime opinion update received:', payload.new);
-          // payload.new가 null/undefined가 아니고, 필요한 속성들을 가지고 있는지 명시적으로 확인
-          if (payload.new && 'positive' in payload.new && 'negative' in payload.new && 'neutral' in payload.new) {
-              const newOpinion = payload.new as OpinionPayload;
-              setOpinion(() => { // prevOpinion 사용하지 않으므로 제거
-                // 상태 업데이트 후 미션 성공/실패 체크 로직 호출
-                // useEffect 내부에서 attemptsLeft 최신 값을 참조하도록 수정
-                checkMissionStatus(newOpinion.positive, attemptsLeft);
-                return { positive: newOpinion.positive, negative: newOpinion.negative, neutral: newOpinion.neutral };
-              });
-           }
-         }
-       )
-      .subscribe();
+    // 임시 초기 여론 및 시도 횟수 설정
+    const initialOpinion = { positive: 60, negative: 25, neutral: 15 };
+    const initialAttempts = 5;
+    setOpinion(initialOpinion);
+    setAttemptsLeft(initialAttempts);
+
+    // 초기 미션 상태 체크
+    checkMissionStatus(initialOpinion.positive, initialAttempts);
+
+    // Supabase 관련 로직 주석 처리
+    /*
+    // 초기 댓글 로드 함수
+    const fetchInitialComments = async () => { ... };
+    fetchInitialComments();
+
+    // 초기 여론 및 시도 횟수 로드 함수
+    const fetchInitialOpinionAndAttempts = async () => { ... };
+    fetchInitialOpinionAndAttempts();
+
+    // 실시간 구독 설정
+    const opinionChannel = supabase.channel(...).subscribe();
+    const commentChannel = supabase.channel(...).subscribe();
 
     // 컴포넌트 언마운트 시 구독 해제
     return () => {
-      supabase.removeChannel(channel);
-      console.log(`CommentScene: Unsubscribed from opinion updates for mission ${missionId}`);
+      supabase.removeChannel(opinionChannel);
+      supabase.removeChannel(commentChannel);
+      console.log(`CommentScene: Unsubscribed (Placeholder Mode)`);
     };
-    // useEffect 의존성 배열에 attemptsLeft와 checkMissionStatus 추가
-  }, [missionId, attemptsLeft, checkMissionStatus]);
+    */
+
+    // 의존성 배열은 유지하되, Supabase 관련 로직이 없으므로 missionId와 checkMissionStatus만 남김
+  }, [missionId, checkMissionStatus]);
 
 
-  // --- 댓글 제출 핸들러 (현재 미사용, 주석 처리) ---
-  /*
-  const handleCommentSubmit = async (commentText: string) => {
-    if (isMissionOver || attemptsLeft <= 0) return; // 미션 종료 또는 시도 횟수 없으면 제출 불가
+  // --- 댓글 제출 핸들러 ---
+  // nickname, password 파라미터 추가
+  const handleCommentSubmit = async (commentText: string, nickname?: string, password?: string) => {
+    if (isMissionOver || attemptsLeft <= 0) return;
 
-    console.log('Submitting comment:', commentText);
+    console.log('Submitting comment:', commentText, 'by', nickname || 'Default');
+    // 시도 횟수 차감은 Edge Function 호출 성공 후 또는 Realtime 업데이트 시 처리하는 것이 더 정확함
+    // 여기서는 일단 낙관적으로 UI만 업데이트 (선택 사항)
+    // const newAttemptsLeft = attemptsLeft - 1;
+    // setAttemptsLeft(newAttemptsLeft); // UI 즉시 반영 (선택적)
+
+    // --- 임시 로컬 업데이트 로직 ---
+    // 새 댓글 객체 생성 시 nickname과 ip 추가 (ip는 임시 생성)
+    const generateRandomIp = () => `${Math.floor(Math.random() * 100 + 100)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
+    const newComment: Comment = {
+      id: `player-${Date.now()}`,
+      nickname: nickname, // 전달받은 nickname 사용
+      ip: generateRandomIp(), // 임시 IP 생성
+      content: commentText,
+      likes: 0,
+      is_player: true, // 플레이어가 작성한 댓글로 표시 (이 부분은 게임 로직에 따라 달라질 수 있음)
+      created_at: new Date().toISOString(),
+    };
+
+    // 댓글 목록 상태 업데이트
+    setComments((prevComments) => [...prevComments, newComment]);
+
+    // 시도 횟수 차감
     const newAttemptsLeft = attemptsLeft - 1;
-    setAttemptsLeft(newAttemptsLeft); // 시도 횟수 차감
+    setAttemptsLeft(newAttemptsLeft);
 
-    // TODO: 댓글을 comments 테이블에 저장 (is_player: true)
+    // 임시 여론 업데이트 (예시: 긍정 +5, 부정/중립 약간 감소)
+    let newPositive = 0; // 아래에서 계산됨
+    setOpinion((prevOpinion) => {
+      newPositive = Math.min(100, prevOpinion.positive + 5); // 긍정 5 증가 (최대 100)
+      const newNegative = Math.max(0, prevOpinion.negative - 2); // 부정 2 감소 (최소 0)
+      // 중립은 100에서 긍정, 부정을 뺀 나머지
+      const newNeutral = Math.max(0, 100 - newPositive - newNegative);
+      return { positive: newPositive, negative: newNegative, neutral: newNeutral };
+    });
+
+    // 미션 상태 체크 (업데이트된 여론과 시도 횟수 사용)
+    // setOpinion이 비동기일 수 있으므로, 계산된 newPositive 값을 직접 사용
+    checkMissionStatus(newPositive, newAttemptsLeft);
+
+    // Supabase 관련 로직 주석 처리
+    /*
+    // 댓글을 comments 테이블에 저장
+    let insertedComment: Comment | null = null;
+    try {
+      const { data: insertedData, error: insertError } = await supabase
+        .from('comments')
+        // ... (insert 로직)
+        .select()
+        .single();
+
+      if (insertError) { ... }
+      insertedComment = insertedData as Comment;
+      // 낙관적 업데이트 (이미 위에서 처리함)
+    } catch (error) { ... }
 
     // 'update-opinion' Edge Function 호출
     try {
-      const { data, error } = await supabase.functions.invoke('update-opinion', {
-        body: { mission_id: missionId, comment: commentText },
-      });
-
+      const { data, error } = await supabase.functions.invoke('update-opinion', { ... });
       if (error) throw error;
-
-      console.log('Edge function response:', data);
-      // Realtime 구독이 opinion 상태를 업데이트하고, 그 업데이트 콜백에서 checkMissionStatus가 호출됨
-      // 만약 Realtime 지연이 우려되거나 즉시 실패 판정(시도 횟수 0)이 필요하면 여기서도 checkMissionStatus 호출 가능
-      // checkMissionStatus(opinion.positive, newAttemptsLeft); // 여기서 즉시 실패 판정 가능
-
-      // TODO: 결과에 따른 독백 설정 (checkMissionStatus에서 처리)
+      console.log('Edge function response (Placeholder Mode - Not used):', data);
     } catch (error) {
-      console.error('Error invoking update-opinion function:', error);
-      setMonologue('댓글 처리 중 오류가 발생했습니다.'); // 에러 독백
-      // TODO: 사용자에게 에러 알림
+      console.error('Error invoking update-opinion function (Placeholder Mode):', error);
+      setMonologue('댓글 처리 중 오류 발생 (임시)');
     }
+    */
   };
-  */
 
   return (
-    <div /* className={styles.commentSceneContainer} */ >
-      <h2>댓글 알바 씬 (Mission ID: {missionId})</h2>
-      {/* TODO: 각 하위 컴포넌트 렌더링 */}
-      {/* <MissionPanel missionId={missionId} /> */}
-      {/* <OpinionStats opinion={opinion} attemptsLeft={attemptsLeft} /> */}
-      {/* <CommentList comments={comments} /> */}
-      {/* <CommentInput onSubmit={handleCommentSubmit} disabled={attemptsLeft <= 0} /> */}
-      {/* {monologue && <MonologueBox text={monologue} />} */}
+    // 전체 레이아웃 래퍼 -> gameContainer 스타일 적용
+    <div className={gameStyles.gameContainer}>
+      {/* 기존 commentSceneWrapper div에 gameArea 스타일 추가 */}
+      <div className={`${gameStyles.gameArea} ${styles.commentSceneWrapper}`}>
+        {/* 왼쪽 사이드 패널 (미션, 여론, 독백) */}
+        <div className={styles.leftSidePanel}>
+          <MissionPanel missionId={missionId} />
+          <OpinionStats opinion={opinion} attemptsLeft={attemptsLeft} />
+          {monologue && (
+            <div className={styles.monologueSection}>
+              <MonologueBox text={monologue} />
+            </div>
+          )}
+        </div>
 
-      <p>여론: 긍정 {opinion.positive}% / 부정 {opinion.negative}% / 중립 {opinion.neutral}%</p>
-      <p>남은 시도: {attemptsLeft}</p>
-      <p>댓글 목록: (구현 예정)</p>
-      <p>댓글 입력: (구현 예정)</p>
-      {monologue && <p>독백: {monologue}</p>}
+        {/* 오른쪽 메인 콘텐츠 영역 */}
+        <div className={styles.mainContentArea}>
+          {/* 사이트 이름 헤더 */}
+          <div className={styles.siteHeader}>acinside.com 갤러리</div>
+          {/* 갤러리 제목 헤더 */}
+          <h2 className={styles.header}>연예인 갤러리</h2>
+          {/* 기사 제목 */}
+          <div className={styles.articleTitle}>[일반] NJZ 어떻게 생각함?</div>
+          {/* 작성자 정보 및 시간 */}
+          <div className={styles.articleMeta}>
+            <span>ㅇㅇ(118.235)</span> | <span>{new Date().toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')}</span>
+          </div>
 
-      {/* 미션 종료 시 버튼 비활성화 또는 다른 UI 표시 가능 */}
-      {/* <CommentInput onSubmit={handleCommentSubmit} disabled={isMissionOver || attemptsLeft <= 0} /> */}
-    </div>
+          {/* 기사 내용 */}
+          <ArticleContent />
+
+          {/* 댓글 목록 섹션 */}
+          <div className={styles.commentListSection}>
+            {/* 댓글 목록 헤더 추가 */}
+            <div className={styles.commentListHeader}>
+              <div className={styles.commentCount}>
+                전체 댓글 <span className={styles.countNumber}>{comments.length}</span>개
+              </div>
+              <div className={styles.headerControls}>
+                <select className={styles.sortDropdown} value={sortOrder} onChange={handleSortChange}>
+                  <option value="등록순">등록순</option>
+                  <option value="최신순">최신순</option>
+                  <option value="답글순">답글순</option> {/* 답글 기능은 미구현 */}
+                </select>
+                <span className={styles.listControls}>
+                  <button onClick={scrollToTop} className={styles.controlButton}>본문 보기</button> |
+                  <button onClick={toggleCommentList} className={styles.controlButton}>
+                    댓글{isCommentListVisible ? '닫기 ▼' : '열기 ▲'} {/* 아이콘 방향 반대로 수정 */}
+                  </button> |
+                  <button onClick={refreshComments} className={styles.controlButton}>새로고침</button>
+                </span>
+              </div>
+            </div>
+            {/* CommentList에 isVisible prop 전달 */}
+            <CommentList comments={comments} isVisible={isCommentListVisible} />
+            {/* 댓글 목록 하단 컨트롤 추가 */}
+            {isCommentListVisible && comments.length > 0 && ( // 댓글이 있고, 목록이 보일 때만 표시
+              <div className={styles.commentListFooter}>
+                <span className={styles.listControls}>
+                  <button onClick={scrollToTop} className={styles.controlButton}>본문 보기</button> |
+                  <button onClick={toggleCommentList} className={styles.controlButton}>
+                    댓글{isCommentListVisible ? '닫기 ▼' : '열기 ▲'}
+                  </button> |
+                  <button onClick={refreshComments} className={styles.controlButton}>새로고침</button>
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 댓글 입력 섹션 */}
+          <div className={styles.commentInputSection}>
+            <CommentInput onSubmit={handleCommentSubmit} disabled={isMissionOver || attemptsLeft <= 0} />
+          </div>
+        </div> {/* mainContentArea 끝 */}
+      </div> {/* commentSceneWrapper (이제 gameArea 역할도 함) 끝 */}
+    </div> // gameContainer 끝
   );
 };
 

@@ -1,0 +1,63 @@
+.opinionStatsContainer {
+  background-color: #ffffff;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif; /* 좀 더 깔끔한 폰트 (예시) */
+}
+
+.title {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.statsList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px 0;
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.statLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 이모지와 텍스트 간격 */
+  color: #555;
+}
+
+.statValue {
+  font-weight: bold;
+  color: #333;
+}
+
+.attempts {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.attemptsValue {
+  font-weight: bold;
+  color: #e74c3c; /* 시도 횟수 강조 색상 */
+  margin-left: 5px;
+}
+
+/* 이모지 스타일 (선택 사항) */
+.emoji {
+  font-size: 1.1em; /* 이모지 크기 살짝 키우기 */
+}
