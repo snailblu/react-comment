@@ -8,9 +8,10 @@ import DialogueBox from './DialogueBox';
 import Choices from './Choices';
 import SettingsMenu from './SettingsMenu'; // SettingsMenu import 추가
 import PhoneChat from './PhoneChat'; // PhoneChat 컴포넌트 추가
-import useScriptLoader from '../hooks/useScriptLoader'; // useScriptLoader 훅 import
+// import useScriptLoader from '../hooks/useScriptLoader'; // useScriptLoader 훅 import 제거
+import useEpisodeLoader from '../hooks/useEpisodeLoader'; // useEpisodeLoader 훅 import 추가
 // useGameState 훅 및 관련 타입 import
-import useGameState, { ScriptLine, ScriptData, GameFlags, ChoiceOption } from '../hooks/useGameState';
+import useGameState, { ScriptLine, GameFlags, ChoiceOption } from '../hooks/useGameState'; // ScriptData 제거 (이제 EpisodeData 사용)
 import styles from './Game.module.css'; // CSS 모듈 import 확인
 import roomBackground from '../assets/oneroom.png';
 import dorimSmile from '../assets/dorim_smile.png';
@@ -40,7 +41,15 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
   const [notificationMessage, setNotificationMessage] = useState(''); // 상단 알림 메시지 상태 추가
 
   // --- 커스텀 Hook 사용 ---
-  const { scriptData, isLoadingScript } = useScriptLoader(); // 스크립트 로딩 훅 호출
+  // TODO: 현재는 테스트용 ID 사용. 라우팅 또는 상태 관리 통해 동적으로 받아와야 함.
+  const episodeIdToLoad = '123e4567-e89b-12d3-a456-426614174000'; // 임시 테스트 ID
+  const { episodeData, isLoadingEpisode } = useEpisodeLoader(episodeIdToLoad); // 에피소드 로딩 훅 호출
+  // const { scriptData, isLoadingScript } = useScriptLoader(); // 스크립트 로딩 훅 호출 제거
+
+  // episodeData에서 실제 스크립트 데이터 추출 (intro_dialogues 사용 가정)
+  // null 또는 undefined일 경우 빈 배열([]) 사용
+  const currentEpisodeScript = episodeData?.intro_dialogues ?? [];
+
   const {
     currentScriptIndex,
     gameFlags,
@@ -48,7 +57,7 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
     setGameFlags,
     saveGame, // 저장 함수 가져오기
     loadGame  // 불러오기 함수 가져오기
-  } = useGameState(scriptData); // 게임 상태 훅 호출 (scriptData 전달)
+  } = useGameState(currentEpisodeScript); // 게임 상태 훅 호출 (currentEpisodeScript 전달)
   const navigate = useNavigate(); // useNavigate 훅 사용
 
   // currentLine 계산은 로딩 완료 및 상태 로드 후로 이동
@@ -68,23 +77,23 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
   // handleSaveGame, handleLoadGame 제거
 
   // 로딩 중 표시
-  if (isLoadingScript) {
-    return <div>Loading script...</div>;
+  if (isLoadingEpisode) {
+    return <div>Loading episode...</div>; // 로딩 메시지 변경
   }
 
-  // 로딩 완료 후 로직 (scriptData 사용)
-  // currentLine 계산 시 scriptData 유효성 및 인덱스 범위 확인 (타입 명시)
-  const currentLine: ScriptLine | null = scriptData && scriptData.length > currentScriptIndex ? scriptData[currentScriptIndex] : null;
+  // 로딩 완료 후 로직 (currentEpisodeScript 사용)
+  // currentLine 계산 시 currentEpisodeScript 유효성 및 인덱스 범위 확인 (타입 명시)
+  const currentLine: ScriptLine | null = currentEpisodeScript && currentEpisodeScript.length > currentScriptIndex ? currentEpisodeScript[currentScriptIndex] : null;
 
   // currentLine이 null일 경우 렌더링하지 않거나 다른 처리 추가
   if (!currentLine) {
-      // 스크립트 로딩은 완료되었지만 currentLine을 찾을 수 없는 경우 (예: 스크립트 끝)
-      // 또는 로딩 실패 후 isLoadingScript가 false가 된 경우 scriptData가 비어있을 수 있음
-      if (scriptData.length === 0 && !isLoadingScript) {
-          return <div>Error: Failed to load script data.</div>;
+      // 에피소드 로딩은 완료되었지만 currentLine을 찾을 수 없는 경우 (예: 스크립트 끝)
+      // 또는 로딩 실패 후 isLoadingEpisode가 false가 된 경우 currentEpisodeScript가 비어있을 수 있음
+      if (currentEpisodeScript.length === 0 && !isLoadingEpisode) {
+          return <div>Error: Failed to load episode data or script is empty.</div>; // 오류 메시지 변경
       }
       // 정상적으로 스크립트 끝에 도달한 경우
-      return <div>Script ended.</div>; // 또는 다른 종료 화면
+      return <div>Episode script ended.</div>; // 또는 다른 종료 화면
   }
 
 
@@ -98,12 +107,12 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
     playSfx('click'); // 효과음 재생 추가!
 
     let nextIndex = -1;
-    // scriptData 사용하도록 수정 (타입 단언 사용)
+    // currentEpisodeScript 사용하도록 수정 (타입 단언 사용)
     if ((currentLine as ScriptLine).nextId) {
       // findIndex 콜백 파라미터 타입 지정
-      nextIndex = scriptData.findIndex((line: ScriptLine) => line.id === (currentLine as ScriptLine).nextId);
+      nextIndex = currentEpisodeScript.findIndex((line: ScriptLine) => line.id === (currentLine as ScriptLine).nextId);
       if (nextIndex === -1) console.warn(`nextId '${(currentLine as ScriptLine).nextId}' 찾기 실패!`);
-    } else if (currentScriptIndex < scriptData.length - 1) { // scriptData.length 사용
+    } else if (currentScriptIndex < currentEpisodeScript.length - 1) { // currentEpisodeScript.length 사용
       nextIndex = currentScriptIndex + 1;
     }
 
@@ -122,15 +131,15 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
     playSfx('click'); // 효과음 재생 추가!
 
     let nextIndex = -1;
-    // scriptData 사용하도록 수정
+    // currentEpisodeScript 사용하도록 수정
     if (nextId) {
         // findIndex 콜백 파라미터 타입 지정
-        nextIndex = scriptData.findIndex((line: ScriptLine) => line.id === nextId);
+        nextIndex = currentEpisodeScript.findIndex((line: ScriptLine) => line.id === nextId);
         if (nextIndex === -1) console.warn(`선택지의 nextId '${nextId}' 찾기 실패!`);
     }
     // nextId가 없으면 기존 방식 사용 (선택 사항)
     // else {
-    //   nextIndex = scriptData.findIndex(line => line.id === `${choiceId}_result`);
+    //   nextIndex = currentEpisodeScript.findIndex(line => line.id === `${choiceId}_result`);
     //   if (nextIndex === -1) console.warn(`선택지 결과 ID '${choiceId}_result' 찾기 실패!`);
     // }
 
@@ -147,7 +156,7 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
     } else {
       console.log('선택지에 대한 다음 대사를 찾을 수 없습니다!');
       // 선택지 이후 진행이 막히면 안되므로, 다음 라인으로 넘어가는 기본 로직 추가 고려
-      if (currentScriptIndex < scriptData.length - 1) { // scriptData.length 사용
+      if (currentScriptIndex < currentEpisodeScript.length - 1) { // currentEpisodeScript.length 사용
          setCurrentScriptIndex(prevIndex => prevIndex + 1);
       } else {
          // 스크립트 끝 처리
@@ -199,8 +208,9 @@ const Game: React.FC = () => { // 컴포넌트 타입 명시
       <div className={styles.gameArea}>
         {/* 저장/불러오기/설정 버튼 */}
         <div className={styles.menuButtons}>
-          <button onClick={saveGame} className={styles.menuButton} disabled={isLoadingScript}>저장</button>
-          <button onClick={loadGame} className={styles.menuButton} disabled={isLoadingScript}>불러오기</button>
+          {/* disabled 상태를 isLoadingEpisode 기준으로 변경 */}
+          <button onClick={saveGame} className={styles.menuButton} disabled={isLoadingEpisode}>저장</button>
+          <button onClick={loadGame} className={styles.menuButton} disabled={isLoadingEpisode}>불러오기</button>
           {/* 설정 버튼 추가 */}
           <button onClick={() => setShowSettings(true)} className={styles.menuButton}>설정</button>
         </div>
