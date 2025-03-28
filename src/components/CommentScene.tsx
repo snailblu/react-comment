@@ -8,31 +8,39 @@ import { Mission } from '../types'; // Mission 타입 import 추가
 import MissionPanel from './MissionPanel'; // MissionPanel import 활성화
 import OpinionStats from './OpinionStats'; // OpinionStats import 활성화
 import CommentList from './CommentList';
-import CommentInput from './CommentInput'; // CommentInput import 활성화
-import MonologueBox from './MonologueBox'; // MonologueBox는 이미 사용 중이므로 주석 해제 유지
-import ArticleContent from './ArticleContent'; // ArticleContent import 추가
+import CommentInput from './CommentInput';
+import MonologueBox from './MonologueBox';
+import ArticleContent from './ArticleContent';
+import { Button } from './ui/button'; // 상대 경로로 다시 변경
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai"; // Gemini SDK import
+import { generateCommentPrompt } from '../lib/promptGenerator'; // 프롬프트 생성 함수 import
+import { Comment, Opinion } from '../types'; // Comment 및 Opinion 타입 import 위치 수정
 
 // 필요한 Hook import (예시)
 // import useGameState from '../hooks/useGameState';
 
-// Comment 데이터 구조 정의 (동일하게 유지) - types/index.ts 로 이동 고려
-interface Comment {
-  id: string;
-  nickname?: string;
-  ip?: string;
-  isReply?: boolean;
-  content: string;
-  likes: number;
-  is_player: boolean;
-  created_at: string; // 또는 Date 타입
+// Gemini API 설정
+const API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
+if (!API_KEY) {
+  console.error("Gemini API Key not found. Please set REACT_APP_GEMINI_API_KEY in your .env file.");
 }
+const genAI = new GoogleGenerativeAI(API_KEY || ""); // API 키가 없으면 빈 문자열로 초기화 (오류 방지)
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // 사용할 모델 지정
 
-// Opinion 데이터 구조 정의 - types/index.ts 로 이동 고려
-interface Opinion {
-  positive: number;
-  negative: number;
-  neutral: number;
-}
+// 안전 설정 (필요에 따라 조정)
+const generationConfig = {
+  temperature: 0.9,
+  topK: 1,
+  topP: 1,
+  maxOutputTokens: 2048,
+};
+
+const safetySettings = [
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+];
 
 interface CommentSceneProps {
   onMissionComplete?: (success: boolean) => void;
@@ -52,6 +60,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   const [isCommentListVisible, setIsCommentListVisible] = useState(true);
   const [sortOrder, setSortOrder] = useState('등록순');
   const [isMonologueVisible, setIsMonologueVisible] = useState(true);
+  const [isGeneratingComments, setIsGeneratingComments] = useState(false); // 댓글 생성 로딩 상태 추가
   const mainContentAreaRef = useRef<HTMLDivElement>(null);
 
   // --- 핸들러 함수들 ---
@@ -80,6 +89,77 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     console.log('Sort order changed:', event.target.value);
   };
 
+  // 임시 댓글 생성 핸들러
+  const handleGenerateComments = async () => {
+    if (isGeneratingComments || isMissionOver || !missionData) return;
+
+    setIsGeneratingComments(true);
+    setMonologue('AI가 댓글을 생성하는 중...'); // 로딩 메시지
+
+    if (!API_KEY) {
+      setMonologue('오류: Gemini API 키가 설정되지 않았습니다.');
+      setIsGeneratingComments(false);
+      return;
+    }
+
+    try {
+      console.log('Requesting AI comments for article:', missionData.articleTitle);
+
+      // 분리된 함수를 사용하여 프롬프트 생성
+      const prompt = generateCommentPrompt(
+        missionData.articleTitle ?? '제목 없음',
+        missionData.articleContent ?? '내용 없음',
+        comments, // 현재 댓글 목록 상태 전달
+        opinion   // 현재 여론 상태 전달
+      );
+      console.log("Generated Prompt for Gemini:", prompt); // 생성된 프롬프트 확인용 로그
+
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig,
+        safetySettings,
+      });
+
+      const response = result.response;
+      const generatedText = response.text();
+
+      if (!generatedText) {
+        throw new Error("Gemini API로부터 빈 응답을 받았습니다.");
+      }
+
+      // 응답 텍스트를 줄바꿈 기준으로 나누어 댓글 배열 생성
+      const commentTexts = generatedText.split('\n').map(c => c.trim()).filter(c => c.length > 0);
+
+      // Comment 객체로 변환
+      const generatedComments: Comment[] = commentTexts.map((text, index) => ({
+        id: `ai-${Date.now()}-${index}`,
+        content: text,
+        likes: Math.floor(Math.random() * 10), // 임의의 좋아요 수
+        is_player: false,
+        created_at: new Date().toISOString(),
+        // nickname, ip 등은 필요에 따라 추가
+      }));
+
+      if (generatedComments.length === 0) {
+        setMonologue('AI가 댓글을 생성하지 못했습니다. 다시 시도해주세요.');
+      } else {
+        setComments((prevComments) => [...prevComments, ...generatedComments]);
+        setMonologue(`AI가 ${generatedComments.length}개의 댓글을 생성했습니다.`); // 성공 메시지
+      }
+
+    } catch (error) {
+      console.error('Failed to generate AI comments:', error);
+      // 사용자에게 보여줄 오류 메시지 개선
+      if (error instanceof Error) {
+        setMonologue(`댓글 생성 중 오류 발생: ${error.message}`);
+      } else {
+        setMonologue('댓글 생성 중 알 수 없는 오류가 발생했습니다.');
+      }
+      setMonologue('댓글 생성 중 오류가 발생했습니다.'); // 오류 메시지
+    } finally {
+      setIsGeneratingComments(false);
+    }
+  };
 
   // --- 미션 상태 체크 로직 ---
   const checkMissionStatus = useCallback((currentPositive: number, currentAttempts: number) => {
@@ -159,11 +239,11 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
           }));
         setComments(loadedComments);
 
-        // 초기 미션 상태 체크
-        checkMissionStatus(
-          currentMission.initialOpinion?.positive ?? 50,
-          currentMission.max_attempts ?? 5
-        );
+        // 초기 미션 상태 체크 (주석 처리 - handleCommentSubmit에서 처리됨)
+        // checkMissionStatus(
+        //   currentMission.initialOpinion?.positive ?? 50,
+        //   currentMission.max_attempts ?? 5
+        // );
 
       } catch (error) {
         console.error("Failed to fetch mission data:", error);
@@ -173,8 +253,8 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     };
 
     fetchMissionData();
-
-  }, [missionId, checkMissionStatus]); // 의존성 배열 유지
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [missionId]); // 의존성 배열에서 checkMissionStatus 제거
 
 
   // --- 댓글 제출 핸들러 ---
@@ -228,6 +308,14 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         <div className={styles.leftSidePanel}>
           <MissionPanel missionId={missionId || null} />
           <OpinionStats opinion={opinion} attemptsLeft={attemptsLeft} />
+          {/* 임시 댓글 요청 버튼 추가 */}
+          <Button
+            onClick={handleGenerateComments}
+            disabled={isGeneratingComments || isMissionOver}
+            className="mt-4 w-full" // 스타일 조정
+          >
+            {isGeneratingComments ? '댓글 생성 중...' : '임시 댓글 요청'}
+          </Button>
           <button
             onClick={toggleMonologueVisibility}
             style={{ position: 'absolute', bottom: '10px', left: '10px', zIndex: 10 }}

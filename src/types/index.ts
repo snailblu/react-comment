@@ -50,7 +50,7 @@ export interface Comment {
   content: string;
   likes: number;
   is_player: boolean;
-  created_at?: string; // 생성 시간 (ISO 문자열)
+  created_at: string; // 생성 시간 (ISO 문자열) - 필수로 변경
   // delay?: number; // missions.json에서 사용할 지연 시간 (ms) - 제거
 }
 
