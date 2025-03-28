@@ -28,6 +28,7 @@ const characterSprites = {
 const Game = () => {
   // --- 상태 추가 ---
   const [showSettings, setShowSettings] = useState(false); // 설정 메뉴 표시 상태
+  const [notificationMessage, setNotificationMessage] = useState(''); // 상단 알림 메시지 상태 추가
 
   // --- 커스텀 Hook 사용 ---
   const { scriptData, isLoadingScript } = useScriptLoader(); // 스크립트 로딩 훅 호출
@@ -170,6 +171,13 @@ const Game = () => {
           {/* 설정 버튼 추가 */}
           <button onClick={() => setShowSettings(true)} className={styles.menuButton}>설정</button>
         </div>
+
+        {/* 상단 알림 메시지 */}
+        {notificationMessage && (
+          <div className={styles.notification}>
+            {notificationMessage}
+          </div>
+        )}
 
         <Background imageUrl={roomBackground} />
 

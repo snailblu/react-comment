@@ -8,8 +8,12 @@ const SAVE_KEY = 'saveDataVn'; // 로컬 스토리지 키 정의
  * @returns {{
  *   currentScriptIndex: number,
  *   gameFlags: object,
+ *   currentEpisodeId: string | null, // 추가
+ *   sceneProgress: string, // 추가
  *   setCurrentScriptIndex: Function,
  *   setGameFlags: Function,
+ *   setCurrentEpisodeId: Function, // 추가
+ *   setSceneProgress: Function, // 추가
  *   saveGame: Function,
  *   loadGame: Function
  * }} 게임 상태 값, 상태 업데이트 함수, 저장/불러오기 함수.
@@ -17,6 +21,8 @@ const SAVE_KEY = 'saveDataVn'; // 로컬 스토리지 키 정의
 const useGameState = (scriptData) => {
   const [currentScriptIndex, setCurrentScriptIndex] = useState(0);
   const [gameFlags, setGameFlags] = useState({});
+  const [currentEpisodeId, setCurrentEpisodeId] = useState(null); // 현재 에피소드 ID 상태 추가
+  const [sceneProgress, setSceneProgress] = useState('intro'); // 씬 진행 상태 추가 (예: 'intro', 'mission', 'ending')
 
   // --- 로컬 스토리지에서 초기 상태 로드 ---
   useEffect(() => {
@@ -24,10 +30,13 @@ const useGameState = (scriptData) => {
     const savedData = localStorage.getItem(SAVE_KEY);
     let loadedIndex = 0;
     let loadedFlags = {};
+    let loadedEpisodeId = null; // 초기값 설정
+    let loadedSceneProgress = 'intro'; // 초기값 설정
 
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData);
+
         // currentScriptIndex 로드 및 유효성 검사
         if (typeof parsedData.currentScriptIndex === 'number' && parsedData.currentScriptIndex >= 0) {
           // 스크립트 데이터가 로드된 경우 추가적인 범위 검사
@@ -38,9 +47,10 @@ const useGameState = (scriptData) => {
             loadedIndex = parsedData.currentScriptIndex;
             console.log('useGameState: 저장된 인덱스 로드:', loadedIndex);
           }
-        } else {
+        } else if (parsedData.currentScriptIndex !== undefined) { // undefined가 아닐 때만 경고
           console.warn('useGameState: 저장된 currentScriptIndex가 유효하지 않습니다:', parsedData.currentScriptIndex);
         }
+
         // gameFlags 로드 및 유효성 검사
         if (typeof parsedData.gameFlags === 'object' && parsedData.gameFlags !== null) {
           loadedFlags = parsedData.gameFlags;
@@ -48,6 +58,23 @@ const useGameState = (scriptData) => {
         } else if (parsedData.gameFlags !== undefined) {
           console.warn('useGameState: 저장된 gameFlags가 유효한 객체가 아닙니다:', parsedData.gameFlags);
         }
+
+        // currentEpisodeId 로드 (문자열 또는 null 허용)
+        if (typeof parsedData.currentEpisodeId === 'string' || parsedData.currentEpisodeId === null) {
+            loadedEpisodeId = parsedData.currentEpisodeId;
+            console.log('useGameState: 저장된 에피소드 ID 로드:', loadedEpisodeId);
+        } else if (parsedData.currentEpisodeId !== undefined) {
+            console.warn('useGameState: 저장된 currentEpisodeId가 유효하지 않습니다:', parsedData.currentEpisodeId);
+        }
+
+        // sceneProgress 로드 (문자열)
+        if (typeof parsedData.sceneProgress === 'string') {
+            loadedSceneProgress = parsedData.sceneProgress;
+            console.log('useGameState: 저장된 씬 진행 상태 로드:', loadedSceneProgress);
+        } else if (parsedData.sceneProgress !== undefined) {
+            console.warn('useGameState: 저장된 sceneProgress가 유효하지 않습니다:', parsedData.sceneProgress);
+        }
+
       } catch (e) {
         console.error('useGameState: 저장된 데이터 파싱 오류:', e);
       }
@@ -58,6 +85,8 @@ const useGameState = (scriptData) => {
     // 상태 업데이트
     setCurrentScriptIndex(loadedIndex);
     setGameFlags(loadedFlags);
+    setCurrentEpisodeId(loadedEpisodeId); // 에피소드 ID 상태 업데이트
+    setSceneProgress(loadedSceneProgress); // 씬 진행 상태 업데이트
 
   // scriptData가 변경될 때도 이 로직을 다시 실행하여 인덱스 유효성을 재검증할 수 있습니다.
   // 하지만 초기 로드 시에만 실행하려면 빈 배열을 사용합니다. 여기서는 초기 로드만 처리합니다.
@@ -66,7 +95,8 @@ const useGameState = (scriptData) => {
   // --- 게임 저장 함수 ---
   const saveGame = useCallback(() => {
     try {
-      const dataToSave = { currentScriptIndex, gameFlags };
+      // 저장할 데이터에 currentEpisodeId와 sceneProgress 추가
+      const dataToSave = { currentScriptIndex, gameFlags, currentEpisodeId, sceneProgress };
       localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave));
       console.log('useGameState: 게임 저장 완료:', dataToSave);
       alert('게임이 저장되었습니다!');
@@ -74,8 +104,8 @@ const useGameState = (scriptData) => {
       console.error('useGameState: 게임 저장 실패:', e);
       alert('게임 저장에 실패했습니다.');
     }
-  // currentScriptIndex나 gameFlags가 변경될 때마다 함수가 재생성되지 않도록 useCallback 사용
-  }, [currentScriptIndex, gameFlags]);
+  // 의존성 배열에 currentEpisodeId와 sceneProgress 추가
+  }, [currentScriptIndex, gameFlags, currentEpisodeId, sceneProgress]);
 
   // --- 게임 불러오기 함수 ---
   const loadGame = useCallback(() => {
@@ -99,6 +129,25 @@ const useGameState = (scriptData) => {
             setGameFlags({}); // 저장된 플래그가 없거나 유효하지 않으면 초기화
             console.log('useGameState: 저장된 플래그 없음 또는 유효하지 않음, 플래그 초기화');
           }
+
+          // currentEpisodeId 불러오기 및 상태 업데이트
+          if (typeof parsedData.currentEpisodeId === 'string' || parsedData.currentEpisodeId === null) {
+            setCurrentEpisodeId(parsedData.currentEpisodeId);
+            console.log('useGameState: 에피소드 ID 불러오기 완료:', parsedData.currentEpisodeId);
+          } else {
+            setCurrentEpisodeId(null); // 유효하지 않으면 초기화
+            console.log('useGameState: 저장된 에피소드 ID 없음 또는 유효하지 않음, 초기화');
+          }
+
+          // sceneProgress 불러오기 및 상태 업데이트
+          if (typeof parsedData.sceneProgress === 'string') {
+            setSceneProgress(parsedData.sceneProgress);
+            console.log('useGameState: 씬 진행 상태 불러오기 완료:', parsedData.sceneProgress);
+          } else {
+            setSceneProgress('intro'); // 유효하지 않으면 초기화
+            console.log('useGameState: 저장된 씬 진행 상태 없음 또는 유효하지 않음, 초기화');
+          }
+
           alert('게임을 불러왔습니다!');
         } else {
            console.warn('useGameState: 저장된 인덱스가 유효하지 않거나 스크립트 범위를 벗어납니다:', parsedData.currentScriptIndex);
@@ -118,8 +167,12 @@ const useGameState = (scriptData) => {
   return {
     currentScriptIndex,
     gameFlags,
+    currentEpisodeId, // 반환 객체에 추가
+    sceneProgress,    // 반환 객체에 추가
     setCurrentScriptIndex,
     setGameFlags,
+    setCurrentEpisodeId, // 반환 객체에 추가
+    setSceneProgress,    // 반환 객체에 추가
     saveGame,
     loadGame
   };

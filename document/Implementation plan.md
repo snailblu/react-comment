@@ -7,14 +7,14 @@
 - [ ] **목표:** 현재 구현된 스토리 씬의 기능을 확장하고, 게임 진행에 필수적인 시스템 메뉴(저장, 로드 등)의 기본 구조를 완성합니다.
 - [ ] **주요 작업:**
     1.  **`StoryScene` 컴포넌트 개선:** (`src/components/Game.js` 또는 신규 `StoryScene.js` 파일)
-        - [ ] `document/App flow.md`에 명시된 전화 디티알톡 채팅 UI 컴포넌트 (`PhoneChat`)를 추가합니다.
-        - [ ] 상단 알림 메시지 표시 기능을 구현합니다.
+        - [x] `document/App flow.md`에 명시된 전화 디티알톡 채팅 UI 컴포넌트 (`PhoneChat`)를 추가합니다.
+        - [x] 상단 알림 메시지 표시 기능을 구현합니다.
         - [ ] `document/Frontend Guideline.md`의 디자인 가이드라인을 따릅니다.
     2.  **`SystemMenu` 컴포넌트 구현/개선:** (`src/components/SettingsMenu.js` 수정 또는 신규 `SystemMenu.js` 생성)
-        - [ ] 저장, 로드, 언어 변경, 타이틀 이동, 종료 버튼 UI를 추가합니다. (초기에는 UI만 구현, 기능은 후속 단계에서 연동)
+        - [x] 저장, 로드, 언어 변경, 타이틀 이동, 종료 버튼 UI를 추가합니다. (초기에는 UI만 구현, 기능은 후속 단계에서 연동)
     3.  **`useGameState` 훅 확장:** (`src/hooks/useGameState.js`)
-        - [ ] 현재 에피소드 ID, 씬 진행 상태 등을 관리하는 상태 변수를 추가합니다.
-        - [ ] 게임 상태를 저장하고 로드하는 기본 로직을 추가합니다 (실제 데이터 연동은 Phase 4).
+        - [x] 현재 에피소드 ID, 씬 진행 상태 등을 관리하는 상태 변수를 추가합니다.
+        - [x] 게임 상태를 저장하고 로드하는 기본 로직을 추가합니다 (실제 데이터 연동은 Phase 4).
     4.  **Supabase 연동 (초기):**
         - [ ] `document/Backend Guideline.md`에 따라 Supabase 프로젝트 설정 및 `episodes` 테이블을 생성합니다.
         - [ ] `StoryScene`에서 `episodes` 테이블로부터 현재 에피소드의 대화 데이터(`intro_dialogues`, `ending_dialogues`)를 불러오는 로직을 `services/supabase.js` (신규 생성 필요) 또는 `hooks/useScriptLoader.js` 개선을 통해 구현합니다.

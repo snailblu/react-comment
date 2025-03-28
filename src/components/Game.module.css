@@ -44,3 +44,32 @@
 .menuButton:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
+
+/* 상단 알림 메시지 스타일 */
+.notification {
+  position: absolute;
+  top: 60px; /* 메뉴 버튼 아래에 위치하도록 조정 */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  z-index: 15; /* 메뉴 버튼보다 위에 오도록 */
+  font-size: 1em;
+  text-align: center;
+  max-width: 80%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  /* 애니메이션 추가 (선택 사항) - 메시지가 나타났다가 사라지게 함 */
+  /* animation: fadeInOut 5s ease-in-out forwards; */ /* 필요시 주석 해제 */
+}
+
+/* 페이드 인/아웃 애니메이션 (선택 사항) */
+/*
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+*/
