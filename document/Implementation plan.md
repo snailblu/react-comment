@@ -16,27 +16,27 @@
         - [x] 현재 에피소드 ID, 씬 진행 상태 등을 관리하는 상태 변수를 추가합니다.
         - [x] 게임 상태를 저장하고 로드하는 기본 로직을 추가합니다 (실제 데이터 연동은 Phase 4).
     4.  **Supabase 연동 (초기):**
-        - [ ] `document/Backend Guideline.md`에 따라 Supabase 프로젝트 설정 및 `episodes` 테이블을 생성합니다.
-        - [ ] `StoryScene`에서 `episodes` 테이블로부터 현재 에피소드의 대화 데이터(`intro_dialogues`, `ending_dialogues`)를 불러오는 로직을 `services/supabase.js` (신규 생성 필요) 또는 `hooks/useScriptLoader.js` 개선을 통해 구현합니다.
-        - [ ] `saves` 테이블 스키마를 정의합니다.
+        - [x] `document/Backend Guideline.md`에 따라 Supabase 프로젝트 설정 및 `episodes` 테이블을 생성합니다.
+        - [x] `StoryScene`에서 `episodes` 테이블로부터 현재 에피소드의 대화 데이터(`intro_dialogues`, `ending_dialogues`)를 불러오는 로직을 `services/supabase.js` (신규 생성 필요) 또는 `hooks/useScriptLoader.js` 개선을 통해 구현합니다. (`useEpisodeLoader` 및 `Game.tsx` 수정 완료)
+        - [x] `saves` 테이블 스키마를 정의합니다. (테이블 생성 완료)
 
 ## Phase 2: 댓글 알바 씬 핵심 기능 구현
 
-- [ ] **목표:** 게임의 핵심 플레이인 댓글 작성 및 여론 조작 기능을 구현합니다.
-- [ ] **주요 작업:**
+- [x] **목표:** 게임의 핵심 플레이인 댓글 작성 및 여론 조작 기능을 구현합니다. (기본 구조 및 백엔드 설정 완료)
+- [x] **주요 작업:**
     1.  **Supabase 백엔드 설정:**
-        - [ ] `document/Backend Guideline.md`에 따라 `missions`, `opinions`, `comments` 테이블 스키마를 정의하고 생성합니다.
-        - [ ] `update-opinion` Edge Function을 생성합니다. (초기에는 댓글 내용 기반 간단한 규칙으로 여론 점수 계산)
-        - [ ] `opinions` 테이블에 대한 실시간 구독(Realtime) 기능을 활성화합니다.
+        - [x] `document/Backend Guideline.md`에 따라 `missions`, `opinions`, `comments` 테이블 스키마를 정의하고 생성합니다.
+        - [x] `update-opinion` Edge Function을 생성합니다. (초기 규칙 기반 구현 및 배포 완료)
+        - [x] `opinions` 테이블에 대한 실시간 구독(Realtime) 기능을 활성화합니다.
     2.  **React 컴포넌트 구현 (`src/components/` 내 신규 파일들):**
-        - [ ] `CommentScene`: 댓글 알바 씬의 전체 레이아웃 및 상태 관리를 담당하는 컨테이너 컴포넌트를 구현합니다.
-        - [ ] `MissionPanel`: 현재 미션의 목표, 키워드, 조건 등을 표시하는 컴포넌트를 구현합니다 (`missions` 테이블 데이터 연동).
-        - [ ] `OpinionStats`: 긍정/부정/중립 여론 비율과 남은 시도 횟수를 표시하는 컴포넌트를 구현합니다 (`opinions` 테이블 데이터 실시간 연동).
-        - [ ] `CommentList`: 기존 댓글 및 플레이어가 작성한 댓글 목록을 표시하는 컴포넌트를 구현합니다 (`comments` 테이블 데이터 연동).
-        - [ ] `CommentInput`: 플레이어가 댓글을 입력하고 제출하는 UI 및 기능을 구현합니다. 제출 시 `update-opinion` Edge Function을 호출합니다.
-        - [ ] `MonologueBox`: 댓글 제출 결과에 따른 주인공 독백을 표시하는 컴포넌트를 구현합니다.
+        - [x] `CommentScene`: 댓글 알바 씬의 전체 레이아웃 및 상태 관리를 담당하는 컨테이너 컴포넌트를 구현합니다. (기본 구조 생성 및 Realtime/Edge Function 호출 로직 추가)
+        - [x] `MissionPanel`: 현재 미션의 목표, 키워드, 조건 등을 표시하는 컴포넌트를 구현합니다 (`missions` 테이블 데이터 연동). (기본 구조 및 데이터 로딩 로직 추가)
+        - [x] `OpinionStats`: 긍정/부정/중립 여론 비율과 남은 시도 횟수를 표시하는 컴포넌트를 구현합니다 (`opinions` 테이블 데이터 실시간 연동). (기본 구조 생성)
+        - [x] `CommentList`: 기존 댓글 및 플레이어가 작성한 댓글 목록을 표시하는 컴포넌트를 구현합니다 (`comments` 테이블 데이터 연동). (기본 구조 생성)
+        - [x] `CommentInput`: 플레이어가 댓글을 입력하고 제출하는 UI 및 기능을 구현합니다. 제출 시 `update-opinion` Edge Function을 호출합니다. (기본 구조 생성)
+        - [x] `MonologueBox`: 댓글 제출 결과에 따른 주인공 독백을 표시하는 컴포넌트를 구현합니다. (기본 구조 생성)
     3.  **`useGameState` 훅 확장:** (`src/hooks/useGameState.js`)
-        - [ ] 현재 진행 중인 미션 ID, 남은 댓글 시도 횟수 등을 관리하는 상태를 추가합니다.
+        - [x] 현재 진행 중인 미션 ID, 남은 댓글 시도 횟수 등을 관리하는 상태를 추가합니다. (상태 추가 및 저장/로드 로직 업데이트 완료)
 
 ## Phase 3: 결과 씬 및 엔딩 처리 구현
 
