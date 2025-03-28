@@ -102,25 +102,30 @@ const MissionPanel: React.FC<MissionPanelProps> = ({ missionId }) => {
 
   const goalString = formatGoal(missionData.goal);
 
+  // Remove "테스트 미션: " prefix if it exists
+  const displayTitle = missionData.title?.startsWith('테스트 미션: ')
+    ? missionData.title.substring('테스트 미션: '.length)
+    : missionData.title;
+
   return (
-    <Card className="w-full shadow-md"> {/* Add shadow for better visual separation */}
-      <CardHeader>
-        <CardTitle className="text-lg font-bold"> {/* Adjust title size and weight */}
-          미션: {missionData.title || '제목 없음'}
+    <Card className="w-full shadow-lg border border-border/40"> {/* Enhanced shadow and border */}
+      <CardHeader className="pb-3"> {/* Reduced bottom padding */}
+        <CardTitle className="text-xl font-semibold tracking-tight"> {/* Larger title, adjusted weight/tracking */}
+          {displayTitle || '제목 없음'} {/* Display title without prefix */}
         </CardTitle>
       </CardHeader>
-      <Separator className="my-2" /> {/* Add separator after header */}
-      <CardContent className="space-y-3 text-sm"> {/* Adjust spacing and text size */}
+      <Separator /> {/* Separator without margin */}
+      <CardContent className="pt-4 space-y-4 text-sm"> {/* Adjusted padding and spacing */}
         <div>
-          <strong className="font-semibold text-gray-700 dark:text-gray-300">목표:</strong> {/* Style label */}
-          <span className="ml-2">{goalString}</span> {/* Add margin */}
+          <strong className="font-medium text-muted-foreground">목표:</strong> {/* Use theme color for label */}
+          <p className="mt-1 text-foreground">{goalString}</p> {/* Ensure value text color */}
         </div>
         {missionData.keywords && missionData.keywords.length > 0 && (
           <div>
-            <strong className="font-semibold text-gray-700 dark:text-gray-300">키워드:</strong>
-            <div className="mt-1 flex flex-wrap gap-1"> {/* Use flex-wrap for badges */}
+            <strong className="font-medium text-muted-foreground">키워드:</strong>
+            <div className="mt-2 flex flex-wrap justify-center gap-2"> {/* Centered keywords */}
               {missionData.keywords.map((keyword, index) => (
-                <Badge key={index} variant="secondary"> {/* Use Badge component */}
+                <Badge key={index} variant="outline"> {/* Changed variant for subtle look */}
                   {keyword}
                 </Badge>
               ))}
@@ -129,8 +134,8 @@ const MissionPanel: React.FC<MissionPanelProps> = ({ missionId }) => {
         )}
         {missionData.conditions && missionData.conditions.length > 0 && (
           <div>
-            <strong className="font-semibold text-gray-700 dark:text-gray-300">조건:</strong>
-            <ul className="list-disc list-inside ml-4 mt-1"> {/* Use list for conditions */}
+            <strong className="font-medium text-muted-foreground">조건:</strong>
+            <ul className="list-none pl-4 mt-1 space-y-1 text-foreground"> {/* Removed list-disc and list-inside, added list-none */}
               {missionData.conditions.map((condition, index) => (
                 <li key={index}>{condition}</li>
               ))}

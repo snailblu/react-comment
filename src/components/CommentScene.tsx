@@ -51,8 +51,13 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
   const [isMissionOver, setIsMissionOver] = useState(false); // 미션 종료 상태 추가
   const [isCommentListVisible, setIsCommentListVisible] = useState(true); // 댓글 목록 표시 상태 추가
   const [sortOrder, setSortOrder] = useState('등록순'); // 정렬 상태 추가
+  const [isMonologueVisible, setIsMonologueVisible] = useState(true); // 독백 표시 상태 추가
 
   // --- 핸들러 함수들 ---
+  const toggleMonologueVisibility = () => {
+    setIsMonologueVisible(!isMonologueVisible);
+  };
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -111,6 +116,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
     const initialAttempts = 5;
     setOpinion(initialOpinion);
     setAttemptsLeft(initialAttempts);
+    setMonologue('여기가 나의 전장이다... '); // 초기 독백 텍스트 변경
 
     // 초기 미션 상태 체크
     checkMissionStatus(initialOpinion.positive, initialAttempts);
@@ -217,17 +223,24 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
   return (
     // 전체 레이아웃 래퍼 -> gameContainer 스타일 적용
     <div className={gameStyles.gameContainer}>
+      {/* MonologueBox를 gameContainer 바로 아래로 이동 */}
+      {isMonologueVisible && monologue && (
+        <MonologueBox text={monologue} />
+      )}
+
       {/* 기존 commentSceneWrapper div에 gameArea 스타일 추가 */}
       <div className={`${gameStyles.gameArea} ${styles.commentSceneWrapper}`}>
-        {/* 왼쪽 사이드 패널 (미션, 여론, 독백) */}
+        {/* 왼쪽 사이드 패널 (미션, 여론) - MonologueBox 제거 */}
         <div className={styles.leftSidePanel}>
           <MissionPanel missionId={missionId} />
           <OpinionStats opinion={opinion} attemptsLeft={attemptsLeft} />
-          {monologue && (
-            <div className={styles.monologueSection}>
-              <MonologueBox text={monologue} />
-            </div>
-          )}
+          {/* 독백 토글 버튼은 여기에 유지 */}
+          <button
+            onClick={toggleMonologueVisibility}
+            style={{ position: 'absolute', bottom: '10px', left: '10px', zIndex: 10 }} // 임시 스타일
+          >
+            {isMonologueVisible ? '독백 숨기기' : '독백 보이기'}
+          </button>
         </div>
 
         {/* 오른쪽 메인 콘텐츠 영역 */}
