@@ -11,6 +11,7 @@ import CommentList from './CommentList';
 import CommentInput from './CommentInput';
 import MonologueBox from './MonologueBox';
 import ArticleContent from './ArticleContent';
+import ArticleReactions from './ArticleReactions'; // ArticleReactions 컴포넌트 import 추가
 import { Button } from './ui/button'; // 상대 경로로 다시 변경
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai"; // Gemini SDK import
 import { generateCommentPrompt } from '../lib/promptGenerator'; // 프롬프트 생성 함수 import
@@ -61,6 +62,8 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   const [sortOrder, setSortOrder] = useState('등록순');
   const [isMonologueVisible, setIsMonologueVisible] = useState(true);
   const [isGeneratingComments, setIsGeneratingComments] = useState(false); // 댓글 생성 로딩 상태 추가
+  const [articleLikes, setArticleLikes] = useState(0); // 기사 좋아요 상태 추가
+  const [articleDislikes, setArticleDislikes] = useState(0); // 기사 싫어요 상태 추가
   const mainContentAreaRef = useRef<HTMLDivElement>(null);
 
   // --- 핸들러 함수들 ---
@@ -88,6 +91,18 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     // TODO: 실제 정렬 로직 구현
     console.log('Sort order changed:', event.target.value);
   };
+
+  // 기사 좋아요 핸들러
+  const handleLikeArticle = useCallback(() => {
+    setArticleLikes(prev => prev + 1);
+    // TODO: 필요시 추가 로직 (예: 게임 플래그 변경 등)
+  }, []);
+
+  // 기사 싫어요 핸들러
+  const handleDislikeArticle = useCallback(() => {
+    setArticleDislikes(prev => prev + 1);
+    // TODO: 필요시 추가 로직
+  }, []);
 
   // 임시 댓글 생성 핸들러
   const handleGenerateComments = async () => {
@@ -241,6 +256,8 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         setOpinion(currentMission.initialOpinion ?? { positive: 50, negative: 30, neutral: 20 }); // 기본값 설정
         setAttemptsLeft(currentMission.max_attempts ?? 5); // 기본값 설정
         setMonologue(currentMission.initialMonologue ?? '댓글을 달아 여론을 조작하자...'); // 기본값 설정
+        setArticleLikes(currentMission.initialLikes ?? 0); // 초기 좋아요 설정
+        setArticleDislikes(currentMission.initialDislikes ?? 0); // 초기 싫어요 설정
 
         // 초기 댓글 설정 (created_at 직접 사용)
         // const now = Date.now(); // 더 이상 필요 없음
@@ -361,6 +378,14 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
             content={missionData.articleContent} // content prop은 이미 존재
             imageFilename={missionData.articleImage} // imageFilename prop 추가 필요
             // attachmentFilename prop 전달 제거
+          />
+
+          {/* 기사 반응 섹션 추가 */}
+          <ArticleReactions
+            likes={articleLikes}
+            dislikes={articleDislikes}
+            onLike={handleLikeArticle}
+            onDislike={handleDislikeArticle}
           />
 
           <div className={styles.commentListSection}>

@@ -11,6 +11,8 @@
     "articleImage": "oneroom.png",
     "articleCreatedAt": "2025-03-28T17:00:00Z",
     "initialOpinion": { "positive": 60, "negative": 25, "neutral": 15 },
+    "initialLikes": 0,
+    "initialDislikes": 0,
     "initialMonologue": "여기가 나의 전장이다... ",
     "initialComments": [
       { "id": "sample-1", "nickname": "ㅇㅇ", "ip": "118.235", "content": "솔직히 요즘 아이돌 중에 제일 낫지 않나?", "likes": 15, "is_player": false, "created_at": "2025-03-28T17:55:00Z" },
@@ -47,6 +49,8 @@
     "articleImage": "oneroom.png",
     "articleCreatedAt": "2025-03-28T18:00:00Z",
     "initialOpinion": { "positive": 40, "negative": 40, "neutral": 20 },
+    "initialLikes": 34,
+    "initialDislikes": 0,
     "initialMonologue": "튜토리얼 미션이다. 도림이를 도와 긍정적인 여론을 만들어보자.",
     "initialComments": [
       { "id": "tut-1", "nickname": "지나가던", "ip": "118.235", "content": "얘가 누군데 자꾸 글 올라옴?", "likes": 2, "is_player": false, "created_at": "2025-03-28T18:08:45Z" },

@@ -79,6 +79,8 @@ export interface Mission {
   articleCreatedAt?: string; // 기사 생성 시간 (ISO 문자열) 추가
   // attachmentFilename?: string; // 제거
   initialOpinion?: Opinion;
+  initialLikes?: number; // 기사 좋아요 초기값
+  initialDislikes?: number; // 기사 싫어요 초기값
   initialMonologue?: string;
   initialComments?: Partial<Comment & { delay?: number }>[]; // 로딩 시 delay 또는 created_at 사용 가능하도록 유지
 }
