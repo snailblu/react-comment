@@ -36,12 +36,16 @@ export type GameFlags = Record<string, any>; // export 추가
 export interface GameStateHook { // export 추가
   currentScriptIndex: number;
   gameFlags: GameFlags;
-  currentEpisodeId: string | null;
-  sceneProgress: string;
+  currentEpisodeId: string | null; // 현재 에피소드 ID
+  sceneProgress: string; // 현재 씬 진행 단계 (예: 'intro', 'mission', 'ending')
+  currentMissionId: string | null; // 현재 진행 중인 미션 ID
+  remainingAttempts: number; // 현재 미션 남은 시도 횟수
   setCurrentScriptIndex: Dispatch<SetStateAction<number>>;
   setGameFlags: Dispatch<SetStateAction<GameFlags>>;
   setCurrentEpisodeId: Dispatch<SetStateAction<string | null>>;
   setSceneProgress: Dispatch<SetStateAction<string>>;
+  setCurrentMissionId: Dispatch<SetStateAction<string | null>>; // 미션 ID setter
+  setRemainingAttempts: Dispatch<SetStateAction<number>>; // 시도 횟수 setter
   saveGame: () => void;
   loadGame: () => void;
 }
@@ -53,8 +57,10 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
   // useState에 제네릭 타입 적용
   const [currentScriptIndex, setCurrentScriptIndex] = useState<number>(0);
   const [gameFlags, setGameFlags] = useState<GameFlags>({});
-  const [currentEpisodeId, setCurrentEpisodeId] = useState<string | null>(null); // 현재 에피소드 ID 상태 추가
-  const [sceneProgress, setSceneProgress] = useState<string>('intro'); // 씬 진행 상태 추가
+  const [currentEpisodeId, setCurrentEpisodeId] = useState<string | null>(null);
+  const [sceneProgress, setSceneProgress] = useState<string>('intro');
+  const [currentMissionId, setCurrentMissionId] = useState<string | null>(null); // 미션 ID 상태 추가
+  const [remainingAttempts, setRemainingAttempts] = useState<number>(0); // 남은 시도 횟수 상태 추가 (초기값 0)
 
   // --- 로컬 스토리지에서 초기 상태 로드 ---
   useEffect(() => {
@@ -62,8 +68,10 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
     const savedData = localStorage.getItem(SAVE_KEY);
     let loadedIndex = 0;
     let loadedFlags = {};
-    let loadedEpisodeId: string | null = null; // 타입 명시
-    let loadedSceneProgress: string = 'intro'; // 타입 명시
+    let loadedEpisodeId: string | null = null;
+    let loadedSceneProgress: string = 'intro';
+    let loadedMissionId: string | null = null; // 로드할 미션 ID 변수
+    let loadedAttempts: number = 0; // 로드할 남은 시도 횟수 변수
 
     if (savedData) {
       try {
@@ -73,6 +81,8 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
           gameFlags: GameFlags;
           currentEpisodeId: string | null;
           sceneProgress: string;
+          currentMissionId: string | null; // 파싱 타입에 추가
+          remainingAttempts: number; // 파싱 타입에 추가
         }> = JSON.parse(savedData);
 
         // currentScriptIndex 로드 및 유효성 검사
@@ -113,6 +123,22 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
             console.warn('useGameState: 저장된 sceneProgress가 유효하지 않습니다:', parsedData.sceneProgress);
         }
 
+        // currentMissionId 로드 (문자열 또는 null)
+        if (typeof parsedData.currentMissionId === 'string' || parsedData.currentMissionId === null) {
+            loadedMissionId = parsedData.currentMissionId;
+            console.log('useGameState: 저장된 미션 ID 로드:', loadedMissionId);
+        } else if (parsedData.currentMissionId !== undefined) {
+            console.warn('useGameState: 저장된 currentMissionId가 유효하지 않습니다:', parsedData.currentMissionId);
+        }
+
+        // remainingAttempts 로드 (숫자)
+        if (typeof parsedData.remainingAttempts === 'number' && parsedData.remainingAttempts >= 0) {
+            loadedAttempts = parsedData.remainingAttempts;
+            console.log('useGameState: 저장된 남은 시도 횟수 로드:', loadedAttempts);
+        } else if (parsedData.remainingAttempts !== undefined) {
+            console.warn('useGameState: 저장된 remainingAttempts가 유효하지 않습니다:', parsedData.remainingAttempts);
+        }
+
       } catch (e) {
         console.error('useGameState: 저장된 데이터 파싱 오류:', e);
       }
@@ -123,8 +149,10 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
     // 상태 업데이트
     setCurrentScriptIndex(loadedIndex);
     setGameFlags(loadedFlags);
-    setCurrentEpisodeId(loadedEpisodeId); // 에피소드 ID 상태 업데이트
-    setSceneProgress(loadedSceneProgress); // 씬 진행 상태 업데이트
+    setCurrentEpisodeId(loadedEpisodeId);
+    setSceneProgress(loadedSceneProgress);
+    setCurrentMissionId(loadedMissionId); // 미션 ID 상태 업데이트
+    setRemainingAttempts(loadedAttempts); // 남은 시도 횟수 상태 업데이트
 
   // scriptData가 변경될 때도 이 로직을 다시 실행하여 인덱스 유효성을 재검증할 수 있습니다.
   // 하지만 초기 로드 시에만 실행하려면 빈 배열을 사용합니다. 여기서는 초기 로드만 처리합니다.
@@ -133,8 +161,15 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
   // --- 게임 저장 함수 ---
   const saveGame = useCallback(() => {
     try {
-      // 저장할 데이터에 currentEpisodeId와 sceneProgress 추가
-      const dataToSave = { currentScriptIndex, gameFlags, currentEpisodeId, sceneProgress };
+      // 저장할 데이터에 currentMissionId와 remainingAttempts 추가
+      const dataToSave = {
+        currentScriptIndex,
+        gameFlags,
+        currentEpisodeId,
+        sceneProgress,
+        currentMissionId,
+        remainingAttempts
+      };
       localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave));
       console.log('useGameState: 게임 저장 완료:', dataToSave);
       alert('게임이 저장되었습니다!');
@@ -142,8 +177,8 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
       console.error('useGameState: 게임 저장 실패:', e);
       alert('게임 저장에 실패했습니다.');
     }
-  // 의존성 배열에 currentEpisodeId와 sceneProgress 추가
-  }, [currentScriptIndex, gameFlags, currentEpisodeId, sceneProgress]);
+  // 의존성 배열에 currentMissionId와 remainingAttempts 추가
+  }, [currentScriptIndex, gameFlags, currentEpisodeId, sceneProgress, currentMissionId, remainingAttempts]);
 
   // --- 게임 불러오기 함수 ---
   const loadGame = useCallback(() => {
@@ -186,6 +221,25 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
             console.log('useGameState: 저장된 씬 진행 상태 없음 또는 유효하지 않음, 초기화');
           }
 
+          // currentMissionId 불러오기 및 상태 업데이트
+          if (typeof parsedData.currentMissionId === 'string' || parsedData.currentMissionId === null) {
+            setCurrentMissionId(parsedData.currentMissionId);
+            console.log('useGameState: 미션 ID 불러오기 완료:', parsedData.currentMissionId);
+          } else {
+            setCurrentMissionId(null);
+            console.log('useGameState: 저장된 미션 ID 없음 또는 유효하지 않음, 초기화');
+          }
+
+          // remainingAttempts 불러오기 및 상태 업데이트
+          if (typeof parsedData.remainingAttempts === 'number' && parsedData.remainingAttempts >= 0) {
+            setRemainingAttempts(parsedData.remainingAttempts);
+            console.log('useGameState: 남은 시도 횟수 불러오기 완료:', parsedData.remainingAttempts);
+          } else {
+            setRemainingAttempts(0); // 기본값 또는 미션 데이터 기반 초기값 설정 필요
+            console.log('useGameState: 저장된 남은 시도 횟수 없음 또는 유효하지 않음, 초기화');
+          }
+
+
           alert('게임을 불러왔습니다!');
         } else {
            console.warn('useGameState: 저장된 인덱스가 유효하지 않거나 스크립트 범위를 벗어납니다:', parsedData.currentScriptIndex);
@@ -205,12 +259,16 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
   return {
     currentScriptIndex,
     gameFlags,
-    currentEpisodeId, // 반환 객체에 추가
-    sceneProgress,    // 반환 객체에 추가
+    currentEpisodeId,
+    sceneProgress,
+    currentMissionId, // 반환 객체에 추가
+    remainingAttempts, // 반환 객체에 추가
     setCurrentScriptIndex,
     setGameFlags,
-    setCurrentEpisodeId, // 반환 객체에 추가
-    setSceneProgress,    // 반환 객체에 추가
+    setCurrentEpisodeId,
+    setSceneProgress,
+    setCurrentMissionId, // 반환 객체에 추가
+    setRemainingAttempts, // 반환 객체에 추가
     saveGame,
     loadGame
   };

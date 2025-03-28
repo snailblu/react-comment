@@ -14,6 +14,14 @@ import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'; // Realt
 // import useGameState from '../hooks/useGameState';
 // import { supabase } from '../services/supabase';
 
+// opinions 테이블 데이터 구조 인터페이스 정의
+interface OpinionPayload {
+  positive: number;
+  negative: number;
+  neutral: number;
+  // 필요하다면 다른 필드도 추가 (예: id, mission_id, updated_at)
+}
+
 interface CommentSceneProps {
   missionId: string; // 현재 진행 중인 미션 ID를 props로 받음 (예시)
   onMissionComplete: (success: boolean) => void; // 미션 완료 시 호출될 콜백 함수
@@ -43,12 +51,15 @@ const CommentScene: React.FC<CommentSceneProps> = ({ missionId, onMissionComplet
           table: 'opinions',
           filter: `mission_id=eq.${missionId}`, // 해당 미션 ID의 변경만 수신
         },
-        // payload 타입 지정
-        (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
+        // payload 타입에 OpinionPayload 적용
+        (payload: RealtimePostgresChangesPayload<OpinionPayload>) => {
           console.log('Realtime opinion update received:', payload.new);
-          // payload.new의 타입을 명확히 하기 위해 타입 단언 또는 타입 가드 사용 권장
-          if (payload.new && typeof payload.new.positive === 'number' && typeof payload.new.negative === 'number' && typeof payload.new.neutral === 'number') {
-             setOpinion({ positive: payload.new.positive, negative: payload.new.negative, neutral: payload.new.neutral });
+          // payload.new가 null/undefined가 아니고, 필요한 속성들을 가지고 있는지 명시적으로 확인
+          if (payload.new && 'positive' in payload.new && 'negative' in payload.new && 'neutral' in payload.new) {
+             // 이제 TypeScript는 payload.new에 해당 속성들이 있다고 확신합니다.
+             // 타입 단언을 사용하여 명확하게 타입을 지정할 수도 있습니다.
+             const newOpinion = payload.new as OpinionPayload;
+             setOpinion({ positive: newOpinion.positive, negative: newOpinion.negative, neutral: newOpinion.neutral });
           }
         }
       )
