@@ -40,18 +40,18 @@
 
 ## Phase 3: 결과 씬 및 엔딩 처리 구현
 
-- [ ] **목표:** 댓글 알바 미션의 성공/실패 결과를 표시하고, 다양한 엔딩 조건에 따라 게임 흐름을 분기합니다.
-- [ ] **주요 작업:**
+- [x] **목표:** 댓글 알바 미션의 성공/실패 결과를 표시하고, 다양한 엔딩 조건에 따라 게임 흐름을 분기합니다. (기본 기능 구현 완료)
+- [x] **주요 작업:**
     1.  **Supabase 백엔드 설정:**
-        - [ ] `document/Backend Guideline.md`에 따라 `endings` 테이블 스키마를 정의하고 생성합니다.
-        - [ ] `generate-feedback` Edge Function을 생성합니다 (초기에는 고정 텍스트 반환).
-        - [ ] `check-ending` Edge Function을 생성하여 플레이어의 진행 상태에 따른 엔딩 조건을 확인하는 로직을 구현합니다.
+        - [x] `document/Backend Guideline.md`에 따라 `endings` 테이블 스키마를 정의하고 생성합니다.
+        - [x] `generate-feedback` Edge Function을 생성합니다 (초기에는 고정 텍스트 반환).
+        - [x] `check-ending` Edge Function을 생성하여 플레이어의 진행 상태에 따른 엔딩 조건을 확인하는 로직을 구현합니다 (초기에는 고정 타입 반환).
     2.  **React 컴포넌트 구현 (`src/components/` 내 신규 파일들):**
-        - [ ] `ResultScene`: 미션 성공/실패 메시지와 NPC 피드백을 표시하는 컴포넌트를 구현합니다. `generate-feedback` 함수를 호출하여 피드백을 가져옵니다.
-        - [ ] `EndingScene`: 엔딩 유형에 따른 메시지를 표시하는 컴포넌트를 구현합니다 (`endings` 테이블 데이터 연동).
-    3.  **게임 흐름 제어 로직 수정 (`src/components/Game.js` 또는 `useGameState`):**
-        - [ ] `CommentScene`에서 결과에 따라 `EndingScene` (배드 엔딩) 또는 `StoryScene` (에피소드 엔딩)으로 전환하는 로직을 추가합니다.
-        - [ ] `ResultScene`에서 다음 에피소드로 넘어가거나, 모든 에피소드 완료 시 `check-ending` 함수를 호출하여 적절한 `EndingScene` (일반/히든 엔딩)으로 전환하는 로직을 구현합니다.
+        - [x] `ResultScene`: 미션 성공/실패 메시지와 NPC 피드백을 표시하는 컴포넌트를 구현합니다. `generate-feedback` 함수를 호출하여 피드백을 가져옵니다.
+        - [x] `EndingScene`: 엔딩 유형에 따른 메시지를 표시하는 컴포넌트를 구현합니다 (`endings` 테이블 데이터 연동).
+    3.  **게임 흐름 제어 로직 수정 (`src/App.tsx`, `src/components/CommentScene.tsx`, `src/components/ResultScene.tsx`):**
+        - [x] `CommentScene`에서 결과에 따라 `ResultScene` 또는 `EndingScene` (배드 엔딩)으로 전환하는 로직을 추가합니다 (`App.tsx`에서 처리).
+        - [x] `ResultScene`에서 다음 에피소드로 넘어가거나, 모든 에피소드 완료 시 `check-ending` 함수를 호출하여 적절한 `EndingScene` (일반/히든 엔딩)으로 전환하는 로직을 구현합니다.
 
 ## Phase 4: 타이틀 화면 기능 완성 및 저장/로드 시스템 연동
 
