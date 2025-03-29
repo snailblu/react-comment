@@ -47,6 +47,7 @@ export interface Comment {
   nickname?: string;
   ip?: string; // IP 주소 (ipRange 제거)
   isReply?: boolean;
+  parentId?: string; // 부모 댓글 ID (대댓글인 경우)
   content: string;
   likes: number;
   is_player: boolean;

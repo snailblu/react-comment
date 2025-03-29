@@ -154,45 +154,95 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         }
       }
 
-      // 응답 텍스트를 줄바꿈 기준으로 나누어 댓글 배열 생성 (원래 로직 복원)
-      const commentTexts = generatedText.split('\n').map(c => c.trim()).filter(c => c.length > 0);
+      // 응답 텍스트를 줄바꿈 기준으로 나누어 댓글 배열 생성
+      const commentLines = generatedText.split('\n').map(c => c.trim()).filter(c => c.length > 0);
 
-      // Comment 객체로 변환 (원래 파싱 로직 복원)
-      const generatedComments: Comment[] = commentTexts.map((text, index) => {
-        // 정규식 수정: 괄호 안 IP 형식을 더 유연하게 처리
-        const match = text.match(/^(.+?)\((.*?)\):\s*(.*)$/);
-        if (match) {
-          const [, nickname, ip, content] = match;
-          return {
+      // Comment 객체로 변환 (parentId 파싱 로직 추가)
+      const generatedComments: Comment[] = [];
+      commentLines.forEach((line, index) => {
+        let isReply = false;
+        let parentId: string | undefined = undefined;
+        let textToParse = line;
+
+        // 대댓글 형식 확인 및 parentId 추출 (-> [ID] 형식)
+        const replyMatch = line.match(/^->\s*\[(.*?)\]\s*(.*)$/);
+        if (replyMatch) {
+          isReply = true;
+          parentId = replyMatch[1].trim(); // 대괄호 안의 ID 추출
+          textToParse = replyMatch[2].trim(); // ID 부분을 제외한 나머지 텍스트
+        }
+
+        // 닉네임(IP): 내용 형식 매칭
+        const commentMatch = textToParse.match(/^(.+?)\((.*?)\):\s*(.*)$/);
+
+        if (commentMatch) {
+          const [, nickname, ip, content] = commentMatch;
+          generatedComments.push({
             id: `ai-${Date.now()}-${index}`,
             nickname: nickname.trim(),
-            ip: ip.trim(), // 추출된 IP 사용
-            content: content.trim(), // 추출된 댓글 내용 사용
-            likes: Math.floor(Math.random() * 10), // 임의의 좋아요 수
+            ip: ip.trim(),
+            content: content.trim(),
+            likes: Math.floor(Math.random() * 10),
             is_player: false,
+            isReply: isReply,
+            parentId: parentId, // 추출한 parentId 설정
             created_at: new Date().toISOString(),
-          };
+          });
         } else {
-          // 형식이 맞지 않는 경우, 전체 텍스트를 content로 사용하고 기본값 설정
-          console.warn(`AI comment format mismatch, using full text as content: "${text}"`);
-          return {
+          // 형식이 맞지 않는 경우 (대댓글/일반댓글 모두)
+          console.warn(`AI comment format mismatch, using full text as content: "${line}"`);
+          generatedComments.push({
             id: `ai-${Date.now()}-${index}-fallback`,
-            nickname: '익명AI', // 기본 닉네임
-            ip: '0.0.0', // 기본 IP
-            content: text, // 전체 텍스트를 내용으로
-            likes: Math.floor(Math.random() * 5), // 좋아요 수 약간 낮게
+            nickname: '익명AI',
+            ip: '0.0.0',
+            content: line, // 원본 라인 전체를 내용으로
+            likes: Math.floor(Math.random() * 5),
             is_player: false,
+            isReply: isReply, // 대댓글 여부는 유지될 수 있음
+            parentId: parentId, // parentId도 유지될 수 있음
             created_at: new Date().toISOString(),
-          };
+          });
         }
-      }).filter(comment => comment !== null) as Comment[]; // null 제거 및 타입 단언
+      });
 
-      // 상태 업데이트 (댓글만)
+      // 상태 업데이트 (대댓글 위치 조정 로직 추가)
       if (generatedComments.length === 0) {
         setMonologue('AI가 댓글을 생성하지 못했습니다. 다시 시도해주세요.');
       } else {
-        setComments((prevComments) => [...prevComments, ...generatedComments]);
-        setMonologue(`AI가 ${generatedComments.length}개의 댓글을 생성했습니다.`); // 성공 메시지 (여론 분석 제거)
+        // 새로운 댓글 목록을 생성하여 대댓글 위치 조정
+        setComments((prevComments) => {
+          let newCommentsList = [...prevComments]; // 시작은 이전 댓글 목록 복사
+
+          generatedComments.forEach(newComment => {
+            if (newComment.isReply && newComment.parentId) {
+              // 대댓글 처리: 부모 댓글 찾기
+              const parentIndex = newCommentsList.findIndex(comment => comment.id === newComment.parentId);
+
+              if (parentIndex !== -1) {
+                // 부모 댓글 찾음: 삽입 위치 계산 (부모 다음부터 마지막 대댓글 뒤까지)
+                let insertionIndex = parentIndex + 1;
+                while (insertionIndex < newCommentsList.length &&
+                       newCommentsList[insertionIndex].isReply) {
+                           // && newCommentsList[insertionIndex].parentId === newComment.parentId) { // 필요시 더 정확한 부모 확인
+                  insertionIndex++;
+                }
+                // 찾은 위치에 대댓글 삽입
+                newCommentsList.splice(insertionIndex, 0, newComment);
+              } else {
+                // 부모 댓글 못 찾음 (오류 또는 AI가 잘못된 ID 생성): 맨 뒤에 추가하고 경고
+                console.warn(`Parent comment with ID ${newComment.parentId} not found for AI reply. Appending to the end.`);
+                newCommentsList.push(newComment);
+              }
+            } else {
+              // 일반 댓글 처리: 맨 뒤에 추가
+              newCommentsList.push(newComment);
+            }
+          });
+
+          return newCommentsList; // 최종적으로 정렬된 새 배열 반환
+        });
+
+        setMonologue(`AI가 ${generatedComments.length}개의 댓글(대댓글 포함)을 생성했습니다.`); // 메시지 수정
       }
 
       // 여론 상태 업데이트 로직 제거
