@@ -29,6 +29,23 @@
   box-sizing: border-box;
   height: 100%; /* 높이 100% 추가 */
   overflow-y: auto; /* 세로 스크롤 추가 */
+  position: relative; /* 오버레이를 위한 position 설정 */
+}
+
+/* 로딩 오버레이 스타일 추가 */
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7); /* 반투명 흰색 배경 */
+  z-index: 100; /* 다른 요소 위에 표시 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto; /* 클릭 이벤트 차단 */
+  cursor: wait; /* 로딩 커서 표시 */
 }
 
 /* .commentSceneContainer 제거 */

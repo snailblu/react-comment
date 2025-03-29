@@ -79,7 +79,7 @@ export interface Mission {
   };
   keywords?: string[];
   conditions?: string[];
-  max_attempts?: number;
+  totalAttempts?: number; // max_attempts에서 이름 변경
   articleTitle?: string;
   articleContent?: string;
   articleImage?: string; // 이미지 파일 이름 (예: "oneroom.png")

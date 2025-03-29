@@ -6,7 +6,6 @@ import StoryScene from './components/StoryScene'; // Game -> StoryScene 변경
 import TitleScreen from './components/TitleScreen';
 import CommentScene from './components/CommentScene';
 import ResultScene from './components/ResultScene';
-import EndingScene from './components/EndingScene';
 // Removed duplicate import: import CommentScene from './components/CommentScene';
 
 function App() {
@@ -24,8 +23,7 @@ function App() {
         <Route path="/comment/:missionId" element={<CommentScene />} /> {/* 예시: missionId를 URL 파라미터로 받도록 변경 */}
         {/* ResultScene 라우트 유지 */}
         <Route path="/result" element={<ResultScene />} />
-        {/* EndingScene 라우트 유지 */}
-        <Route path="/ending" element={<EndingScene />} />
+        {/* EndingScene 라우트 제거 */}
         {/* 기존 /title 경로는 루트로 대체되었으므로 제거 가능 */}
         {/* <Route path="/title" element={<TitleScreen />} /> */}
         <Route path="/game" element={<StoryScene />} /> {/* Game -> StoryScene 변경 */}

@@ -41,9 +41,7 @@ const OpinionStats: React.FC<OpinionStatsProps> = ({ opinion, attemptsLeft }) =>
         <div className={styles.neutralSection} style={{ width: `${opinion.neutral}%` }}></div>
         <div className={styles.negativeSection} style={{ width: `${opinion.negative}%` }}></div>
       </div>
-      <div className={styles.attempts}>
-        남은 시도: <span className={styles.attemptsValue}>{attemptsLeft}회</span>
-      </div>
+      {/* 남은 시도 횟수 표시 제거 */}
     </div>
   );
 };

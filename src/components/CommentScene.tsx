@@ -107,12 +107,12 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     // TODO: 필요시 추가 로직
   }, []);
 
-  // 임시 댓글 생성 핸들러
-  const handleGenerateComments = async () => {
+  // 댓글 생성 핸들러 (업데이트된 댓글 목록을 인자로 받을 수 있도록 수정)
+  const handleGenerateComments = async (updatedComments?: Comment[]) => {
     if (isGeneratingComments || isMissionOver || !missionData) return;
 
     setIsGeneratingComments(true);
-    setMonologue('AI가 댓글을 생성하는 중...'); // 로딩 메시지
+    setMonologue('잠시 여론을 지켜볼까…?'); // 로딩 메시지 변경
 
     if (!API_KEY) {
       setMonologue('오류: Gemini API 키가 설정되지 않았습니다.');
@@ -121,7 +121,10 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     }
 
     try {
-      console.log('Requesting AI comments for article:', missionData.articleTitle);
+      // 사용할 댓글 목록 결정 (인자가 있으면 사용, 없으면 상태 사용)
+      const commentsToUse = updatedComments ?? comments;
+      console.log(`Requesting AI comments for article: ${missionData.articleTitle} (using ${updatedComments ? 'updated' : 'current state'} comments)`);
+
 
       // 현재 기사 추천/비추천 수를 객체로 전달
       const currentReactions: ArticleReactionsType = {
@@ -133,10 +136,11 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       const prompt = generateCommentPrompt(
         missionData.articleTitle ?? '제목 없음',
         missionData.articleContent ?? '내용 없음',
-        comments, // 현재 댓글 목록 상태 전달
+        commentsToUse, // 결정된 댓글 목록 사용
         currentReactions // 현재 추천/비추천 수 전달
       );
-      console.log("Generated Prompt for Gemini:", prompt); // 생성된 프롬프트 확인용 로그
+      // 로그 수정: 어떤 댓글 목록을 사용했는지 명시
+      console.log(`Generated Prompt for Gemini (using ${updatedComments ? 'updated' : 'current state'} comments):`, prompt);
 
       const result = await model.generateContent({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -271,8 +275,9 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         // 1. 댓글 상태 업데이트 (부모 ID 유효성 검사 추가)
         if (generatedComments.length > 0) {
           setComments((prevComments) => {
-            let newCommentsList = [...prevComments]; // 시작은 이전 댓글 목록 복사
-            // let newCommentsList = [...prevComments]; // 중복 선언 제거
+            // AI 생성 요청 시 사용했던 댓글 목록을 기준으로 업데이트 시작
+            let baseComments = updatedComments ?? prevComments;
+            let newCommentsList = [...baseComments]; // 기준 목록 복사
             const tempGeneratedComments: Comment[] = []; // 이번 배치에서 생성된 댓글 임시 저장
 
             generatedComments.forEach(newComment => {
@@ -281,10 +286,10 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
                 let actualParentId: string | undefined = undefined;
                 let parentComment: Comment | undefined = undefined;
 
-                // 1. 기존 댓글 + 현재 배치에서 ID로 부모 찾기
+                // 1. 기준 댓글 목록 + 현재 배치에서 ID로 부모 찾기
                 parentComment = [...newCommentsList, ...tempGeneratedComments].find(c => c.id === targetIdentifier);
 
-                // 2. ID로 못 찾으면, 기존 댓글 + 현재 배치에서 닉네임으로 부모 찾기
+                // 2. ID로 못 찾으면, 기준 댓글 목록 + 현재 배치에서 닉네임으로 부모 찾기
                 if (!parentComment) {
                   parentComment = [...newCommentsList, ...tempGeneratedComments].find(c => c.nickname === targetIdentifier);
                 }
@@ -304,6 +309,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
                            newCommentsList[insertionIndex].parentId === actualParentId) { // 같은 부모를 가진 대댓글 뒤에 삽입
                       insertionIndex++;
                     }
+                    // splice는 원본 배열을 변경하므로, 복사본에서 작업
                     newCommentsList.splice(insertionIndex, 0, newComment);
                   } else {
                     // newCommentsList에 부모가 없는 경우 (tempGeneratedComments에만 있는 경우) -> 일단 temp에 넣고 나중에 처리
@@ -373,7 +379,8 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       if (onMissionComplete) {
         onMissionComplete(true);
       } else {
-        navigate('/result', { state: { missionId: missionId } });
+        // 성공 시 ResultScene으로 이동하고, 성공 상태(success: true) 전달
+        navigate('/result', { state: { missionId: missionId, success: true } });
       }
     } else if (currentAttempts <= 0) {
       console.log('Mission Failed!');
@@ -382,7 +389,8 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       if (onMissionComplete) {
         onMissionComplete(false);
       } else {
-         navigate('/ending', { state: { endingType: 'bad_ending' } });
+         // 실패 시 ResultScene으로 이동하고, 실패 상태(success: false) 전달
+         navigate('/result', { state: { missionId: missionId, success: false } });
       }
     }
   }, [isMissionOver, missionData, onMissionComplete, navigate, missionId]); // 의존성 배열에 missionData 추가
@@ -418,15 +426,12 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
 
         // 초기 상태 설정
         setOpinion(currentMission.initialOpinion ?? { positive: 50, negative: 30, neutral: 20 }); // 기본값 설정
-        setAttemptsLeft(currentMission.max_attempts ?? 5); // 기본값 설정
+        setAttemptsLeft(currentMission.totalAttempts ?? 5); // max_attempts -> totalAttempts 변경, 기본값 설정
         setMonologue(currentMission.initialMonologue ?? '댓글을 달아 여론을 조작하자...'); // 기본값 설정
         setArticleLikes(currentMission.initialLikes ?? 0); // 초기 좋아요 설정
         setArticleDislikes(currentMission.initialDislikes ?? 0); // 초기 싫어요 설정
 
         // 초기 댓글 설정 (created_at 직접 사용)
-        // const now = Date.now(); // 더 이상 필요 없음
-
-        // initialComments 로드 시 타입 문제 해결 및 필수 필드 확인
         const loadedComments: Comment[] = (currentMission.initialComments ?? [])
           .filter(c => c.id && c.content && c.created_at) // id, content, created_at 필수 확인
           .map((c): Comment => ({ // 반환 타입을 명시적으로 Comment로 지정
@@ -438,15 +443,8 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
             likes: c.likes ?? 0,
             is_player: c.is_player ?? false,
             created_at: c.created_at!, // missions.json의 created_at 값을 직접 사용
-            // delay는 Comment 타입에 없으므로 포함하지 않음
           }));
         setComments(loadedComments);
-
-        // 초기 미션 상태 체크 (주석 처리 - handleCommentSubmit에서 처리됨)
-        // checkMissionStatus(
-        //   currentMission.initialOpinion?.positive ?? 50,
-        //   currentMission.max_attempts ?? 5
-        // );
 
       } catch (error) {
         console.error("Failed to fetch mission data:", error);
@@ -459,6 +457,17 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [missionId]); // 의존성 배열에서 checkMissionStatus 제거
 
+  // --- 시도 횟수 변경 시 미션 상태 체크 ---
+  useEffect(() => {
+    // missionData가 로드되었고, 시도 횟수가 0 이하이며, 미션이 아직 끝나지 않았을 때만 체크
+    if (missionData && attemptsLeft <= 0 && !isMissionOver) {
+      console.log(`Attempts left reached 0 or less (${attemptsLeft}). Checking final mission status.`);
+      // opinion.positive는 현재 상태 값을 사용하고, attemptsLeft는 0 이하인 값을 그대로 전달
+      checkMissionStatus(opinion.positive, attemptsLeft);
+    }
+    // checkMissionStatus는 useCallback으로 감싸져 있으므로 의존성 배열에 포함
+  }, [attemptsLeft, missionData, isMissionOver, checkMissionStatus, opinion.positive]);
+
 
   // --- 댓글 제출 핸들러 ---
   const handleCommentSubmit = async (commentText: string, nickname?: string, password?: string) => {
@@ -466,8 +475,6 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
 
     console.log('Submitting comment:', commentText, 'by', nickname || 'Default');
 
-    // --- 임시 로컬 업데이트 로직 ---
-    // 플레이어 댓글 IP는 고정값 또는 다른 규칙으로 설정 (예: '127.0.0.1')
     const playerIp = '127.0.0.1'; // 예시 고정 IP
     const newComment: Comment = {
       id: uuidv4(), // UUID로 ID 생성
@@ -479,21 +486,22 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       created_at: new Date().toISOString(),
     };
 
-    setComments((prevComments) => [...prevComments, newComment]);
+    // 새 댓글 목록 생성
+    const newCommentsList = [...comments, newComment];
+    // 상태 업데이트
+    setComments(newCommentsList);
 
     const newAttemptsLeft = attemptsLeft - 1;
     setAttemptsLeft(newAttemptsLeft);
 
-    // 플레이어 댓글 제출 시 여론 업데이트 로직 제거
-    // 여론은 handleGenerateComments 에서 AI 분석 결과로만 업데이트됨
+    // 업데이트된 댓글 목록을 직접 전달하여 AI 댓글 생성 요청
+    await handleGenerateComments(newCommentsList);
 
-    // 미션 상태 체크 (현재 opinion 상태와 변경된 시도 횟수 사용)
-    // checkMissionStatus는 opinion 상태를 직접 읽으므로, opinion 값을 인자로 전달할 필요 없음
-    checkMissionStatus(opinion.positive, newAttemptsLeft);
+    // checkMissionStatus 호출 제거 (useEffect에서 처리 예정)
   };
 
   // --- 대댓글 제출 핸들러 ---
-  const handleReplySubmit = (replyContent: string, parentId: string, nickname?: string, password?: string) => {
+  const handleReplySubmit = async (replyContent: string, parentId: string, nickname?: string, password?: string) => { // async 추가
     if (isMissionOver || attemptsLeft <= 0 || !missionData) return;
 
     console.log(`Submitting reply to ${parentId}:`, replyContent, 'by', nickname || 'Default');
@@ -507,41 +515,41 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       likes: 0,
       is_player: true,
       isReply: true, // 대댓글임을 표시
-      // parentId: parentId, // 필요하다면 부모 ID 저장 (현재 Comment 타입에는 없음)
+      parentId: parentId, // 부모 ID 저장
       created_at: new Date().toISOString(),
     };
 
-    // 부모 댓글 바로 아래에 대댓글 삽입
-    setComments((prevComments) => {
-      const parentIndex = prevComments.findIndex(comment => comment.id === parentId);
-      if (parentIndex === -1) {
-        // 부모 댓글을 찾지 못한 경우 맨 뒤에 추가 (예외 처리)
-        console.error(`Parent comment with id ${parentId} not found.`);
-        return [...prevComments, newReply];
-      }
+    // 새 대댓글을 포함한 목록 생성
+    let newCommentsList: Comment[];
+    const parentIndex = comments.findIndex(comment => comment.id === parentId);
 
-      // 부모 댓글 다음부터 시작하여 마지막 대댓글 위치 찾기
+    if (parentIndex === -1) {
+      console.error(`Parent comment with id ${parentId} not found. Appending reply to the end.`);
+      newCommentsList = [...comments, newReply]; // 부모 못 찾으면 그냥 끝에 추가
+    } else {
+      // 올바른 삽입 위치 찾기
       let insertionIndex = parentIndex + 1;
-      for (let i = parentIndex + 1; i < prevComments.length; i++) {
-        if (prevComments[i].isReply) {
-          // 현재 댓글이 대댓글이면, 다음 위치를 삽입 후보로 업데이트
-          insertionIndex = i + 1;
-        } else {
-          // 대댓글이 아닌 댓글을 만나면, 여기가 대댓글 블록의 끝이므로 반복 중단
-          break;
-        }
+      // 같은 부모를 가진 마지막 대댓글 뒤에 삽입
+      while (insertionIndex < comments.length &&
+             comments[insertionIndex].isReply &&
+             comments[insertionIndex].parentId === parentId) {
+        insertionIndex++;
       }
+      // 새 배열 생성 및 삽입
+      newCommentsList = [...comments];
+      newCommentsList.splice(insertionIndex, 0, newReply);
+    }
 
-      // 찾은 위치에 새로운 대댓글 삽입
-      const newComments = [...prevComments];
-      newComments.splice(insertionIndex, 0, newReply);
-      return newComments;
-    });
+    // 상태 업데이트
+    setComments(newCommentsList);
 
-    // 시도 횟수 차감 및 미션 상태 체크 (일반 댓글과 동일하게 처리)
     const newAttemptsLeft = attemptsLeft - 1;
     setAttemptsLeft(newAttemptsLeft);
-    checkMissionStatus(opinion.positive, newAttemptsLeft);
+
+    // 업데이트된 댓글 목록을 직접 전달하여 AI 댓글 생성 요청
+    await handleGenerateComments(newCommentsList);
+
+    // checkMissionStatus 호출 제거 (useEffect에서 처리 예정)
   };
 
 
@@ -556,15 +564,47 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         <MonologueBox text={monologue} />
       )}
 
-      <div className={`${gameStyles.storyArea} ${styles.commentSceneWrapper}`}>
-        <div className={styles.leftSidePanel}>
-          <MissionPanel missionId={missionId || null} />
+      {/* 댓글 생성 중 전체 영역 인터랙션 방지 */}
+      <div
+        className={`${gameStyles.storyArea} ${styles.commentSceneWrapper}`}
+        style={{ pointerEvents: isGeneratingComments ? 'none' : 'auto' }}
+      >
+        {/* 왼쪽 패널은 항상 인터랙션 가능하도록 */}
+        <div className={styles.leftSidePanel} style={{ pointerEvents: 'auto' }}>
+          {/* MissionPanel에 attemptsLeft와 totalAttempts 전달 */}
+          <MissionPanel
+            missionId={missionId || null}
+            attemptsLeft={attemptsLeft}
+            totalAttempts={missionData?.totalAttempts} // missionData가 있을 때만 totalAttempts 전달
+          />
           <OpinionStats opinion={opinion} attemptsLeft={attemptsLeft} />
+
+          {/* --- 디버그 버튼 추가 --- */}
+          <div className="mt-4 space-y-2">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate('/result', { state: { missionId: missionId, success: true } })}
+              disabled={isMissionOver}
+            >
+              (디버그) 성공 씬 이동
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate('/result', { state: { missionId: missionId, success: false } })}
+              disabled={isMissionOver}
+            >
+              (디버그) 실패 씬 이동
+            </Button>
+          </div>
+          {/* --- 디버그 버튼 끝 --- */}
+
           {/* 임시 댓글 요청 버튼 추가 */}
           <Button
-            onClick={handleGenerateComments}
+            onClick={() => handleGenerateComments()} // 인자 없이 호출 (현재 상태 사용)
             disabled={isGeneratingComments || isMissionOver}
-            className="mt-4 w-full" // 스타일 조정
+            className="mt-4 w-full"
           >
             {isGeneratingComments ? '댓글 생성 중...' : '임시 댓글 요청'}
           </Button>
@@ -576,24 +616,26 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
           </button>
         </div>
 
+        {/* mainContentArea에서 overflowY 스타일 제거 */}
         <div ref={mainContentAreaRef} className={styles.mainContentArea}>
+          {/* 로딩 오버레이 추가 */}
+          {isGeneratingComments && (
+            <div className={styles.loadingOverlay}>
+              {/* 필요하다면 로딩 스피너나 메시지 추가 */}
+            </div>
+          )}
           <div className={styles.siteHeader}>acinside.com 갤러리</div>
           <h2 className={styles.header}>연예인 갤러리</h2>
-          {/* 기사 제목 (missionData에서 가져옴) */}
           <div className={styles.articleTitle}>{missionData.articleTitle ?? '기사 제목 없음'}</div>
-          {/* 작성자 정보 및 시간 (missionData의 articleCreatedAt 사용) */}
           <div className={styles.articleMeta}>
             <span>ㅇㅇ(118.235)</span> | <span>{missionData.articleCreatedAt ? new Date(missionData.articleCreatedAt).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '') : '시간 정보 없음'}</span>
           </div>
 
-          {/* 기사 내용 (missionData에서 가져옴) */}
           <ArticleContent
-            content={missionData.articleContent} // content prop은 이미 존재
-            imageFilename={missionData.articleImage} // imageFilename prop 추가 필요
-            // attachmentFilename prop 전달 제거
+            content={missionData.articleContent}
+            imageFilename={missionData.articleImage}
           />
 
-          {/* 기사 반응 섹션 추가 */}
           <ArticleReactions
             likes={articleLikes}
             dislikes={articleDislikes}
@@ -621,11 +663,10 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
                 </span>
               </div>
             </div>
-            {/* onReplySubmit 핸들러 전달 */}
             <CommentList
               comments={comments}
               isVisible={isCommentListVisible}
-              onReplySubmit={handleReplySubmit} // 핸들러 전달
+              onReplySubmit={handleReplySubmit}
             />
             {isCommentListVisible && comments.length > 0 && (
               <div className={styles.commentListFooter}>

@@ -12,13 +12,18 @@ import { Mission } from '../types'; // Import Mission from types (MissionData ->
 
 interface MissionPanelProps {
   missionId: string | null; // Allow null missionId
+  attemptsLeft?: number; // 남은 시도 횟수 (옵셔널)
+  totalAttempts?: number; // 총 시도 횟수 (옵셔널)
 }
 
 // MissionData interface moved to src/types/index.ts
 
-const MissionPanel: React.FC<MissionPanelProps> = ({ missionId }) => {
+// props를 함수 인자에서 직접 구조 분해
+const MissionPanel: React.FC<MissionPanelProps> = ({ missionId, attemptsLeft, totalAttempts }) => {
   const [mission, setMission] = useState<Mission | null>(null); // missionData -> mission, MissionData -> Mission
   const [isLoading, setIsLoading] = useState(true);
+
+  // Props 구조 분해는 위에서 처리했으므로 이 라인 제거
 
   useEffect(() => {
     const fetchMissionData = async () => {
@@ -135,7 +140,16 @@ const MissionPanel: React.FC<MissionPanelProps> = ({ missionId }) => {
             </ul>
           </div>
         )}
-        {/* max_attempts는 CommentScene에서 관리하므로 여기서는 표시하지 않을 수 있음 */}
+        {/* 턴 정보 표시 */}
+        {typeof attemptsLeft === 'number' && typeof totalAttempts === 'number' && totalAttempts > 0 && (
+          <div>
+            <strong className="font-medium text-muted-foreground">턴:</strong>
+            <p className="mt-1 text-foreground">
+              {/* 현재 턴 계산: 총 턴 - 남은 턴 + 1 */}
+              {totalAttempts - attemptsLeft + 1} / {totalAttempts}
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
