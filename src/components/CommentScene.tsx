@@ -17,6 +17,7 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/ge
 import { v4 as uuidv4 } from 'uuid'; // uuid 라이브러리 import
 import { generateCommentPrompt } from '../lib/promptGenerator'; // 프롬프트 생성 함수 import
 import { Comment, Opinion, ArticleReactions as ArticleReactionsType } from '../types'; // ArticleReactions 타입 import 추가 및 별칭 사용
+// useEffect, useRef import 확인 (이미 있음)
 
 // 필요한 Hook import (예시)
 // import useGameState from '../hooks/useGameState';
@@ -68,6 +69,12 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   const [articleLikes, setArticleLikes] = useState(0); // 기사 좋아요 상태 추가
   const [articleDislikes, setArticleDislikes] = useState(0); // 기사 싫어요 상태 추가
   const mainContentAreaRef = useRef<HTMLDivElement>(null);
+  const commentsRef = useRef(comments); // comments 상태 추적용 ref 추가
+
+  // comments 상태가 변경될 때마다 ref 업데이트
+  useEffect(() => {
+    commentsRef.current = comments;
+  }, [comments]);
 
   // --- 핸들러 함수들 ---
   const toggleMonologueVisibility = () => {
@@ -391,11 +398,11 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       setTimeout(() => { // 2초 지연
         if (onMissionComplete) {
           onMissionComplete(true);
-        } else {
-          // 성공 시 ResultScene으로 이동하고, 성공 상태(success: true) 전달
-          navigate('/result', { state: { missionId: missionId, success: true } });
-        }
-      }, 2000); // 2000ms = 2초
+         } else {
+           // 성공 시 ResultScene으로 이동하고, 성공 상태, 최신 댓글 목록, 미션 제목 전달 (ref 사용)
+           navigate('/result', { state: { missionId: missionId, success: true, allComments: commentsRef.current, missionTitle: missionData?.title } }); // missionData?.title 사용
+         }
+       }, 2000); // 2000ms = 2초
     } else if (currentAttempts <= 0) { // 시도 횟수 체크는 그대로 유지
       // 실패 시
       console.log(`Mission Failed! Attempts: ${currentAttempts}, Positive: ${currentPositivePercent}% < Goal: ${missionData.goal?.positive ?? 100}%`);
@@ -404,14 +411,16 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       setTimeout(() => { // 2초 지연
         if (onMissionComplete) {
           onMissionComplete(false);
-        } else {
-          // 실패 시 ResultScene으로 이동하고, 실패 상태(success: false) 전달
-          navigate('/result', { state: { missionId: missionId, success: false } });
-        }
-      }, 2000); // 2000ms = 2초
-    } // else if 블록 닫기
-  // 의존성 배열에서 opinion.positive 제거, articleLikes, articleDislikes 추가
-  }, [isMissionOver, missionData, onMissionComplete, navigate, missionId, articleLikes, articleDislikes]); // useCallback 닫기
+         } else {
+           // 실패 시 ResultScene으로 이동하고, 실패 상태 및 전체 댓글 목록 전달 (실패 시에도 피드백을 원할 경우)
+           // 참고: 현재 ResultScene은 성공 시에만 피드백을 요청하므로, 실패 시 allComments/missionTitle 전달은 선택 사항입니다.
+           // 실패 시에도 최신 댓글 및 미션 제목 전달 (ref 사용)
+           navigate('/result', { state: { missionId: missionId, success: false, allComments: commentsRef.current, missionTitle: missionData?.title } }); // missionData?.title 사용
+         }
+       }, 2000); // 2000ms = 2초
+     } // else if 블록 닫기
+   // 의존성 배열에 comments 추가
+   }, [isMissionOver, missionData, onMissionComplete, navigate, missionId, articleLikes, articleDislikes, comments]); // comments 추가!
 
 
   // --- 데이터 로딩 (missions.json 사용) ---
@@ -620,7 +629,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => navigate('/result', { state: { missionId: missionId, success: true } })}
+              onClick={() => navigate('/result', { state: { missionId: missionId, success: true, allComments: comments, missionTitle: missionData?.title } })} // missionData?.title 사용
               disabled={isMissionOver}
             >
               (디버그) 성공 씬 이동
@@ -628,7 +637,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => navigate('/result', { state: { missionId: missionId, success: false } })}
+              onClick={() => navigate('/result', { state: { missionId: missionId, success: false, allComments: comments, missionTitle: missionData?.title } })} // missionData?.title 사용
               disabled={isMissionOver}
             >
               (디버그) 실패 씬 이동
