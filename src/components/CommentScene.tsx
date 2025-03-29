@@ -26,7 +26,8 @@ if (!API_KEY) {
   console.error("Gemini API Key not found. Please set REACT_APP_GEMINI_API_KEY in your .env file.");
 }
 const genAI = new GoogleGenerativeAI(API_KEY || ""); // API 키가 없으면 빈 문자열로 초기화 (오류 방지)
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro-exp-03-25" }); // 사용할 모델 지정
+// 모델을 gemini-1.5-flash 로 변경
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // 안전 설정 (필요에 따라 조정)
 const generationConfig = {
@@ -37,10 +38,11 @@ const generationConfig = {
 };
 
 const safetySettings = [
-  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  // 괴롭힘 카테고리 차단 기준을 낮춤 (MEDIUM 허용, HIGH만 차단)
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
 ];
 
 interface CommentSceneProps {
@@ -120,12 +122,11 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     try {
       console.log('Requesting AI comments for article:', missionData.articleTitle);
 
-      // 분리된 함수를 사용하여 프롬프트 생성
+      // 분리된 함수를 사용하여 프롬프트 생성 (opinion 인자 제거)
       const prompt = generateCommentPrompt(
         missionData.articleTitle ?? '제목 없음',
         missionData.articleContent ?? '내용 없음',
-        comments, // 현재 댓글 목록 상태 전달
-        opinion   // 현재 여론 상태 전달
+        comments // 현재 댓글 목록 상태 전달
       );
       console.log("Generated Prompt for Gemini:", prompt); // 생성된 프롬프트 확인용 로그
 
@@ -136,21 +137,30 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       });
 
       const response = result.response;
-      const generatedText = response.text();
+      // Log the full response for debugging, especially promptFeedback
+      console.log("Full Gemini Response:", JSON.stringify(response, null, 2));
+
+      let generatedText = response.text();
 
       if (!generatedText) {
-        throw new Error("Gemini API로부터 빈 응답을 받았습니다.");
+        // Check for safety blocks
+        if (response.promptFeedback?.blockReason) {
+          console.error("Gemini request blocked due to safety settings:", response.promptFeedback.blockReason, response.promptFeedback.safetyRatings);
+          throw new Error(`Gemini API 요청이 안전 설정에 의해 차단되었습니다: ${response.promptFeedback.blockReason}`);
+        } else {
+          // Other reasons for empty response
+          console.error("Gemini API returned an empty response without a specific block reason.");
+          throw new Error("Gemini API로부터 빈 응답을 받았습니다. (안전 차단 외 다른 이유)");
+        }
       }
 
-      // 응답 텍스트를 줄바꿈 기준으로 나누어 댓글 배열 생성
+      // 응답 텍스트를 줄바꿈 기준으로 나누어 댓글 배열 생성 (원래 로직 복원)
       const commentTexts = generatedText.split('\n').map(c => c.trim()).filter(c => c.length > 0);
 
-      // Comment 객체로 변환 (파싱 로직 추가)
+      // Comment 객체로 변환 (원래 파싱 로직 복원)
       const generatedComments: Comment[] = commentTexts.map((text, index) => {
-        // 정규식: 닉네임(xxx.xxx): 댓글 내용
-        // 그룹 1: 닉네임, 그룹 2: IP 주소 (xxx.xxx 형식), 그룹 3: 댓글 내용
-        const match = text.match(/^(.+?)\((\d{1,3}\.\d{1,3})\):\s*(.*)$/);
-
+        // 정규식 수정: 괄호 안 IP 형식을 더 유연하게 처리
+        const match = text.match(/^(.+?)\((.*?)\):\s*(.*)$/);
         if (match) {
           const [, nickname, ip, content] = match;
           return {
@@ -175,24 +185,26 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
             created_at: new Date().toISOString(),
           };
         }
-      }).filter(comment => comment !== null) as Comment[]; // filter(Boolean)과 유사, null 제거 및 타입 단언
+      }).filter(comment => comment !== null) as Comment[]; // null 제거 및 타입 단언
 
+      // 상태 업데이트 (댓글만)
       if (generatedComments.length === 0) {
         setMonologue('AI가 댓글을 생성하지 못했습니다. 다시 시도해주세요.');
       } else {
         setComments((prevComments) => [...prevComments, ...generatedComments]);
-        setMonologue(`AI가 ${generatedComments.length}개의 댓글을 생성했습니다.`); // 성공 메시지
+        setMonologue(`AI가 ${generatedComments.length}개의 댓글을 생성했습니다.`); // 성공 메시지 (여론 분석 제거)
       }
 
+      // 여론 상태 업데이트 로직 제거
+
+
     } catch (error) {
-      console.error('Failed to generate AI comments:', error);
-      // 사용자에게 보여줄 오류 메시지 개선
+      console.error('Failed to generate AI comments:', error); // 오류 메시지 수정
       if (error instanceof Error) {
-        setMonologue(`댓글 생성 중 오류 발생: ${error.message}`);
+        setMonologue(`AI 처리 중 오류 발생: ${error.message}`);
       } else {
-        setMonologue('댓글 생성 중 알 수 없는 오류가 발생했습니다.');
+        setMonologue('AI 처리 중 알 수 없는 오류가 발생했습니다.');
       }
-      setMonologue('댓글 생성 중 오류가 발생했습니다.'); // 오류 메시지
     } finally {
       setIsGeneratingComments(false);
     }
@@ -320,16 +332,12 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     const newAttemptsLeft = attemptsLeft - 1;
     setAttemptsLeft(newAttemptsLeft);
 
-    // 임시 여론 업데이트 (더 정교한 로직 필요 시 수정)
-    let newPositive = 0;
-    setOpinion((prevOpinion) => {
-      newPositive = Math.min(100, prevOpinion.positive + 5);
-      const newNegative = Math.max(0, prevOpinion.negative - 2);
-      const newNeutral = Math.max(0, 100 - newPositive - newNegative);
-      return { positive: newPositive, negative: newNegative, neutral: newNeutral };
-    });
+    // 플레이어 댓글 제출 시 여론 업데이트 로직 제거
+    // 여론은 handleGenerateComments 에서 AI 분석 결과로만 업데이트됨
 
-    checkMissionStatus(newPositive, newAttemptsLeft);
+    // 미션 상태 체크 (현재 opinion 상태와 변경된 시도 횟수 사용)
+    // checkMissionStatus는 opinion 상태를 직접 읽으므로, opinion 값을 인자로 전달할 필요 없음
+    checkMissionStatus(opinion.positive, newAttemptsLeft); // opinion.positive를 전달하거나, checkMissionStatus 내부에서 opinion 상태를 직접 읽도록 수정 필요. 여기서는 전달하는 방식을 유지.
   };
 
   // --- 로딩 상태 표시 ---
