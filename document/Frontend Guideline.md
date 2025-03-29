@@ -1,6 +1,6 @@
 # 1. 개요
 
-이 가이드라인은 Opinion Manipulation Game의 프론트엔드 개발을 위한 표준을 제공합니다. React를 주요 프레임워크로 사용하며, Supabase와의 통합을 통해 데이터 관리와 사용자 경험을 최적화합니다. UI는 직관적이고 반응형으로 설계되며, 코드의 가독성과 재사용성을 보장합니다.
+이 가이드라인은 Opinion Manipulation Game의 프론트엔드 개발을 위한 표준을 제공합니다. React를 주요 프레임워크로 사용하며, 로컬 저장소(LocalStorage)와 클라이언트 측 로직을 통해 데이터 관리와 사용자 경험을 구현합니다. UI는 직관적이고 반응형으로 설계되며, 코드의 가독성과 재사용성을 보장합니다.
 
 ---
 
@@ -11,9 +11,7 @@
 - 스타일링: Tailwind CSS
     
 - 상태 관리: React Context 또는 Redux (복잡도에 따라 선택)
-    
-- 데이터 통신: @supabase/supabase-js
-    
+        
 - 타입 안전성: TypeScript (선택 사항, 권장)
     
 - 배포: Vercel (권장)
@@ -33,9 +31,9 @@ src/
 │   ├── scenes/         # 주요 씬별 컴포넌트 (Title, Story, Comment 등)
 │   └── ui/             # 대화 상자, 입력 창 등 UI 요소
 ├── contexts/            # React Context (상태 관리)
-├── hooks/               # 커스텀 훅 (예: useSupabase, useGameState)
+├── hooks/               # 커스텀 훅 (예: useGameState, useScriptLoader)
 ├── pages/               # 라우팅 페이지 (Next.js 사용 시)
-├── services/            # Supabase API 호출 로직
+├── services/            # 외부 API 호출 로직 (예: LLM)
 ├── styles/              # Tailwind 설정 및 글로벌 스타일
 ├── types/               # TypeScript 타입 정의 (선택)
 └── utils/               # 유틸리티 함수
@@ -58,7 +56,7 @@ src/
     
 - CSS 클래스: kebab-case (Tailwind 사용 시 클래스명 직접 작성 최소화)
     
-- 변수/함수: camelCase (예: fetchEpisodeData)
+- 변수/함수: camelCase (예: loadEpisodeData)
     
 
 ## 4.3 Props와 상태
@@ -80,7 +78,7 @@ src/
 	- <Button>: "새 게임", "게임 로드", "언어 설정". 
 	- <SaveSlotList>: 4개 슬롯 표시.        
 - 스타일: Tailwind로 중앙 정렬, 반응형 버튼 크기.
-- Supabase 연동: supabase.from('saves').select()로 저장 데이터 조회.
+- 로컬 저장소 연동: LocalStorage에서 저장 데이터 조회.
     
 
 ## 5.2 스토리 씬 (StoryScene)
@@ -100,8 +98,7 @@ src/
     - <SystemMenu>: 저장, 로드, 언어 변경 등.
         
 - 스타일: 풀스크린 배경, 대화 상자는 하단 고정, 반투명 배경.
-    
-- Supabase 연동: supabase.storage.from('assets')로 이미지 로드.
+- 데이터 연동: 로컬 스크립트 파일(`public/script.json` 등)에서 대화 데이터 로드, 로컬 에셋 경로로 이미지 로드.
     
 
 ## 5.3 댓글 알바 씬 (CommentScene)
@@ -121,8 +118,7 @@ src/
     - <MonologueBox>: 주인공 독백.
         
 - 스타일: 전화 UI 테마, 좌/우 패널은 고정 위치, 입력 창은 하단.
-    
-- Supabase 연동: supabase.rpc('update_opinion')로 실시간 여론 계산.
+- 로직 연동: 클라이언트 측 로직으로 여론 계산 및 상태 업데이트.
     
 
 ## 5.4 결과 씬 (ResultScene)
@@ -136,8 +132,7 @@ src/
     - <ClientFeedback>: LLM 생성 피드백.
         
 - 스타일: 중앙 정렬 텍스트, 클릭 시 페이드 아웃 전환.
-    
-- Supabase 연동: supabase.functions.invoke('generate_feedback') 호출.
+- API 연동: 클라이언트에서 직접 LLM API 호출 (예: Gemini).
     
 
 ## 5.5 엔딩 씬 (EndingScene)
@@ -149,6 +144,7 @@ src/
     - <EndingMessage>: 배드/일반/히든 엔딩 텍스트.
         
 - 스타일: 풀스크린 텍스트, 타이틀 복귀 버튼 포함.
+- 데이터 연동: 로컬 스크립트 파일에서 엔딩 조건 및 텍스트 로드.
     
 
 ---
@@ -214,6 +210,7 @@ jsx
 const GameContext = createContext();
 const GameProvider = ({ children }) => {
   const [gameState, setGameState] = useState({ episode: 1, progress: {} });
+  // LocalStorage 연동 로직 추가
   return <GameContext.Provider value={{ gameState, setGameState }}>{children}</GameContext.Provider>;
 };
 ```
@@ -221,55 +218,41 @@ const GameProvider = ({ children }) => {
 - Redux (복잡 시): 미션 데이터, 여론 상태 관리.
     
 
-## 7.3 Supabase와 동기화
-
-- useEffect로 데이터 페칭 및 실시간 구독.
-    
-
-jsx
-
-```jsx
-useEffect(() => {
-  const subscription = supabase
-    .channel('opinion-updates')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'opinions' }, (payload) =>
-      setOpinionState(payload.new)
-    )
-    .subscribe();
-  return () => subscription.unsubscribe();
-}, []);
-```
-
 ---
 
-# 8. Supabase 통합
+# 8. 데이터 관리 (LocalStorage)
 
-## 8.1 클라이언트 설정
+## 8.1 저장/로드
 
-- src/services/supabase.js에 초기화.
-    
-
-jsx
-
-```jsx
-import { createClient } from '@supabase/supabase-js';
-export const supabase = createClient(process.env.REACT_APP_SUPABASE_URL, process.env.REACT_APP_SUPABASE_KEY);
-```
+- `useGameState` 훅 또는 관련 유틸리티 함수에서 LocalStorage API (`localStorage.setItem`, `localStorage.getItem`)를 사용하여 게임 상태 저장 및 로드.
+- 데이터는 JSON 형태로 직렬화하여 저장.
 
 ## 8.2 커스텀 훅
 
-- useSupabase로 데이터 조회/업데이트 캡슐화.
-    
+- `useGameState` 훅에서 게임 상태 관리 및 LocalStorage 연동 로직 캡슐화.
 
 jsx
 
 ```jsx
-const useSupabase = () => {
-  const fetchEpisode = async (id) => {
-    const { data } = await supabase.from('episodes').select('*').eq('id', id).single();
-    return data;
+const useGameState = () => {
+  const [state, setState] = useState(initialState);
+
+  useEffect(() => {
+    // 컴포넌트 마운트 시 LocalStorage에서 상태 로드
+    const savedState = localStorage.getItem('gameState');
+    if (savedState) {
+      setState(JSON.parse(savedState));
+    }
+  }, []);
+
+  const updateState = (newState) => {
+    const updated = { ...state, ...newState };
+    setState(updated);
+    // 상태 변경 시 LocalStorage에 저장
+    localStorage.setItem('gameState', JSON.stringify(updated));
   };
-  return { fetchEpisode };
+
+  return { gameState: state, updateGameState: updateState };
 };
 ```
 
@@ -279,9 +262,10 @@ const useSupabase = () => {
 
 - 메모이제이션: useMemo, useCallback으로 불필요한 렌더링 방지.
     
-- 이미지 최적화: Supabase Storage에서 압축된 이미지 사용.
+- 이미지 최적화: 웹에 최적화된 이미지 포맷 사용 및 압축.
     
 - 지연 로딩: React.lazy로 씬 컴포넌트 동적 로드.
+- LocalStorage 사용 주의: 너무 크거나 복잡한 데이터를 자주 저장/로드하면 성능에 영향을 줄 수 있으므로 필요한 데이터만 관리.
     
 
 ---

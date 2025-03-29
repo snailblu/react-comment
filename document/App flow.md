@@ -1,6 +1,6 @@
 # 개요
 
-이 문서는 Opinion Manipulation Game의 사용자 흐름을 정의합니다. 사용자는 타이틀 화면에서 시작해 스토리 씬, 댓글 알바 미션, 결과 확인을 거쳐 다양한 엔딩에 도달합니다. 각 단계는 React 컴포넌트와 Supabase의 기능을 활용해 구현되며, 직관적이고 매끄러운 경험을 제공합니다.
+이 문서는 Opinion Manipulation Game의 사용자 흐름을 정의합니다. 사용자는 타이틀 화면에서 시작해 스토리 씬, 댓글 알바 미션, 결과 확인을 거쳐 다양한 엔딩에 도달합니다. 각 단계는 React 컴포넌트의 기능을 활용해 구현되며, 직관적이고 매끄러운 경험을 제공합니다.
 
 # 앱 흐름 구조
 
@@ -42,9 +42,7 @@
 - 기술적 구현:
     
     - React 컴포넌트: TitleScreen, SaveSlotList
-        
-    - Supabase: supabase.auth로 사용자 세션 확인, supabase.from('saves')로 저장 데이터 조회
-        
+                
 
 ---
 
@@ -77,9 +75,7 @@
 - 기술적 구현:
     
     - React 컴포넌트: StoryScene, DialogueBox, SystemMenu
-        
-    - Supabase: supabase.storage로 이미지 로드, supabase.from('episodes')로 대화 데이터 조회
-        
+                
 
 ---
 
@@ -132,9 +128,7 @@
 - 기술적 구현:
     
     - React 컴포넌트: CommentScene, MissionPanel, OpinionStats, CommentInput
-        
-    - Supabase: supabase.rpc('update_opinion')로 여론 계산, supabase.from('comments')로 댓글 저장
-        
+                
 
 ---
 
@@ -153,9 +147,7 @@
 - 기술적 구현:
     
     - React 컴포넌트: 재사용된 StoryScene
-        
-    - Supabase: supabase.from('episode_endings')로 결과별 대화 데이터 로드
-        
+                
 
 ---
 
@@ -180,9 +172,7 @@
 - 기술적 구현:
     
     - React 컴포넌트: ResultScene
-        
-    - Supabase: supabase.functions.invoke('generate_feedback')로 LLM 피드백 호출 (Gemini 또는 대체 모델)
-        
+                
 
 ---
 
@@ -207,9 +197,7 @@
 - 기술적 구현:
     
     - React 컴포넌트: EndingScene
-        
-    - Supabase: supabase.from('progress')로 조건 확인, 엔딩 데이터 로드
-        
+                
 
 ---
 

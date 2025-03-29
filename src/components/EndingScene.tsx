@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// import { supabase } from '../services/supabase'; // Supabase 클라이언트 import 제거
 import { useLocation, useNavigate } from 'react-router-dom';
 
 // 로컬 script.json 파일의 엔딩 데이터 구조 정의 (예시)

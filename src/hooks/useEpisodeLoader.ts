@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-// import { getEpisodeData } from '../services/supabase'; // Supabase 의존성 제거
 import { ScriptLine } from './useGameState'; // useGameState에서 ScriptLine 타입 가져오기
 
 // 로컬 script.json 파일의 에피소드 데이터 구조 정의

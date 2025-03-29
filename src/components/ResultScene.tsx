@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// import { supabase } from '../services/supabase'; // Supabase 클라이언트 import 제거
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface Feedback {
