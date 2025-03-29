@@ -48,8 +48,8 @@
     "articleContent": "안녕하세요, 저는 도림이라고 해요. 요즘 저에 대한 안 좋은 이야기들이 많아서 속상해요... 혹시 저를 응원하는 댓글을 달아주실 수 있을까요? 작은 응원 하나하나가 저에게 큰 힘이 될 거예요!",
     "articleImage": "oneroom.png",
     "articleCreatedAt": "2025-03-28T18:00:00Z",
-    "initialOpinion": { "positive": 40, "negative": 40, "neutral": 20 },
-    "initialLikes": 34,
+    "initialOpinion": { "positive": 50, "negative":50},
+    "initialLikes": 0,
     "initialDislikes": 0,
     "initialMonologue": "튜토리얼 미션이다. 도림이를 도와 긍정적인 여론을 만들어보자.",
     "initialComments": [

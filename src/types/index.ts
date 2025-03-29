@@ -15,7 +15,6 @@ export interface Choice {
   opinionChange?: { // 여론 변화 추가
     positive?: number;
     negative?: number;
-    neutral?: number;
   };
 }
 
@@ -59,7 +58,6 @@ export interface Comment {
 export interface Opinion {
   positive: number;
   negative: number;
-  neutral: number;
 }
 
 // 기사 추천/비추천 타입 정의 추가
@@ -85,7 +83,7 @@ export interface Mission {
   articleImage?: string; // 이미지 파일 이름 (예: "oneroom.png")
   articleCreatedAt?: string; // 기사 생성 시간 (ISO 문자열) 추가
   // attachmentFilename?: string; // 제거
-  initialOpinion?: Opinion;
+  initialOpinion?: Opinion; // neutral 제거됨
   initialLikes?: number; // 기사 좋아요 초기값
   initialDislikes?: number; // 기사 싫어요 초기값
   initialMonologue?: string;

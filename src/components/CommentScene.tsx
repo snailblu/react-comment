@@ -56,7 +56,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
 
   // --- 상태 관리 ---
   const [missionData, setMissionData] = useState<Mission | null>(null); // 미션 데이터 상태 추가
-  const [opinion, setOpinion] = useState<Opinion>({ positive: 0, negative: 0, neutral: 0 }); // 초기값 0으로 설정
+  const [opinion, setOpinion] = useState<Opinion>({ positive: 0, negative: 0 }); // neutral 제거, 초기값 0으로 설정
   const [comments, setComments] = useState<Comment[]>([]);
   const [attemptsLeft, setAttemptsLeft] = useState(0); // 초기값 0으로 설정
   const [monologue, setMonologue] = useState('');
@@ -339,21 +339,21 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
           setMonologue('AI가 새 댓글은 생성하지 않았습니다.'); // 댓글만 없을 경우 메시지
         }
 
-        // 2. 추천/비추천 상태 업데이트 (예측값이 있으면)
+        // 2. 추천/비추천 상태 업데이트 (예측값이 있으면) - 복원
         if (predictedReactions) {
           setArticleLikes(predictedReactions.likes);
-           setArticleDislikes(predictedReactions.dislikes);
-           // 독백에 추천/비추천 업데이트 정보 추가 (null 체크 추가)
-           setMonologue(prev => {
-             const reactionText = predictedReactions
-               ? ` (예상 추천/비추천: ${predictedReactions.likes}/${predictedReactions.dislikes})`
-               : '';
-             return `${prev}${reactionText}`;
-           });
-         }
+          setArticleDislikes(predictedReactions.dislikes);
+          // 독백에 추천/비추천 업데이트 정보 추가 (null 체크 추가)
+          setMonologue(prev => {
+            const reactionText = predictedReactions
+              ? ` (AI 예상 추천/비추천: ${predictedReactions.likes}/${predictedReactions.dislikes})` // 메시지 수정
+              : '';
+            return `${prev}${reactionText}`;
+          });
+        }
        }
 
-      // 여론 상태 업데이트 로직은 여전히 제거된 상태 유지
+      // 여론 상태 업데이트는 useEffect에서 처리
 
 
     } catch (error) {
@@ -369,31 +369,49 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   };
 
   // --- 미션 상태 체크 로직 ---
-  const checkMissionStatus = useCallback((currentPositive: number, currentAttempts: number) => {
+  // currentPositive 파라미터 제거, currentAttempts는 남겨둠 (0 이하인지 체크용)
+  const checkMissionStatus = useCallback((currentAttempts: number) => {
     if (isMissionOver || !missionData) return; // missionData 없으면 체크 중단
 
-    if (currentPositive >= (missionData.goal?.positive ?? 100)) { // 목표값은 missionData에서 가져옴 (기본값 100)
-      console.log('Mission Success!');
-      setMonologue('미션 성공! 목표를 달성했다.'); // 성공 독백은 고정 또는 missionData에서 가져오도록 수정 가능
-      setIsMissionOver(true);
-      if (onMissionComplete) {
-        onMissionComplete(true);
-      } else {
-        // 성공 시 ResultScene으로 이동하고, 성공 상태(success: true) 전달
-        navigate('/result', { state: { missionId: missionId, success: true } });
-      }
-    } else if (currentAttempts <= 0) {
-      console.log('Mission Failed!');
-      setMonologue('실패했다... 시도 횟수를 다 써버렸어.'); // 실패 독백은 고정 또는 missionData에서 가져오도록 수정 가능
-      setIsMissionOver(true);
-      if (onMissionComplete) {
-        onMissionComplete(false);
-      } else {
-         // 실패 시 ResultScene으로 이동하고, 실패 상태(success: false) 전달
-         navigate('/result', { state: { missionId: missionId, success: false } });
-      }
+    // 함수 호출 시점의 최신 articleLikes, articleDislikes 상태를 사용하여 여론 계산
+    const totalReactions = articleLikes + articleDislikes;
+    let currentPositivePercent = 50; // 기본값 50%
+    if (totalReactions > 0) {
+      currentPositivePercent = Math.round((articleLikes / totalReactions) * 100);
+    } else if (missionData?.initialOpinion) {
+      // 반응이 없고 초기 여론값이 있으면 사용
+      currentPositivePercent = missionData.initialOpinion.positive;
     }
-  }, [isMissionOver, missionData, onMissionComplete, navigate, missionId]); // 의존성 배열에 missionData 추가
+    // opinion 상태 대신 계산된 currentPositivePercent 사용
+    if (currentPositivePercent >= (missionData.goal?.positive ?? 100)) { // 목표값은 missionData에서 가져옴 (기본값 100)
+      console.log(`Mission Success! Positive: ${currentPositivePercent}% >= Goal: ${missionData.goal?.positive ?? 100}%`);
+      // 성공 시
+      setMonologue('결과가 나왔나...?'); // 결과 확인 독백 표시
+      setIsMissionOver(true); // 미션 종료 상태 설정
+      setTimeout(() => { // 2초 지연
+        if (onMissionComplete) {
+          onMissionComplete(true);
+        } else {
+          // 성공 시 ResultScene으로 이동하고, 성공 상태(success: true) 전달
+          navigate('/result', { state: { missionId: missionId, success: true } });
+        }
+      }, 2000); // 2000ms = 2초
+    } else if (currentAttempts <= 0) { // 시도 횟수 체크는 그대로 유지
+      // 실패 시
+      console.log(`Mission Failed! Attempts: ${currentAttempts}, Positive: ${currentPositivePercent}% < Goal: ${missionData.goal?.positive ?? 100}%`);
+      setMonologue('결과가 나왔나...?'); // 결과 확인 독백 표시
+      setIsMissionOver(true); // 미션 종료 상태 설정
+      setTimeout(() => { // 2초 지연
+        if (onMissionComplete) {
+          onMissionComplete(false);
+        } else {
+          // 실패 시 ResultScene으로 이동하고, 실패 상태(success: false) 전달
+          navigate('/result', { state: { missionId: missionId, success: false } });
+        }
+      }, 2000); // 2000ms = 2초
+    } // else if 블록 닫기
+  // 의존성 배열에서 opinion.positive 제거, articleLikes, articleDislikes 추가
+  }, [isMissionOver, missionData, onMissionComplete, navigate, missionId, articleLikes, articleDislikes]); // useCallback 닫기
 
 
   // --- 데이터 로딩 (missions.json 사용) ---
@@ -425,11 +443,13 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         setMissionData(currentMission);
 
         // 초기 상태 설정
-        setOpinion(currentMission.initialOpinion ?? { positive: 50, negative: 30, neutral: 20 }); // 기본값 설정
+        // neutral 제거 및 기본값 조정 (예: 60/40)
+        setOpinion(currentMission.initialOpinion ?? { positive: 60, negative: 40 });
         setAttemptsLeft(currentMission.totalAttempts ?? 5); // max_attempts -> totalAttempts 변경, 기본값 설정
         setMonologue(currentMission.initialMonologue ?? '댓글을 달아 여론을 조작하자...'); // 기본값 설정
-        setArticleLikes(currentMission.initialLikes ?? 0); // 초기 좋아요 설정
-        setArticleDislikes(currentMission.initialDislikes ?? 0); // 초기 싫어요 설정
+        // 초기 좋아요/싫어요 설정 복원
+        setArticleLikes(currentMission.initialLikes ?? 0);
+        setArticleDislikes(currentMission.initialDislikes ?? 0);
 
         // 초기 댓글 설정 (created_at 직접 사용)
         const loadedComments: Comment[] = (currentMission.initialComments ?? [])
@@ -457,16 +477,23 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [missionId]); // 의존성 배열에서 checkMissionStatus 제거
 
-  // --- 시도 횟수 변경 시 미션 상태 체크 ---
+  // --- 기사 반응 변경 시 여론 업데이트 ---
   useEffect(() => {
-    // missionData가 로드되었고, 시도 횟수가 0 이하이며, 미션이 아직 끝나지 않았을 때만 체크
-    if (missionData && attemptsLeft <= 0 && !isMissionOver) {
-      console.log(`Attempts left reached 0 or less (${attemptsLeft}). Checking final mission status.`);
-      // opinion.positive는 현재 상태 값을 사용하고, attemptsLeft는 0 이하인 값을 그대로 전달
-      checkMissionStatus(opinion.positive, attemptsLeft);
+    const totalReactions = articleLikes + articleDislikes;
+    if (totalReactions > 0) {
+      const positivePercent = Math.round((articleLikes / totalReactions) * 100);
+      const negativePercent = 100 - positivePercent; // 나머지를 부정으로 계산
+
+      setOpinion({
+        positive: positivePercent,
+        negative: negativePercent,
+      });
+    } else {
+      // 반응이 없으면 초기 여론 또는 50/50으로 설정
+      setOpinion(missionData?.initialOpinion ?? { positive: 50, negative: 50 });
     }
-    // checkMissionStatus는 useCallback으로 감싸져 있으므로 의존성 배열에 포함
-  }, [attemptsLeft, missionData, isMissionOver, checkMissionStatus, opinion.positive]);
+    // missionData 로딩 전/후 모두 처리하기 위해 initial 값들도 의존성에 추가
+  }, [articleLikes, articleDislikes, missionData?.initialOpinion]);
 
 
   // --- 댓글 제출 핸들러 ---
@@ -497,7 +524,11 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     // 업데이트된 댓글 목록을 직접 전달하여 AI 댓글 생성 요청
     await handleGenerateComments(newCommentsList);
 
-    // checkMissionStatus 호출 제거 (useEffect에서 처리 예정)
+    // AI 응답 처리 후, 시도 횟수가 0 이하이면 미션 상태 체크
+    if (newAttemptsLeft <= 0) {
+      console.log("Attempts depleted after comment submission. Checking mission status.");
+      checkMissionStatus(newAttemptsLeft); // 최신 시도 횟수 전달
+    }
   };
 
   // --- 대댓글 제출 핸들러 ---
@@ -549,7 +580,11 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     // 업데이트된 댓글 목록을 직접 전달하여 AI 댓글 생성 요청
     await handleGenerateComments(newCommentsList);
 
-    // checkMissionStatus 호출 제거 (useEffect에서 처리 예정)
+    // AI 응답 처리 후, 시도 횟수가 0 이하이면 미션 상태 체크
+    if (newAttemptsLeft <= 0) {
+      console.log("Attempts depleted after reply submission. Checking mission status.");
+      checkMissionStatus(newAttemptsLeft); // 최신 시도 횟수 전달
+    }
   };
 
 
@@ -580,6 +615,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
           <OpinionStats opinion={opinion} attemptsLeft={attemptsLeft} />
 
           {/* --- 디버그 버튼 추가 --- */}
+          {/*
           <div className="mt-4 space-y-2">
             <Button
               variant="outline"
@@ -598,16 +634,19 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
               (디버그) 실패 씬 이동
             </Button>
           </div>
+          */}
           {/* --- 디버그 버튼 끝 --- */}
 
           {/* 임시 댓글 요청 버튼 추가 */}
+          {/*
           <Button
             onClick={() => handleGenerateComments()} // 인자 없이 호출 (현재 상태 사용)
             disabled={isGeneratingComments || isMissionOver}
-            className="mt-4 w-full"
-          >
-            {isGeneratingComments ? '댓글 생성 중...' : '임시 댓글 요청'}
-          </Button>
+                className="mt-4 w-full"
+              >
+                {isGeneratingComments ? '댓글 생성 중...' : '(디버그) 임시 댓글 요청'}
+              </Button>
+          */}
           <button
             onClick={toggleMonologueVisibility}
             style={{ position: 'absolute', bottom: '10px', left: '10px', zIndex: 10 }}
@@ -624,7 +663,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
               {/* 필요하다면 로딩 스피너나 메시지 추가 */}
             </div>
           )}
-          <div className={styles.siteHeader}>acinside.com 갤러리</div>
+          <div className={styles.siteHeader}>acoutside.com 갤러리</div>
           <h2 className={styles.header}>연예인 갤러리</h2>
           <div className={styles.articleTitle}>{missionData.articleTitle ?? '기사 제목 없음'}</div>
           <div className={styles.articleMeta}>

@@ -57,9 +57,13 @@
   margin-left: 5px;
 }
 
-/* 이모지 스타일 (선택 사항) */
-.emoji {
-  font-size: 1.1em; /* 이모지 크기 살짝 키우기 */
+/* 아이콘 스타일 */
+.icon {
+  display: inline-block; /* Tailwind 'inline-block' */
+  width: 1rem; /* Tailwind 'w-4' */
+  height: 1rem; /* Tailwind 'h-4' */
+  margin-right: 0.25rem; /* Tailwind 'mr-1' */
+  vertical-align: middle; /* 아이콘과 텍스트 수직 정렬 개선 (선택 사항) */
 }
 
 /* 누적 막대 그래프 스타일 */
@@ -75,7 +79,6 @@
 }
 
 .positiveSection,
-.neutralSection,
 .negativeSection {
   height: 100%;
   transition: width 0.4s ease-in-out; /* 너비 변경 시 부드러운 애니메이션 */
@@ -86,9 +89,7 @@
   background-color: #3498db; /* 긍정: 파란색 */
 }
 
-.neutralSection {
-  background-color: #95a5a6; /* 중립: 회색 */
-}
+/* .neutralSection 제거 */
 
 .negativeSection {
   background-color: #e74c3c; /* 부정: 빨간색 */
