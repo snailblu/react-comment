@@ -7,7 +7,7 @@ interface UseArticleStateResult {
   opinion: Opinion;
   handleLikeArticle: () => void;
   handleDislikeArticle: () => void;
-  setPredictedReactions: (likes: number, dislikes: number) => void; // AI 예측 반영 함수 추가
+  setPredictedReactions: (added_likes: number, added_dislikes: number) => void; // AI 예측 '추가' 반영 함수로 수정
 }
 
 const useArticleState = (
@@ -69,9 +69,9 @@ const useArticleState = (
     opinion,
     handleLikeArticle,
     handleDislikeArticle,
-    setPredictedReactions: (likes: number, dislikes: number) => { // 함수 구현
-      setArticleLikes(likes);
-      setArticleDislikes(dislikes);
+    setPredictedReactions: (added_likes: number, added_dislikes: number) => { // 함수 구현 수정: 기존 값에 더하기
+      setArticleLikes(prev => prev + added_likes);
+      setArticleDislikes(prev => prev + added_dislikes);
     },
   };
 };

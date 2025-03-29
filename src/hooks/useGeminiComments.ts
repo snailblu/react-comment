@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react';
-import { generateAiComments } from '../services/geminiService'; // 분리된 서비스 import
+import { generateAiComments, ParsedAiResponse } from '../services/geminiService'; // ParsedAiResponse import 추가
+// PredictedAddedReactions 타입은 geminiService에서 반환되므로 여기서 직접 참조할 필요는 없음
 import { Comment, ArticleReactions as ArticleReactionsType, Mission } from '../types';
 
+// useGeminiComments 훅의 반환 타입 정의
 interface UseGeminiCommentsResult {
   isGeneratingComments: boolean;
   aiMonologue: string; // 훅 내부의 독백 상태 (기존 monologue와 구분)
@@ -9,7 +11,8 @@ interface UseGeminiCommentsResult {
     missionData: Mission,
     currentComments: Comment[],
     currentReactions: ArticleReactionsType
-  ) => Promise<{ generatedComments: Comment[]; predictedReactions: ArticleReactionsType | null; error?: string }>; // 결과를 Promise로 반환
+  // 반환 타입을 명시적으로 Promise<ParsedAiResponse>로 지정
+  ) => Promise<ParsedAiResponse>;
 }
 
 const useGeminiComments = (): UseGeminiCommentsResult => {
@@ -21,21 +24,24 @@ const useGeminiComments = (): UseGeminiCommentsResult => {
       missionData: Mission,
       currentComments: Comment[],
       currentReactions: ArticleReactionsType
-    ): Promise<{ generatedComments: Comment[]; predictedReactions: ArticleReactionsType | null; error?: string }> => {
+    // 반환 타입을 명시적으로 Promise<ParsedAiResponse>로 지정
+    ): Promise<ParsedAiResponse> => {
       if (isGeneratingComments || !missionData) {
-        // 이미 생성 중이거나 미션 데이터가 없으면 중단하고 빈 결과 반환
-        return { generatedComments: [], predictedReactions: null, error: isGeneratingComments ? "이미 생성 중입니다." : "미션 데이터가 없습니다." };
+        // 이미 생성 중이거나 미션 데이터가 없으면 중단하고 빈 결과 반환 (타입 일치)
+        return Promise.resolve({ generatedComments: [], predictedAddedReactions: null, error: isGeneratingComments ? "이미 생성 중입니다." : "미션 데이터가 없습니다." });
       }
 
       setIsGeneratingComments(true);
       setAiMonologue('잠시 여론을 지켜볼까…?'); // 로딩 시작 메시지
 
+      // generateAiComments는 이미 Promise를 반환하므로 await만 사용
       const result = await generateAiComments(missionData, currentComments, currentReactions);
 
       if (result.error) {
         setAiMonologue(result.error); // 서비스에서 반환된 오류 메시지 사용
-      } else if (result.generatedComments.length === 0 && !result.predictedReactions) {
-        setAiMonologue('AI가 댓글이나 추천/비추천 예측을 생성하지 못했습니다.');
+      // 조건 변경: predictedAddedReactions 확인
+      } else if (result.generatedComments.length === 0 && !result.predictedAddedReactions) {
+        setAiMonologue('AI가 댓글이나 추가 추천/비추천 예측을 생성하지 못했습니다.'); // 메시지 변경
       } else {
         let successMsg = '';
         if (result.generatedComments.length > 0) {
@@ -43,8 +49,9 @@ const useGeminiComments = (): UseGeminiCommentsResult => {
         } else {
           successMsg += 'AI가 새 댓글은 생성하지 않았습니다.';
         }
-        if (result.predictedReactions) {
-          successMsg += ` (AI 예상 추천/비추천: ${result.predictedReactions.likes}/${result.predictedReactions.dislikes})`;
+        // 성공 메시지 변경: predictedAddedReactions 사용
+        if (result.predictedAddedReactions) {
+          successMsg += ` (AI 예상 추가 추천/비추천: +${result.predictedAddedReactions.added_likes}/+${result.predictedAddedReactions.added_dislikes})`;
         }
         setAiMonologue(successMsg);
       }

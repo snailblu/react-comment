@@ -12,7 +12,7 @@ if (!API_KEY) {
 }
 // API 키가 없어도 genAI 객체는 생성하되, 실제 호출 시점에 키 유무를 다시 확인하는 것이 좋습니다.
 const genAI = new GoogleGenerativeAI(API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // 모델 이름 확인
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // 모델 이름 확인
 
 const generationConfig = {
   temperature: 0.9,
@@ -30,16 +30,23 @@ const safetySettings = [
 
 // --- AI 응답 파싱 및 처리 로직 ---
 
-interface ParsedAiResponse {
+// 예측된 '추가' 반응 타입 정의
+interface PredictedAddedReactions {
+  added_likes: number;
+  added_dislikes: number;
+}
+
+// ParsedAiResponse 인터페이스 export 추가
+export interface ParsedAiResponse {
   generatedComments: Comment[];
-  predictedReactions: ArticleReactionsType | null;
+  predictedAddedReactions: PredictedAddedReactions | null; // 타입 변경
   error?: string; // 파싱 또는 API 오류 메시지
 }
 
 // AI 응답 텍스트를 파싱하여 댓글과 예측 반응으로 분리하는 함수
 const parseAiResponse = (responseText: string): Omit<ParsedAiResponse, 'error'> => {
   let commentTextPart = responseText;
-  let predictedReactions: ArticleReactionsType | null = null;
+  let predictedAddedReactions: PredictedAddedReactions | null = null; // 변수명 및 타입 변경
 
   // 응답 마지막 줄이 JSON 형식인지 확인하고 분리 시도
   const lines = responseText.trim().split('\n');
@@ -47,19 +54,20 @@ const parseAiResponse = (responseText: string): Omit<ParsedAiResponse, 'error'> 
   if (lastLine.startsWith('{') && lastLine.endsWith('}')) {
     try {
       const parsedJson = JSON.parse(lastLine);
-      if (typeof parsedJson.likes === 'number' && typeof parsedJson.dislikes === 'number') {
-        predictedReactions = parsedJson;
+      // 필드명 변경: added_likes, added_dislikes 확인
+      if (typeof parsedJson.added_likes === 'number' && typeof parsedJson.added_dislikes === 'number') {
+        predictedAddedReactions = parsedJson; // 변수명 변경
         commentTextPart = lines.slice(0, -1).join('\n');
-        console.log("Parsed predicted reactions:", predictedReactions);
+        console.log("Parsed predicted added reactions:", predictedAddedReactions); // 로그 메시지 변경
       } else {
-        console.warn("Last line looks like JSON but doesn't match ArticleReactions format:", lastLine);
+        console.warn("Last line looks like JSON but doesn't match PredictedAddedReactions format:", lastLine); // 경고 메시지 변경
       }
     } catch (e) {
-      console.warn("Failed to parse last line as JSON, treating as comment:", lastLine, e);
+      console.warn("Failed to parse last line as JSON, treating as comment:", lastLine, e); // 경고 메시지 유지
     }
   }
 
-  // 댓글 파싱
+  // 댓글 파싱 (기존 로직 유지)
   const commentLines = commentTextPart.split('\n').map(c => c.trim()).filter(c => c.length > 0);
   const generatedComments: Comment[] = [];
 
@@ -79,11 +87,13 @@ const parseAiResponse = (responseText: string): Omit<ParsedAiResponse, 'error'> 
         isReply = true;
         nickname = complexReplyMatch[1].trim();
         ip = complexReplyMatch[2].trim();
-        parentId = complexReplyMatch[3].trim();
+        // ID: 접두사 제거
+        parentId = complexReplyMatch[3].trim().replace(/^ID:\s*/, '');
         content = complexReplyMatch[4].trim();
     } else if (simpleReplyMatch) {
         isReply = true;
-        parentId = simpleReplyMatch[1].trim();
+        // ID: 접두사 제거
+        parentId = simpleReplyMatch[1].trim().replace(/^ID:\s*/, '');
         nickname = simpleReplyMatch[2].trim();
         ip = simpleReplyMatch[3].trim();
         content = simpleReplyMatch[4].trim();
@@ -96,6 +106,9 @@ const parseAiResponse = (responseText: string): Omit<ParsedAiResponse, 'error'> 
     }
 
     if (content !== undefined) {
+        // 추가: 댓글 끝의 (UUID) 패턴 제거
+        content = content.replace(/\s\([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\)$/, '').trim();
+
         generatedComments.push({
             id: uuidv4(),
             nickname: nickname || '익명AI',
@@ -123,7 +136,7 @@ const parseAiResponse = (responseText: string): Omit<ParsedAiResponse, 'error'> 
     }
   });
 
-  return { generatedComments, predictedReactions };
+  return { generatedComments, predictedAddedReactions }; // 반환값 변경
 };
 
 
@@ -140,12 +153,12 @@ export const generateAiComments = async (
   missionData: Mission,
   currentComments: Comment[],
   currentReactions: ArticleReactionsType
-): Promise<ParsedAiResponse> => {
+): Promise<ParsedAiResponse> => { // 반환 타입은 ParsedAiResponse 유지 (내부 필드만 변경됨)
   if (!API_KEY) {
-    return { generatedComments: [], predictedReactions: null, error: "Gemini API 키가 설정되지 않았습니다." };
+    return { generatedComments: [], predictedAddedReactions: null, error: "Gemini API 키가 설정되지 않았습니다." }; // 반환값 변경
   }
   if (!missionData) {
-    return { generatedComments: [], predictedReactions: null, error: "미션 데이터가 없습니다." };
+    return { generatedComments: [], predictedAddedReactions: null, error: "미션 데이터가 없습니다." }; // 반환값 변경
   }
 
   try {
@@ -173,25 +186,25 @@ export const generateAiComments = async (
       if (response.promptFeedback?.blockReason) {
         const blockReason = response.promptFeedback.blockReason;
         console.error("Gemini request blocked due to safety settings:", blockReason, response.promptFeedback.safetyRatings);
-        return { generatedComments: [], predictedReactions: null, error: `Gemini API 요청이 안전 설정에 의해 차단되었습니다: ${blockReason}` };
+        return { generatedComments: [], predictedAddedReactions: null, error: `Gemini API 요청이 안전 설정에 의해 차단되었습니다: ${blockReason}` }; // 반환값 변경
       } else {
         console.error("Gemini API returned an empty response without a specific block reason.");
-        return { generatedComments: [], predictedReactions: null, error: "Gemini API로부터 빈 응답을 받았습니다." };
+        return { generatedComments: [], predictedAddedReactions: null, error: "Gemini API로부터 빈 응답을 받았습니다." }; // 반환값 변경
       }
     }
 
     // 응답 파싱
-    const { generatedComments, predictedReactions } = parseAiResponse(generatedText);
+    const { generatedComments, predictedAddedReactions } = parseAiResponse(generatedText); // 변수명 변경
 
-    if (generatedComments.length === 0 && !predictedReactions) {
-        return { generatedComments: [], predictedReactions: null, error: "AI가 댓글이나 추천/비추천 예측을 생성하지 못했습니다." };
+    if (generatedComments.length === 0 && !predictedAddedReactions) { // 조건 변경
+        return { generatedComments: [], predictedAddedReactions: null, error: "AI가 댓글이나 추천/비추천 예측을 생성하지 못했습니다." }; // 반환값 변경
     }
 
-    return { generatedComments, predictedReactions };
+    return { generatedComments, predictedAddedReactions }; // 반환값 변경
 
   } catch (error) {
     console.error('Failed to generate AI comments via service:', error);
     const errorMessage = error instanceof Error ? error.message : 'AI 처리 중 알 수 없는 오류가 발생했습니다.';
-    return { generatedComments: [], predictedReactions: null, error: `AI 처리 중 오류 발생: ${errorMessage}` };
+    return { generatedComments: [], predictedAddedReactions: null, error: `AI 처리 중 오류 발생: ${errorMessage}` }; // 반환값 변경
   }
 };

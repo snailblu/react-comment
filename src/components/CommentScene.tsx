@@ -138,20 +138,20 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
 
 
   // --- 댓글/대댓글 제출 및 AI 연동 핸들러 ---
-  const handleSubmitAndGenerateAi = async (newlyAddedComment: Comment | null) => {
+  // 인자를 newlyAddedComment 대신 updatedComments 배열로 받도록 수정
+  const handleSubmitAndGenerateAi = async (updatedComments: Comment[]) => {
     // missionData null 체크 강화
-    if (!newlyAddedComment || !missionData) {
-        console.error("handleSubmitAndGenerateAi: No newly added comment or mission data.");
+    if (!updatedComments || updatedComments.length === 0 || !missionData) {
+        console.error("handleSubmitAndGenerateAi: No updated comments array or mission data.");
         return;
     }
 
     const currentAttempts = decrementAttempts(); // 시도 횟수 감소
 
-    // AI 댓글 생성 요청 (현재 댓글 목록과 반응 사용)
+    // AI 댓글 생성 요청 (업데이트된 댓글 목록과 현재 반응 사용)
     const currentReactions: ArticleReactionsType = { likes: articleLikes, dislikes: articleDislikes };
-    // commentsRef.current가 null일 수 있으므로 빈 배열로 대체
-    const commentsForAi = commentsRef.current ?? [];
-    const aiResult = await triggerGenerateComments(missionData, commentsForAi, currentReactions);
+    // 인자로 받은 updatedComments 배열을 사용
+    const aiResult = await triggerGenerateComments(missionData, updatedComments, currentReactions);
 
     // AI 응답 처리
     if (!aiResult.error) {
@@ -200,9 +200,9 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         });
       }
 
-      // 2. AI가 예측한 추천/비추천 수 반영
-      if (aiResult.predictedReactions) {
-        setPredictedReactions(aiResult.predictedReactions.likes, aiResult.predictedReactions.dislikes);
+      // 2. AI가 예측한 '추가될' 추천/비추천 수 반영 (구조 변경됨)
+      if (aiResult.predictedAddedReactions) {
+        setPredictedReactions(aiResult.predictedAddedReactions.added_likes, aiResult.predictedAddedReactions.added_dislikes);
       }
     }
 
@@ -213,18 +213,18 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     }
   };
 
-  // 댓글 제출 핸들러
+  // 댓글 제출 핸들러 (addComment 반환값 사용하도록 수정)
   const handleCommentSubmit = async (commentText: string, nickname?: string, password?: string) => {
     if (isMissionOver || attemptsLeft <= 0 || !missionData) return;
-    const addedComment = addComment(commentText, nickname); // useCommentState 훅 사용
-    await handleSubmitAndGenerateAi(addedComment); // 공통 로직 호출
+    const updatedComments = addComment(commentText, nickname); // useCommentState 훅 사용, 업데이트된 배열 반환
+    await handleSubmitAndGenerateAi(updatedComments); // 공통 로직 호출 (업데이트된 배열 전달)
   };
 
-  // 대댓글 제출 핸들러
+  // 대댓글 제출 핸들러 (addReply 반환값 사용하도록 수정)
   const handleReplySubmit = async (replyContent: string, parentId: string, nickname?: string, password?: string) => {
     if (isMissionOver || attemptsLeft <= 0 || !missionData) return;
-    const addedReply = addReply(replyContent, parentId, nickname); // useCommentState 훅 사용
-    await handleSubmitAndGenerateAi(addedReply); // 공통 로직 호출
+    const updatedComments = addReply(replyContent, parentId, nickname); // useCommentState 훅 사용, 업데이트된 배열 반환
+    await handleSubmitAndGenerateAi(updatedComments); // 공통 로직 호출 (업데이트된 배열 전달)
   };
 
 
