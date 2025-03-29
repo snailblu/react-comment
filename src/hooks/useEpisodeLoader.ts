@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ScriptLine } from '../types'; // 타입 import 경로 수정
+// ScriptLine과 함께 EpisodeData 타입 import 추가
+import { ScriptLine, EpisodeData } from '../types';
 
-// 로컬 script.json 파일의 에피소드 데이터 구조 정의
-interface EpisodeData {
-  id: string;
-  title: string; // title은 null이 아니라고 가정
-  intro_dialogues: ScriptLine[]; // intro_dialogues가 ScriptLine 배열이라고 가정
-  ending_dialogues: ScriptLine[]; // ending_dialogues가 ScriptLine 배열이라고 가정
-  mission_id: string; // 미션 ID 추가 (script.json 구조에 따라 조정 필요)
-}
+// 로컬 EpisodeData 정의 제거
 
 // script.json 파일 전체 구조 정의 (에피소드 ID를 키로 사용)
 interface ScriptData {

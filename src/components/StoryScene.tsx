@@ -1,63 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // useNavigate import 추가
-// audioManager 함수 import 수정
-import { playBgm, stopBgm, playSfx, signalInteraction } from '../utils/audioManager';
+import React, { useEffect } from 'react';
+// useNavigate 제거 (useStoryProgression 내부에서 사용)
+// audioManager 관련 import 제거 (useStoryProgression 내부에서 사용)
+import { playBgm, stopBgm } from '../utils/audioManager'; // BGM 관련만 남김
 import Background from './Background';
 import Character from './Character';
 import DialogueBox from './DialogueBox';
 import Choices from './Choices';
-import SettingsMenu from './SettingsMenu'; // SettingsMenu import 추가
-import PhoneChat from './PhoneChat'; // PhoneChat 컴포넌트 추가
-// import useScriptLoader from '../hooks/useScriptLoader'; // useScriptLoader 훅 import 제거
-import useEpisodeLoader from '../hooks/useEpisodeLoader'; // useEpisodeLoader 훅 import 추가
-// useGameState 훅 import 및 필요한 타입들은 ../types에서 가져오기
+import SettingsMenu from './SettingsMenu';
+import PhoneChat from './PhoneChat';
+import useEpisodeLoader from '../hooks/useEpisodeLoader';
 import useGameState from '../hooks/useGameState';
-import { ScriptLine, GameFlags, ChoiceOption } from '../types'; // 타입 import 경로 수정
-import styles from './StoryScene.module.css'; // CSS 모듈 import 경로 수정
+import useStoryProgression from '../hooks/useStoryProgression'; // 새로 만든 훅 import
+import useStoryUIState from '../hooks/useStoryUIState'; // 새로 만든 훅 import
+import StoryMenuBar from './StoryMenuBar'; // 새로 만든 컴포넌트 import
+import { getCharacterImageUrl } from '../config/characterSprites'; // 캐릭터 이미지 함수 import
+import { ScriptLine } from '../types'; // 필요한 타입만 import
+import styles from './StoryScene.module.css';
 import roomBackground from '../assets/oneroom.png';
-import dorimSmile from '../assets/dorim_smile.png';
-import dorimSad from '../assets/dorim_sad.png';
-// unmuteAfterInteraction import 제거
-
-// 캐릭터 스프라이트 타입 정의
-interface CharacterSpriteMap {
-  [characterName: string]: {
-    [expression: string]: string; // expression은 문자열 키, 값은 이미지 경로(string)
-  };
-}
-
-const characterSprites: CharacterSpriteMap = {
-  '앨리스': { // 기존 앨리스 정의 (테스트용으로 남겨두거나 삭제 가능)
-    normal: dorimSad,
-    happy: dorimSmile,
-  },
-  '도림': { // 도림 캐릭터 추가
-    normal: dorimSad, // 기본 표정 (일단 sad 이미지 사용, 필요시 변경)
-    sad: dorimSad,
-    smile: dorimSmile,
-    // 필요에 따라 다른 표정 추가
-  },
-  '세영': {
-    // 세영 캐릭터 스프라이트 추가 (필요하다면)
-  }
-  // 다른 캐릭터 추가 가능
-};
+// 캐릭터 이미지 import 제거 (config 파일에서 관리)
 
 
-const StoryScene: React.FC = () => { // 컴포넌트 이름 변경: Game -> StoryScene
-  // --- 상태 추가 ---
-  const [showSettings, setShowSettings] = useState(false); // 설정 메뉴 표시 상태
-  const [notificationMessage, setNotificationMessage] = useState(''); // 상단 알림 메시지 상태 추가
-  const [showPhoneChat, setShowPhoneChat] = useState(false); // 디티알톡 표시 상태 추가 (기본값: 숨김)
-
+const StoryScene: React.FC = () => {
   // --- 커스텀 Hook 사용 ---
   // TODO: 현재는 테스트용 ID 사용. 라우팅 또는 상태 관리 통해 동적으로 받아와야 함.
-  const episodeIdToLoad = '123e4567-e89b-12d3-a456-426614174000'; // 임시 테스트 ID
-  const { episodeData, isLoadingEpisode } = useEpisodeLoader(episodeIdToLoad); // 에피소드 로딩 훅 호출
-  // const { scriptData, isLoadingScript } = useScriptLoader(); // 스크립트 로딩 훅 호출 제거
+  // 스크립트 시작 ID로 되돌림 (script.json의 키)
+  const episodeIdToLoad = '123e4567-e89b-12d3-a456-426614174000'; // 유효 ID -> 스크립트 시작 ID로 변경
+  const { episodeData, isLoadingEpisode } = useEpisodeLoader(episodeIdToLoad);
 
   // episodeData에서 실제 스크립트 데이터 추출 (intro_dialogues 사용 가정)
-  // null 또는 undefined일 경우 빈 배열([]) 사용
   const currentEpisodeScript = episodeData?.intro_dialogues ?? [];
 
   const {
@@ -65,227 +35,84 @@ const StoryScene: React.FC = () => { // 컴포넌트 이름 변경: Game -> Stor
     gameFlags,
     setCurrentScriptIndex,
     setGameFlags,
-    saveGame, // 저장 함수 가져오기
-    loadGame  // 불러오기 함수 가져오기
-  } = useGameState(currentEpisodeScript); // 게임 상태 훅 호출 (currentEpisodeScript 전달)
-  const navigate = useNavigate(); // useNavigate 훅 사용
+    saveGame,
+    loadGame
+  } = useGameState(currentEpisodeScript);
 
-  // currentLine 계산은 로딩 완료 및 상태 로드 후로 이동
+  // UI 상태 훅 호출
+  const {
+    showSettings,
+    setShowSettings,
+    notificationMessage,
+    // setNotificationMessage, // 알림 설정 로직은 아직 없으므로 주석 처리
+    showPhoneChat,
+    togglePhoneChat,
+  } = useStoryUIState();
+
+  // 스토리 진행 훅 호출
+  const { handleNext, handleChoiceSelect } = useStoryProgression({
+    currentScript: currentEpisodeScript,
+    currentScriptIndex,
+    setCurrentScriptIndex,
+    gameFlags,
+    setGameFlags,
+    episodeData, // episodeData 전달
+  });
 
   // --- BGM 자동 재생 시도 및 정리 ---
   useEffect(() => {
-    console.log('StoryScene Component 마운트 - BGM 재생 시도'); // 로그 메시지 변경
-    playBgm('mainTheme'); // 마운트 시 재생 시도 (음소거 상태일 수 있음)
+    console.log('StoryScene 마운트 - BGM 재생 시도');
+    playBgm('mainTheme');
 
     return () => {
-      console.log('StoryScene Component 언마운트 - BGM 정지'); // 로그 메시지 변경
-      stopBgm(); // 언마운트 시 정지
+      console.log('StoryScene 언마운트 - BGM 정지');
+      stopBgm();
     };
-  }, []); // 빈 배열: 마운트/언마운트 시 1회 실행
+  }, []);
 
-  // --- 저장/불러오기 함수는 useGameState 훅으로 이동 ---
-  // handleSaveGame, handleLoadGame 제거
-
-  // --- 디티알톡 토글 함수 ---
-  const togglePhoneChat = () => {
-    setShowPhoneChat(prevShow => !prevShow);
-  };
-
-  // 로딩 중 표시
+  // --- 로딩 상태 처리 ---
   if (isLoadingEpisode) {
-    return <div>Loading episode...</div>; // 로딩 메시지 변경
+    return <div>Loading episode...</div>;
   }
 
-  // 로딩 완료 후 로직 (currentEpisodeScript 사용)
-  // currentLine 계산 시 currentEpisodeScript 유효성 및 인덱스 범위 확인 (타입 명시)
-  const currentLine: ScriptLine | null = currentEpisodeScript && currentEpisodeScript.length > currentScriptIndex ? currentEpisodeScript[currentScriptIndex] : null;
+  // --- 현재 스크립트 라인 결정 ---
+  const currentLine: ScriptLine | null = currentEpisodeScript && currentEpisodeScript.length > currentScriptIndex
+    ? currentEpisodeScript[currentScriptIndex]
+    : null;
 
-  // currentLine이 null일 경우 렌더링하지 않거나 다른 처리 추가
+  // --- 스크립트 종료 또는 오류 처리 ---
   if (!currentLine) {
-      // 에피소드 로딩은 완료되었지만 currentLine을 찾을 수 없는 경우 (예: 스크립트 끝)
-      // 또는 로딩 실패 후 isLoadingEpisode가 false가 된 경우 currentEpisodeScript가 비어있을 수 있음
-      if (currentEpisodeScript.length === 0 && !isLoadingEpisode) {
-          return <div>Error: Failed to load episode data or script is empty.</div>; // 오류 메시지 변경
-      }
-      // 정상적으로 스크립트 끝에 도달한 경우
-      return <div>Episode script ended.</div>; // 또는 다른 종료 화면
+    if (currentEpisodeScript.length === 0 && !isLoadingEpisode) {
+      return <div>Error: Failed to load episode data or script is empty.</div>;
+    }
+    // 스크립트 정상 종료 (useStoryProgression 내부에서 navigate 처리)
+    // 여기서는 null을 반환하거나 로딩 스피너 등을 표시할 수 있음
+    return null; // 또는 <div>Episode ended. Preparing next scene...</div>
   }
 
+  // --- 캐릭터 이미지 URL 결정 ---
+  const characterImageUrl = getCharacterImageUrl(currentLine.character, currentLine.expression);
 
-  // --- 상호작용 핸들러 ---
-  const handleNext = () => {
-    // 함수 시작 시 명시적 타입 가드 (이미 위에서 처리됨)
-    // if (!currentLine) return;
-    signalInteraction(); // 첫 상호작용 시 오디오 활성화 신호 보내기
-    // 타입 체크 후 속성 접근 (타입 단언 사용)
-    if ((currentLine as ScriptLine).type === 'choice') return;
-    playSfx('click'); // 효과음 재생 추가!
-
-    let nextIndex = -1;
-    // currentEpisodeScript 사용하도록 수정 (타입 단언 사용)
-    if ((currentLine as ScriptLine).nextId) {
-      // findIndex 콜백 파라미터 타입 지정
-      nextIndex = currentEpisodeScript.findIndex((line: ScriptLine) => line.id === (currentLine as ScriptLine).nextId);
-      if (nextIndex === -1) console.warn(`nextId '${(currentLine as ScriptLine).nextId}' 찾기 실패!`);
-    } else if (currentScriptIndex < currentEpisodeScript.length - 1) { // currentEpisodeScript.length 사용
-      nextIndex = currentScriptIndex + 1;
-    }
-
-    // nextScene 확인 및 처리 추가
-    const currentDialogue = currentLine as ScriptLine; // 타입 단언
-    // const currentDialogue = currentLine as ScriptLine; // 중복 선언 제거
-    if (currentDialogue.nextScene) {
-      console.log(`다음 씬으로 이동: ${currentDialogue.nextScene}`);
-      const missionId = episodeData?.mission_id; // 현재 에피소드의 mission_id 가져오기
-      if (currentDialogue.nextScene === 'comment') {
-        if (missionId) {
-          navigate(`/comment/${missionId}`); // missionId를 포함하여 코멘트 씬으로 이동
-        } else {
-          console.error("Mission ID를 찾을 수 없어 CommentScene으로 이동할 수 없습니다.");
-          // missionId가 없을 경우의 처리 (예: 에러 메시지 표시, 타이틀로 이동 등)
-          navigate('/');
-        }
-      } else {
-        console.warn(`알 수 없는 nextScene 값: ${currentDialogue.nextScene}`);
-        // 기본적으로 타이틀로 이동하거나 다른 처리
-        navigate('/');
-      }
-      return; // 씬 이동 후 함수 종료
-    }
-
-    // nextScene이 없을 경우 기존 로직 수행
-    if (nextIndex !== -1) {
-      setCurrentScriptIndex(nextIndex);
-    } else {
-      // 스크립트 끝 처리 (nextScene 없이 끝나는 경우)
-      console.log('스크립트가 종료되었습니다. (nextScene 없음)');
-      // alert('스크립트가 종료되었습니다.'); // alert 대신 콘솔 로그 사용 또는 다른 UI 피드백 고려
-      navigate('/'); // 타이틀 화면으로 이동
-    }
-  };
-
-  // handleChoiceSelect 파라미터 타입 지정
-  const handleChoiceSelect = (choiceId: string | number, nextId?: string | number) => {
-    signalInteraction(); // 첫 상호작용 시 오디오 활성화 신호 보내기
-    playSfx('click'); // 효과음 재생 추가!
-
-    let nextIndex = -1;
-    // currentEpisodeScript 사용하도록 수정
-    if (nextId) {
-        // findIndex 콜백 파라미터 타입 지정
-        nextIndex = currentEpisodeScript.findIndex((line: ScriptLine) => line.id === nextId);
-        if (nextIndex === -1) console.warn(`선택지의 nextId '${nextId}' 찾기 실패!`);
-    }
-    // nextId가 없으면 기존 방식 사용 (선택 사항)
-    // else {
-    //   nextIndex = currentEpisodeScript.findIndex(line => line.id === `${choiceId}_result`);
-    //   if (nextIndex === -1) console.warn(`선택지 결과 ID '${choiceId}_result' 찾기 실패!`);
-    // }
-
-    // 선택지 ID를 gameFlags에 기록
-    setGameFlags(prevFlags => ({
-      ...prevFlags,
-      previousChoice: choiceId // 'previousChoice' 키에 선택지 ID 저장
-    }));
-    console.log(`선택됨: ${choiceId}, 플래그 업데이트:`, { ...gameFlags, previousChoice: choiceId });
-
-
-    // nextIndex로 다음 대사 찾기
-    const nextDialogue = nextIndex !== -1 ? currentEpisodeScript[nextIndex] : null;
-
-    // 다음 대사에 nextScene이 있는지 확인
-    // 다음 대사에 nextScene이 있는지 확인
-    if (nextDialogue && nextDialogue.nextScene) {
-        console.log(`선택지 결과 후 다음 씬으로 이동: ${nextDialogue.nextScene}`);
-        const missionId = episodeData?.mission_id; // 현재 에피소드의 mission_id 가져오기
-        if (nextDialogue.nextScene === 'comment') {
-          if (missionId) {
-            navigate(`/comment/${missionId}`); // missionId를 포함하여 코멘트 씬으로 이동
-          } else {
-            console.error("Mission ID를 찾을 수 없어 CommentScene으로 이동할 수 없습니다.");
-            navigate('/');
-          }
-        } else {
-            console.warn(`알 수 없는 nextScene 값: ${nextDialogue.nextScene}`);
-            navigate('/'); // 기본적으로 타이틀로 이동
-        }
-        // 플래그는 업데이트하고 씬 이동
-        return;
-    }
-
-    // nextScene이 없거나 다음 대사를 찾지 못한 경우
-    if (nextIndex !== -1) {
-      setCurrentScriptIndex(nextIndex);
-    } else {
-      console.log('선택지에 대한 다음 대사를 찾을 수 없습니다! (nextScene 없음)');
-      // 선택지 이후 진행이 막히면 안되므로, 다음 라인으로 넘어가는 기본 로직 추가 고려
-      // (nextScene이 없다는 것은 일반적으로 스크립트가 계속되어야 함을 의미할 수 있음)
-      // 하지만 현재 로직은 다음 ID를 못 찾으면 종료시키므로, 일단 유지
-      // TODO: 기획에 따라 선택지 후 nextId가 없을 때의 처리 방식 재검토 필요
-      if (currentScriptIndex < currentEpisodeScript.length - 1) {
-         console.warn(`선택지 nextId '${nextId}'에 해당하는 대사를 찾지 못했지만, 다음 순서 대사로 이동합니다.`);
-         setCurrentScriptIndex(prevIndex => prevIndex + 1); // 임시 방편으로 다음 순서로
-      } else {
-         // 스크립트 끝 처리
-         console.log('스크립트가 종료되었습니다. (선택지 후 nextId 없음)');
-         // alert('스크립트가 종료되었습니다.');
-         navigate('/'); // 타이틀 화면으로 이동
-      }
-    }
-  };
-
-
-  // ... (캐릭터 이미지 URL 결정 함수 등 - 타입 단언 및 키 존재 확인 추가) ...
-  const getCharacterImageUrl = (): string | null => {
-      // 함수 시작 시 명시적 타입 가드 (이미 위에서 처리됨)
-      // if (!currentLine) return null;
-      const line = currentLine as ScriptLine; // 타입 단언
-
-      // character 속성 null/undefined 체크 강화
-      if (!line.character || !(line.character in characterSprites)) return null; // 키 존재 확인 추가
-
-      const characterName = line.character; // 타입 추론을 위해 변수에 할당
-      // expression 속성 체크 강화
-      const expression = line.expression || 'normal';
-
-      // characterSprites 접근 시 characterName 유효성 확인
-      const characterSpriteSet = characterSprites[characterName];
-      if (!characterSpriteSet) return null; // 안전 장치
-
-      // expression에 해당하는 스프라이트 반환, 없으면 'normal' 반환
-      return characterSpriteSet[expression] || characterSpriteSet['normal'] || null; // 마지막 null은 혹시 모를 경우 대비
-  };
-  const characterImageUrl = getCharacterImageUrl();
-
-  // --- 조건부 대사 결정 로직 (타입 단언 사용) ---
-  // currentLine null 체크 후 속성 접근
-  let dialogueTextToShow = (currentLine as ScriptLine).text ?? ''; // 기본 텍스트 (null 방지, nullish coalescing 사용)
-  // currentLine 및 condition 속성 null/undefined 체크 강화
-  // 명시적 타입 가드 추가
-  if (currentLine && (currentLine as ScriptLine).condition && gameFlags[(currentLine as ScriptLine).condition!.flag] === (currentLine as ScriptLine).condition!.value) {
-    // 조건 객체가 있고, 해당 플래그 값이 조건 값과 일치하면
-    // altText, text 접근 시 currentLine은 null이 아님 (타입 단언 사용)
-    dialogueTextToShow = (currentLine as ScriptLine).altText || (currentLine as ScriptLine).text || ''; // altText 사용 (null 방지)
-    console.log(`조건 만족 (${(currentLine as ScriptLine).condition!.flag} === ${(currentLine as ScriptLine).condition!.value}), 대체 텍스트 표시: ${dialogueTextToShow}`);
+  // --- 조건부 대사 결정 ---
+  let dialogueTextToShow = currentLine.text ?? '';
+  if (currentLine.condition && gameFlags[currentLine.condition.flag] === currentLine.condition.value) {
+    dialogueTextToShow = currentLine.altText || currentLine.text || '';
+    console.log(`조건 만족 (${currentLine.condition.flag} === ${currentLine.condition.value}), 대체 텍스트 표시: ${dialogueTextToShow}`);
   }
 
-
+  // --- 렌더링 ---
   return (
-    // --- JSX 구조 (className 적용 방식은 styles 객체 사용으로 가정) ---
-    <div className={styles.storySceneContainer}> {/* 클래스 이름 변경 */}
-      <div className={styles.storyArea}> {/* 클래스 이름 변경 */}
-          {/* 저장/불러오기/설정/디티알톡 토글 버튼 */}
-          <div className={styles.menuButtons}>
-            {/* disabled 상태를 isLoadingEpisode 기준으로 변경 */}
-            <button onClick={saveGame} className={styles.menuButton} disabled={isLoadingEpisode}>저장</button>
-            <button onClick={loadGame} className={styles.menuButton} disabled={isLoadingEpisode}>불러오기</button>
-            {/* 설정 버튼 추가 */}
-            <button onClick={() => setShowSettings(true)} className={styles.menuButton}>설정</button>
-            {/* 디티알톡 토글 버튼 추가 */}
-            <button onClick={togglePhoneChat} className={styles.menuButton}>
-              {showPhoneChat ? '디티알톡 숨기기' : '디티알톡 보이기'}
-            </button>
-          </div>
+    <div className={styles.storySceneContainer}>
+      <div className={styles.storyArea}>
+        {/* 메뉴 바 컴포넌트 사용 */}
+        <StoryMenuBar
+          onSave={saveGame}
+          onLoad={loadGame}
+          onSettings={() => setShowSettings(true)}
+          onTogglePhoneChat={togglePhoneChat}
+          isPhoneChatVisible={showPhoneChat}
+          isLoading={isLoadingEpisode} // 로딩 상태 전달
+        />
 
         {/* 상단 알림 메시지 */}
         {notificationMessage && (
@@ -296,27 +123,25 @@ const StoryScene: React.FC = () => { // 컴포넌트 이름 변경: Game -> Stor
 
         <Background imageUrl={roomBackground} />
 
-        {/* JSX 내부에서는 상위의 if (!currentLine) return ...; 가드 덕분에 currentLine이 null이 아님 */}
-        {/* 타입 단언 추가 */}
-        {(currentLine as ScriptLine).character && (currentLine as ScriptLine).character !== '나' && (currentLine as ScriptLine).type !== 'narrator' && characterImageUrl && (
+        {/* 캐릭터 표시 */}
+        {currentLine.character && currentLine.character !== '나' && currentLine.type !== 'narrator' && characterImageUrl && (
           <Character
             imageUrl={characterImageUrl}
-            name={(currentLine as ScriptLine).character!} // non-null assertion 추가
+            name={currentLine.character} // non-null assertion 제거 (위에서 체크)
           />
         )}
 
-        {(currentLine as ScriptLine).type === 'choice' ? (
+        {/* 대화 또는 선택지 표시 */}
+        {currentLine.type === 'choice' ? (
           <Choices
-            // choices가 undefined일 수 있으므로 빈 배열([])로 기본값 제공
-            choices={(currentLine as ScriptLine).choices ?? []}
-            onChoiceSelect={handleChoiceSelect} // handleChoiceSelect 전달
+            choices={currentLine.choices ?? []}
+            onChoiceSelect={handleChoiceSelect} // 훅에서 가져온 핸들러 전달
           />
         ) : (
           <DialogueBox
-            // characterName도 타입 단언 사용
-            characterName={(currentLine as ScriptLine).type === 'narrator' ? null : (currentLine as ScriptLine).character}
-            dialogueText={dialogueTextToShow} // 조건부로 결정된 텍스트 전달
-            onNext={handleNext} // handleNext 전달
+            characterName={currentLine.type === 'narrator' ? null : currentLine.character}
+            dialogueText={dialogueTextToShow}
+            onNext={handleNext} // 훅에서 가져온 핸들러 전달
           />
         )}
 
@@ -330,4 +155,4 @@ const StoryScene: React.FC = () => { // 컴포넌트 이름 변경: Game -> Stor
   );
 };
 
-export default StoryScene; // export 이름 변경
+export default StoryScene;

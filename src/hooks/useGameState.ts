@@ -16,8 +16,10 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
   const [articleLikes, setArticleLikes] = useState<number>(0); // 기사 좋아요 상태 추가
   const [articleDislikes, setArticleDislikes] = useState<number>(0); // 기사 싫어요 상태 추가
 
-  // --- 로컬 스토리지에서 초기 상태 로드 ---
+  // --- 로컬 스토리지에서 초기 상태 로드 (자동 로드 비활성화) ---
   useEffect(() => {
+    // 자동 로드 로직 주석 처리
+    /*
     console.log('useGameState: 게임 상태 로드 시도...');
     const savedData = localStorage.getItem(SAVE_KEY);
     let loadedIndex = 0;
@@ -130,6 +132,10 @@ const useGameState = (scriptData: ScriptData): GameStateHook => {
     setRemainingAttempts(loadedAttempts); // 남은 시도 횟수 상태 업데이트
     setArticleLikes(loadedLikes); // 좋아요 상태 업데이트
     setArticleDislikes(loadedDislikes); // 싫어요 상태 업데이트
+    */
+
+    // 자동 로드를 비활성화했으므로, 초기 상태는 useState의 기본값으로 유지됩니다.
+    console.log('useGameState: 자동 게임 상태 로드 비활성화됨.');
 
   // scriptData가 변경될 때도 이 로직을 다시 실행하여 인덱스 유효성을 재검증할 수 있습니다.
   // 하지만 초기 로드 시에만 실행하려면 빈 배열을 사용합니다. 여기서는 초기 로드만 처리합니다.

@@ -158,3 +158,14 @@ export interface GameStateHook {
   saveGame: () => void;
   loadGame: () => void;
 }
+
+// --- Types moved from useEpisodeLoader.ts ---
+
+// 로컬 script.json 파일의 에피소드 데이터 구조 정의
+export interface EpisodeData {
+  id: string;
+  title: string;
+  intro_dialogues: ScriptLine[];
+  ending_dialogues: ScriptLine[];
+  mission_id: string; // 다음 댓글 미션 ID
+}
