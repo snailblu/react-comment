@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import styles from './CommentInput.module.css';
 
 interface CommentInputProps {
-  onSubmit: (commentText: string, nickname?: string, password?: string) => void; // 닉네임, 비밀번호 추가 (선택적)
-  disabled?: boolean; // 입력 비활성화 여부
+  // 대댓글 모드에서는 parentId가 필요 없으므로 onSubmit 시그니처는 유지
+  onSubmit: (commentText: string, nickname?: string, password?: string) => void;
+  disabled?: boolean;
+  onCancel?: () => void; // 취소 핸들러 추가 (선택적)
+  isReplyMode?: boolean; // 대댓글 모드 여부 추가 (선택적)
 }
 
-const DEFAULT_NICKNAME = '연갤러'; // 기본값 변경
+const DEFAULT_NICKNAME = '연갤러';
 
-const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false }) => {
+const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false, onCancel, isReplyMode = false }) => {
   const [useDefaultNickname, setUseDefaultNickname] = useState(true); // 갤닉 사용 여부 상태
   const [nickname, setNickname] = useState(DEFAULT_NICKNAME);
   const [password, setPassword] = useState('');
@@ -101,7 +104,8 @@ const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false 
       </div>
 
       {/* 오른쪽: 텍스트 영역 및 하단 컨트롤 */}
-      <div className={styles.inputArea}>
+      {/* isReplyMode일 때 스타일 조정이 필요할 수 있음 */}
+      <div className={`${styles.inputArea} ${isReplyMode ? styles.replyInputArea : ''}`}>
         <textarea
           value={commentText}
           onChange={handleTextChange}
@@ -118,12 +122,21 @@ const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false 
           </div>
           <div className={styles.submitButtons}>
             <span className={styles.charCount}>{commentText.length}/{maxLength}</span>
+            {/* 대댓글 모드일 때 취소 버튼 표시 */}
+            {isReplyMode && onCancel && (
+              <button type="button" onClick={onCancel} className={`${styles.submitButton} ${styles.cancelButton}`}>
+                취소
+              </button>
+            )}
             <button type="submit" disabled={disabled || !commentText.trim()} className={styles.submitButton}>
               등록
             </button>
-            <button type="button" onClick={handleSubmitWithRecommend} disabled={disabled || !commentText.trim()} className={`${styles.submitButton} ${styles.recommendButton}`}>
-              등록+추천
-            </button>
+            {/* 대댓글 모드에서는 등록+추천 버튼 숨김 */}
+            {!isReplyMode && (
+              <button type="button" onClick={handleSubmitWithRecommend} disabled={disabled || !commentText.trim()} className={`${styles.submitButton} ${styles.recommendButton}`}>
+                등록+추천
+              </button>
+            )}
           </div>
         </div>
       </div>

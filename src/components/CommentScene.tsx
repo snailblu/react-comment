@@ -337,8 +337,61 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
 
     // 미션 상태 체크 (현재 opinion 상태와 변경된 시도 횟수 사용)
     // checkMissionStatus는 opinion 상태를 직접 읽으므로, opinion 값을 인자로 전달할 필요 없음
-    checkMissionStatus(opinion.positive, newAttemptsLeft); // opinion.positive를 전달하거나, checkMissionStatus 내부에서 opinion 상태를 직접 읽도록 수정 필요. 여기서는 전달하는 방식을 유지.
+    checkMissionStatus(opinion.positive, newAttemptsLeft);
   };
+
+  // --- 대댓글 제출 핸들러 ---
+  const handleReplySubmit = (replyContent: string, parentId: string, nickname?: string, password?: string) => {
+    if (isMissionOver || attemptsLeft <= 0 || !missionData) return;
+
+    console.log(`Submitting reply to ${parentId}:`, replyContent, 'by', nickname || 'Default');
+
+    const playerIp = '127.0.0.1'; // 플레이어 IP
+    const newReply: Comment = {
+      id: `player-reply-${Date.now()}`,
+      nickname: nickname,
+      ip: playerIp,
+      content: replyContent,
+      likes: 0,
+      is_player: true,
+      isReply: true, // 대댓글임을 표시
+      // parentId: parentId, // 필요하다면 부모 ID 저장 (현재 Comment 타입에는 없음)
+      created_at: new Date().toISOString(),
+    };
+
+    // 부모 댓글 바로 아래에 대댓글 삽입
+    setComments((prevComments) => {
+      const parentIndex = prevComments.findIndex(comment => comment.id === parentId);
+      if (parentIndex === -1) {
+        // 부모 댓글을 찾지 못한 경우 맨 뒤에 추가 (예외 처리)
+        console.error(`Parent comment with id ${parentId} not found.`);
+        return [...prevComments, newReply];
+      }
+
+      // 부모 댓글 다음부터 시작하여 마지막 대댓글 위치 찾기
+      let insertionIndex = parentIndex + 1;
+      for (let i = parentIndex + 1; i < prevComments.length; i++) {
+        if (prevComments[i].isReply) {
+          // 현재 댓글이 대댓글이면, 다음 위치를 삽입 후보로 업데이트
+          insertionIndex = i + 1;
+        } else {
+          // 대댓글이 아닌 댓글을 만나면, 여기가 대댓글 블록의 끝이므로 반복 중단
+          break;
+        }
+      }
+
+      // 찾은 위치에 새로운 대댓글 삽입
+      const newComments = [...prevComments];
+      newComments.splice(insertionIndex, 0, newReply);
+      return newComments;
+    });
+
+    // 시도 횟수 차감 및 미션 상태 체크 (일반 댓글과 동일하게 처리)
+    const newAttemptsLeft = attemptsLeft - 1;
+    setAttemptsLeft(newAttemptsLeft);
+    checkMissionStatus(opinion.positive, newAttemptsLeft);
+  };
+
 
   // --- 로딩 상태 표시 ---
   if (!missionData) {
@@ -416,7 +469,12 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
                 </span>
               </div>
             </div>
-            <CommentList comments={comments} isVisible={isCommentListVisible} />
+            {/* onReplySubmit 핸들러 전달 */}
+            <CommentList
+              comments={comments}
+              isVisible={isCommentListVisible}
+              onReplySubmit={handleReplySubmit} // 핸들러 전달
+            />
             {isCommentListVisible && comments.length > 0 && (
               <div className={styles.commentListFooter}>
                 <span className={styles.listControls}>
