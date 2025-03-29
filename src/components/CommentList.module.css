@@ -28,8 +28,8 @@
 
 .authorInfo {
   /* font-weight: bold; 제거 */
-  color: #333;
-  font-size: 0.85rem;
+  color: #333; /* commentText와 동일하게 */
+  font-size: 0.9rem; /* commentText와 동일하게 */
   flex-shrink: 0;
   width: 150px; /* 너비 증가 */
   white-space: nowrap;
@@ -40,14 +40,16 @@
 }
 
 .ipAddress {
-  font-weight: normal;
-  color: #888;
+  /* font-weight: normal; 제거 */
+  color: #888; /* 연한 회색으로 변경 */
+  font-size: 0.8rem; /* 폰트 크기 약간 줄임 */
   /* margin-left: 3px; 제거 */
 }
 
 .commentText {
   margin: 0;
   color: #333;
+  font-size: 0.9rem; /* 기준 폰트 크기 */
   word-break: break-word;
   flex-grow: 1;
   padding-right: 10px;

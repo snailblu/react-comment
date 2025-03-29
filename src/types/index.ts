@@ -62,6 +62,12 @@ export interface Opinion {
   neutral: number;
 }
 
+// 기사 추천/비추천 타입 정의 추가
+export interface ArticleReactions {
+  likes: number;
+  dislikes: number;
+}
+
 // Mission 타입 정의 추가
 export interface Mission {
   id: string;

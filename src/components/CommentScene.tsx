@@ -14,8 +14,9 @@ import ArticleContent from './ArticleContent';
 import ArticleReactions from './ArticleReactions'; // ArticleReactions 컴포넌트 import 추가
 import { Button } from './ui/button'; // 상대 경로로 다시 변경
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai"; // Gemini SDK import
+import { v4 as uuidv4 } from 'uuid'; // uuid 라이브러리 import
 import { generateCommentPrompt } from '../lib/promptGenerator'; // 프롬프트 생성 함수 import
-import { Comment, Opinion } from '../types'; // Comment 및 Opinion 타입 import 위치 수정
+import { Comment, Opinion, ArticleReactions as ArticleReactionsType } from '../types'; // ArticleReactions 타입 import 추가 및 별칭 사용
 
 // 필요한 Hook import (예시)
 // import useGameState from '../hooks/useGameState';
@@ -122,11 +123,18 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     try {
       console.log('Requesting AI comments for article:', missionData.articleTitle);
 
-      // 분리된 함수를 사용하여 프롬프트 생성 (opinion 인자 제거)
+      // 현재 기사 추천/비추천 수를 객체로 전달
+      const currentReactions: ArticleReactionsType = {
+        likes: articleLikes,
+        dislikes: articleDislikes,
+      };
+
+      // 분리된 함수를 사용하여 프롬프트 생성 (reactions 인자 추가)
       const prompt = generateCommentPrompt(
         missionData.articleTitle ?? '제목 없음',
         missionData.articleContent ?? '내용 없음',
-        comments // 현재 댓글 목록 상태 전달
+        comments, // 현재 댓글 목록 상태 전달
+        currentReactions // 현재 추천/비추천 수 전달
       );
       console.log("Generated Prompt for Gemini:", prompt); // 생성된 프롬프트 확인용 로그
 
@@ -154,98 +162,192 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         }
       }
 
-      // 응답 텍스트를 줄바꿈 기준으로 나누어 댓글 배열 생성
-      const commentLines = generatedText.split('\n').map(c => c.trim()).filter(c => c.length > 0);
+      // --- AI 응답 처리: 댓글과 추천/비추천 분리 ---
+      let commentTextPart = generatedText;
+      let predictedReactions: ArticleReactionsType | null = null;
 
-      // Comment 객체로 변환 (parentId 파싱 로직 추가)
+      // 응답 마지막 줄이 JSON 형식인지 확인하고 분리 시도
+      const lines = generatedText.trim().split('\n');
+      const lastLine = lines[lines.length - 1];
+      if (lastLine.startsWith('{') && lastLine.endsWith('}')) {
+        try {
+          const parsedJson = JSON.parse(lastLine);
+          // 파싱된 객체가 likes와 dislikes 속성을 숫자로 가지고 있는지 확인
+          if (typeof parsedJson.likes === 'number' && typeof parsedJson.dislikes === 'number') {
+            predictedReactions = parsedJson;
+            // 댓글 부분만 추출 (마지막 줄 제외)
+            commentTextPart = lines.slice(0, -1).join('\n');
+            console.log("Parsed predicted reactions:", predictedReactions);
+          } else {
+            console.warn("Last line looks like JSON but doesn't match ArticleReactions format:", lastLine);
+          }
+        } catch (e) {
+          console.warn("Failed to parse last line as JSON, treating as comment:", lastLine, e);
+        }
+      }
+
+      // --- 댓글 파싱 ---
+      // commentTextPart를 사용하여 댓글 파싱
+      const commentLines = commentTextPart.split('\n').map(c => c.trim()).filter(c => c.length > 0);
       const generatedComments: Comment[] = [];
+
       commentLines.forEach((line, index) => {
         let isReply = false;
         let parentId: string | undefined = undefined;
-        let textToParse = line;
+        let nickname: string | undefined = undefined;
+        let ip: string | undefined = undefined;
+        let content: string | undefined = undefined;
 
-        // 대댓글 형식 확인 및 parentId 추출 (-> [ID] 형식)
-        const replyMatch = line.match(/^->\s*\[(.*?)\]\s*(.*)$/);
-        if (replyMatch) {
-          isReply = true;
-          parentId = replyMatch[1].trim(); // 대괄호 안의 ID 추출
-          textToParse = replyMatch[2].trim(); // ID 부분을 제외한 나머지 텍스트
+        // 파싱 순서 변경: 더 구체적인 대댓글 형식을 먼저 확인
+        // 1. "작성자(IP): -> [ID] 내용" 형식 (가장 복잡)
+        const complexReplyMatch = line.match(/^(.+?)\((.*?)\):\s*->\s*\[(.*?)\]\s*(.*)$/);
+        // 2. "-> [ID] 작성자(IP): 내용" 형식 (단순 대댓글)
+        const simpleReplyMatch = line.match(/^->\s*\[(.*?)\]\s*(.+?)\((.*?)\):\s*(.*)$/);
+        // 3. "작성자(IP): 내용" 형식 (일반 댓글)
+        const regularCommentMatch = line.match(/^(.+?)\((.*?)\):\s*(.*)$/);
+
+        if (complexReplyMatch) {
+            // 형식: "밤의황제(29.30.31.32): -> [ai-1743209007495-2] 니얼굴빻빻(222.111): 맞는말인데 왜 비추?"
+            // 이 경우, 실제 대댓글 작성자는 내용 부분에 포함될 수 있음.
+            // 여기서는 첫번째 작성자/IP를 댓글 작성자로 간주하고, 나머지를 내용으로 처리.
+            isReply = true;
+            nickname = complexReplyMatch[1].trim();
+            ip = complexReplyMatch[2].trim();
+            parentId = complexReplyMatch[3].trim();
+            content = complexReplyMatch[4].trim(); // 내용 부분 전체
+            console.log(`Parsed complex reply: Nick=${nickname}, IP=${ip}, ParentID=${parentId}, Content=${content}`);
+        } else if (simpleReplyMatch) {
+            // 형식: "-> [tut-1] 니얼굴빻빻(222.111): 꼬우면 보지마셈;"
+            isReply = true;
+            parentId = simpleReplyMatch[1].trim();
+            nickname = simpleReplyMatch[2].trim();
+            ip = simpleReplyMatch[3].trim();
+            content = simpleReplyMatch[4].trim();
+            console.log(`Parsed simple reply: Nick=${nickname}, IP=${ip}, ParentID=${parentId}, Content=${content}`);
+        } else if (regularCommentMatch) {
+            // 형식: "뉴비응원단(1.2.3.4): 도림이 응원글 보고 힘내서 왔다!"
+            isReply = false; // 일반 댓글
+            parentId = undefined;
+            nickname = regularCommentMatch[1].trim();
+            ip = regularCommentMatch[2].trim();
+            content = regularCommentMatch[3].trim();
+            console.log(`Parsed regular comment: Nick=${nickname}, IP=${ip}, Content=${content}`);
         }
 
-        // 닉네임(IP): 내용 형식 매칭
-        const commentMatch = textToParse.match(/^(.+?)\((.*?)\):\s*(.*)$/);
-
-        if (commentMatch) {
-          const [, nickname, ip, content] = commentMatch;
-          generatedComments.push({
-            id: `ai-${Date.now()}-${index}`,
-            nickname: nickname.trim(),
-            ip: ip.trim(),
-            content: content.trim(),
-            likes: Math.floor(Math.random() * 10),
-            is_player: false,
-            isReply: isReply,
-            parentId: parentId, // 추출한 parentId 설정
-            created_at: new Date().toISOString(),
-          });
+        // 파싱 성공 여부 확인 (content가 정의되었는지)
+        if (content !== undefined) { // content가 undefined가 아니면 파싱 성공으로 간주
+            generatedComments.push({
+                id: uuidv4(), // UUID로 ID 생성
+                nickname: nickname || '익명AI', // 파싱 실패 시 기본값
+                ip: ip || '0.0.0', // 파싱 실패 시 기본값
+                content: content,
+                likes: Math.floor(Math.random() * 10),
+                is_player: false,
+                isReply: isReply,
+                parentId: parentId,
+                created_at: new Date().toISOString(),
+            });
         } else {
-          // 형식이 맞지 않는 경우 (대댓글/일반댓글 모두)
-          console.warn(`AI comment format mismatch, using full text as content: "${line}"`);
-          generatedComments.push({
-            id: `ai-${Date.now()}-${index}-fallback`,
-            nickname: '익명AI',
-            ip: '0.0.0',
-            content: line, // 원본 라인 전체를 내용으로
-            likes: Math.floor(Math.random() * 5),
-            is_player: false,
-            isReply: isReply, // 대댓글 여부는 유지될 수 있음
-            parentId: parentId, // parentId도 유지될 수 있음
-            created_at: new Date().toISOString(),
-          });
+            // 어떤 형식에도 맞지 않는 경우 (Fallback)
+            console.warn(`AI comment format mismatch, using full text as content: "${line}"`);
+            generatedComments.push({
+                id: uuidv4(), // UUID로 ID 생성
+                nickname: '익명AI',
+                ip: '0.0.0',
+                content: line, // 원본 라인 전체를 내용으로 사용
+                likes: Math.floor(Math.random() * 5),
+                is_player: false,
+                isReply: false, // 파싱 불가 시 일반 댓글로 처리
+                parentId: undefined,
+                created_at: new Date().toISOString(),
+            });
         }
       });
 
-      // 상태 업데이트 (대댓글 위치 조정 로직 추가)
-      if (generatedComments.length === 0) {
-        setMonologue('AI가 댓글을 생성하지 못했습니다. 다시 시도해주세요.');
+      // --- 상태 업데이트 ---
+      if (generatedComments.length === 0 && !predictedReactions) {
+        setMonologue('AI가 댓글이나 추천/비추천 예측을 생성하지 못했습니다. 다시 시도해주세요.');
       } else {
-        // 새로운 댓글 목록을 생성하여 대댓글 위치 조정
-        setComments((prevComments) => {
-          let newCommentsList = [...prevComments]; // 시작은 이전 댓글 목록 복사
+        // 1. 댓글 상태 업데이트 (부모 ID 유효성 검사 추가)
+        if (generatedComments.length > 0) {
+          setComments((prevComments) => {
+            let newCommentsList = [...prevComments]; // 시작은 이전 댓글 목록 복사
+            // let newCommentsList = [...prevComments]; // 중복 선언 제거
+            const tempGeneratedComments: Comment[] = []; // 이번 배치에서 생성된 댓글 임시 저장
 
-          generatedComments.forEach(newComment => {
-            if (newComment.isReply && newComment.parentId) {
-              // 대댓글 처리: 부모 댓글 찾기
-              const parentIndex = newCommentsList.findIndex(comment => comment.id === newComment.parentId);
+            generatedComments.forEach(newComment => {
+              if (newComment.isReply && newComment.parentId) {
+                const targetIdentifier = newComment.parentId; // AI가 제공한 부모 식별자 (ID 또는 닉네임)
+                let actualParentId: string | undefined = undefined;
+                let parentComment: Comment | undefined = undefined;
 
-              if (parentIndex !== -1) {
-                // 부모 댓글 찾음: 삽입 위치 계산 (부모 다음부터 마지막 대댓글 뒤까지)
-                let insertionIndex = parentIndex + 1;
-                while (insertionIndex < newCommentsList.length &&
-                       newCommentsList[insertionIndex].isReply) {
-                           // && newCommentsList[insertionIndex].parentId === newComment.parentId) { // 필요시 더 정확한 부모 확인
-                  insertionIndex++;
+                // 1. 기존 댓글 + 현재 배치에서 ID로 부모 찾기
+                parentComment = [...newCommentsList, ...tempGeneratedComments].find(c => c.id === targetIdentifier);
+
+                // 2. ID로 못 찾으면, 기존 댓글 + 현재 배치에서 닉네임으로 부모 찾기
+                if (!parentComment) {
+                  parentComment = [...newCommentsList, ...tempGeneratedComments].find(c => c.nickname === targetIdentifier);
                 }
-                // 찾은 위치에 대댓글 삽입
-                newCommentsList.splice(insertionIndex, 0, newComment);
+
+                if (parentComment) {
+                  actualParentId = parentComment.id; // 실제 부모 ID 확보
+                  newComment.parentId = actualParentId; // newComment의 parentId를 실제 ID로 업데이트
+
+                  // 부모 댓글 위치 찾기 (newCommentsList 기준)
+                  const parentIndex = newCommentsList.findIndex(comment => comment.id === actualParentId);
+
+                  if (parentIndex !== -1) {
+                    // 부모 댓글 찾음: 삽입 위치 계산
+                    let insertionIndex = parentIndex + 1;
+                    while (insertionIndex < newCommentsList.length &&
+                           newCommentsList[insertionIndex].isReply &&
+                           newCommentsList[insertionIndex].parentId === actualParentId) { // 같은 부모를 가진 대댓글 뒤에 삽입
+                      insertionIndex++;
+                    }
+                    newCommentsList.splice(insertionIndex, 0, newComment);
+                  } else {
+                    // newCommentsList에 부모가 없는 경우 (tempGeneratedComments에만 있는 경우) -> 일단 temp에 넣고 나중에 처리
+                    tempGeneratedComments.push(newComment);
+                  }
+                } else {
+                  // ID로도, 닉네임으로도 부모 못 찾음: 경고 로그 남기고 일반 댓글처럼 처리 준비
+                  console.warn(`Parent comment target "${targetIdentifier}" provided by AI does not match any existing ID or Nickname. Appending reply as a regular comment.`);
+                  // isReply는 유지하되, parentId는 undefined로 설정하여 일반 댓글처럼 추가되도록 함
+                  newComment.parentId = undefined;
+                  tempGeneratedComments.push(newComment); // 일반 댓글처럼 추가될 예정
+                }
               } else {
-                // 부모 댓글 못 찾음 (오류 또는 AI가 잘못된 ID 생성): 맨 뒤에 추가하고 경고
-                console.warn(`Parent comment with ID ${newComment.parentId} not found for AI reply. Appending to the end.`);
-                newCommentsList.push(newComment);
+                // 일반 댓글 처리
+                tempGeneratedComments.push(newComment); // 일단 temp에 추가
               }
-            } else {
-              // 일반 댓글 처리: 맨 뒤에 추가
-              newCommentsList.push(newComment);
-            }
+            });
+
+            // tempGeneratedComments에 있는 댓글들을 newCommentsList에 최종 추가
+            // (대댓글 삽입이 위에서 처리되었으므로, 여기서는 주로 일반 댓글과 부모 못 찾은 대댓글이 추가됨)
+            newCommentsList.push(...tempGeneratedComments.filter(tc => !newCommentsList.some(nc => nc.id === tc.id))); // 중복 추가 방지
+
+            return newCommentsList; // 최종적으로 정렬된 새 배열 반환
           });
+          setMonologue(`AI가 ${generatedComments.length}개의 댓글(대댓글 포함)을 생성했습니다.`);
+        } else {
+          setMonologue('AI가 새 댓글은 생성하지 않았습니다.'); // 댓글만 없을 경우 메시지
+        }
 
-          return newCommentsList; // 최종적으로 정렬된 새 배열 반환
-        });
+        // 2. 추천/비추천 상태 업데이트 (예측값이 있으면)
+        if (predictedReactions) {
+          setArticleLikes(predictedReactions.likes);
+           setArticleDislikes(predictedReactions.dislikes);
+           // 독백에 추천/비추천 업데이트 정보 추가 (null 체크 추가)
+           setMonologue(prev => {
+             const reactionText = predictedReactions
+               ? ` (예상 추천/비추천: ${predictedReactions.likes}/${predictedReactions.dislikes})`
+               : '';
+             return `${prev}${reactionText}`;
+           });
+         }
+       }
 
-        setMonologue(`AI가 ${generatedComments.length}개의 댓글(대댓글 포함)을 생성했습니다.`); // 메시지 수정
-      }
-
-      // 여론 상태 업데이트 로직 제거
+      // 여론 상태 업데이트 로직은 여전히 제거된 상태 유지
 
 
     } catch (error) {
@@ -368,7 +470,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     // 플레이어 댓글 IP는 고정값 또는 다른 규칙으로 설정 (예: '127.0.0.1')
     const playerIp = '127.0.0.1'; // 예시 고정 IP
     const newComment: Comment = {
-      id: `player-${Date.now()}`,
+      id: uuidv4(), // UUID로 ID 생성
       nickname: nickname,
       ip: playerIp, // 고정된 플레이어 IP 사용
       content: commentText,
@@ -398,7 +500,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
 
     const playerIp = '127.0.0.1'; // 플레이어 IP
     const newReply: Comment = {
-      id: `player-reply-${Date.now()}`,
+      id: uuidv4(), // UUID로 ID 생성
       nickname: nickname,
       ip: playerIp,
       content: replyContent,

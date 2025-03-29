@@ -96,17 +96,17 @@ const CommentList: React.FC<CommentListProps> = ({ comments, isVisible, onReplyS
                 // isReply 값에 따라 replyComment 클래스 추가
                 // 클릭 가능하도록 cursor-pointer 추가 (CSS에서 정의 필요)
                 className={`${styles.commentItem} ${comment.isReply ? styles.replyComment : styles.parentComment} ${!comment.isReply ? styles.clickable : ''}`}
-                onClick={() => !comment.isReply && handleCommentClick(comment.id)} // 부모 댓글만 클릭 가능하도록
-              >
-                {/* 작성자 정보 (닉네임 + IP 앞 두자리) */}
-                <div className={styles.authorInfo}>
-                 {/* 플레이어 구분 없이 닉네임 또는 'ㅇㅇ' 표시 */}
-                 {comment.nickname || 'ㅇㅇ'}
-                 {/* IP 주소 앞 두 자리만 추출하여 표시 */}
-                 {comment.ip && <span className={styles.ipAddress}>({comment.ip.split('.').slice(0, 2).join('.')})</span>}
-               </div>
-               {/* 댓글 내용 (대댓글이면 'ㄴ' 추가) */}
-               <p className={styles.commentText}>
+                 onClick={() => !comment.isReply && handleCommentClick(comment.id)} // 부모 댓글만 클릭 가능하도록
+               >
+                 {/* 작성자 정보 */}
+                 <div className={styles.authorInfo}>
+                   {/* 플레이어 구분 없이 닉네임 또는 'ㅇㅇ' 표시 */}
+                   {comment.nickname || 'ㅇㅇ'}
+                   {/* IP 주소 앞 두 자리만 추출하여 표시 */}
+                   {comment.ip && <span className={styles.ipAddress}>({comment.ip.split('.').slice(0, 2).join('.')})</span>}
+                 </div>
+                 {/* 댓글 내용 (대댓글이면 'ㄴ' 추가) */}
+                 <p className={styles.commentText}>
                 {comment.isReply && <span className={styles.replyPrefix}>ㄴ</span>}
                 {comment.content}
               </p>
