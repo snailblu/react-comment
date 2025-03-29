@@ -1,4 +1,5 @@
 // src/types/index.ts
+import { Dispatch, SetStateAction } from 'react';
 
 // 기존 타입 정의 유지
 export interface DialogueLine {
@@ -99,4 +100,61 @@ export interface Settings {
   textSpeed: number;
   autoPlaySpeed: number;
   language: string;
+}
+
+// --- Types moved from useGameState.ts ---
+
+// 선택지 옵션 타입 (Choices.tsx와 일치 또는 공유 타입 파일로 이동 고려)
+export interface ChoiceOption {
+  id: string | number;
+  text: string;
+  nextId?: string | number;
+}
+
+// 스크립트 라인 타입
+export interface ScriptLine {
+  id: string | number;
+  type: string; // 'dialogue', 'choice', 'narrator' 등
+  character?: string;
+  text?: string;
+  choices?: ChoiceOption[];
+  nextId?: string | number;
+  condition?: {
+    flag: string;
+    value: any; // 조건 값은 다양할 수 있음
+  };
+  altText?: string;
+  expression?: string;
+  nextScene?: SceneType; // 다음 씬 타입 추가
+  // 필요한 다른 속성 추가 가능
+}
+
+// 스크립트 데이터 타입 (ScriptLine 배열)
+export type ScriptData = ScriptLine[];
+
+// 게임 플래그 타입 (문자열 키와 임의의 값)
+export type GameFlags = Record<string, any>;
+
+// useGameState Hook 반환 타입
+export interface GameStateHook {
+  currentScriptIndex: number;
+  gameFlags: GameFlags;
+  currentEpisodeId: string | null; // 현재 에피소드 ID
+  sceneProgress: string; // 현재 씬 진행 단계 (예: 'intro', 'mission', 'ending')
+  currentMissionId: string | null; // 현재 진행 중인 미션 ID
+  remainingAttempts: number; // 현재 미션 남은 시도 횟수
+  articleLikes: number; // 현재 기사 좋아요 수
+  articleDislikes: number; // 현재 기사 싫어요 수
+  setCurrentScriptIndex: Dispatch<SetStateAction<number>>;
+  setGameFlags: Dispatch<SetStateAction<GameFlags>>;
+  setCurrentEpisodeId: Dispatch<SetStateAction<string | null>>;
+  setSceneProgress: Dispatch<SetStateAction<string>>;
+  setCurrentMissionId: Dispatch<SetStateAction<string | null>>; // 미션 ID setter
+  setRemainingAttempts: Dispatch<SetStateAction<number>>; // 시도 횟수 setter
+  setArticleLikes: Dispatch<SetStateAction<number>>; // 좋아요 setter 추가
+  setArticleDislikes: Dispatch<SetStateAction<number>>; // 싫어요 setter 추가
+  handleLikeArticle: () => void; // 좋아요 핸들러
+  handleDislikeArticle: () => void; // 싫어요 핸들러
+  saveGame: () => void;
+  loadGame: () => void;
 }

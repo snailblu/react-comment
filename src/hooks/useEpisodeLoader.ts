@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ScriptLine } from './useGameState'; // useGameState에서 ScriptLine 타입 가져오기
+import { ScriptLine } from '../types'; // 타입 import 경로 수정
 
 // 로컬 script.json 파일의 에피소드 데이터 구조 정의
 interface EpisodeData {

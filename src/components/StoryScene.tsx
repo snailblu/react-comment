@@ -10,8 +10,9 @@ import SettingsMenu from './SettingsMenu'; // SettingsMenu import 추가
 import PhoneChat from './PhoneChat'; // PhoneChat 컴포넌트 추가
 // import useScriptLoader from '../hooks/useScriptLoader'; // useScriptLoader 훅 import 제거
 import useEpisodeLoader from '../hooks/useEpisodeLoader'; // useEpisodeLoader 훅 import 추가
-// useGameState 훅 및 관련 타입 import
-import useGameState, { ScriptLine, GameFlags, ChoiceOption } from '../hooks/useGameState'; // ScriptData 제거 (이제 EpisodeData 사용)
+// useGameState 훅 import 및 필요한 타입들은 ../types에서 가져오기
+import useGameState from '../hooks/useGameState';
+import { ScriptLine, GameFlags, ChoiceOption } from '../types'; // 타입 import 경로 수정
 import styles from './StoryScene.module.css'; // CSS 모듈 import 경로 수정
 import roomBackground from '../assets/oneroom.png';
 import dorimSmile from '../assets/dorim_smile.png';
