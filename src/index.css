@@ -70,6 +70,10 @@
   * {
     @apply border-border;
   }
+  /* html, body, #root에 높이 100% 적용 */
+  html, body, #root {
+    height: 100%;
+  }
   body {
     @apply bg-background text-foreground;
   }
@@ -77,6 +81,8 @@
 
 
 body {
+  /* 위의 @layer base에서 height: 100%가 이미 적용되었으므로,
+     여기서는 기본 스타일만 유지합니다. */
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',

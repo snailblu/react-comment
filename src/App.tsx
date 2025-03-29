@@ -1,22 +1,24 @@
 import './App.css';
 import './App.css';
 import React from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom'; // useNavigate 추가
-import StoryScene from './components/StoryScene'; // Game -> StoryScene 변경
+import { Routes, Route } from 'react-router-dom'; // useNavigate 제거 (현재 사용 안 함)
+import GameViewport from './components/GameViewport'; // GameViewport 추가
+import StoryScene from './components/StoryScene';
 import TitleScreen from './components/TitleScreen';
 import CommentScene from './components/CommentScene';
 import ResultScene from './components/ResultScene';
 // Removed duplicate import: import CommentScene from './components/CommentScene';
 
 function App() {
-  // const navigate = useNavigate(); // navigate는 아직 사용되지 않으므로 주석 처리 또는 제거 가능
-
   // testMissionId 및 handleMissionComplete 제거됨
 
   return (
-    <div className="App">
-      {/* Set up routes */}
-      <Routes>
+    <GameViewport> {/* GameViewport로 감싸기 */}
+      {/* className="App" 제거 */}
+      {/* 중간 div 제거 */}
+      {/* <div className="h-full"> */}
+        {/* Set up routes */}
+        <Routes>
         {/* 루트 경로를 TitleScreen으로 변경 */}
         <Route path="/" element={<TitleScreen />} />
         {/* CommentScene 라우트 수정 (missionId 및 핸들러 제거 - 추후 필요시 재설정) */}
@@ -26,9 +28,10 @@ function App() {
         {/* EndingScene 라우트 제거 */}
         {/* 기존 /title 경로는 루트로 대체되었으므로 제거 가능 */}
         {/* <Route path="/title" element={<TitleScreen />} /> */}
-        <Route path="/game" element={<StoryScene />} /> {/* Game -> StoryScene 변경 */}
-      </Routes>
-    </div>
+          <Route path="/game" element={<StoryScene />} />
+        </Routes>
+      {/* </div> */}
+    </GameViewport>
   );
 }
 

@@ -83,22 +83,36 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   const [isCommentListVisible, setIsCommentListVisible] = useState(true);
   const [isMonologueVisible, setIsMonologueVisible] = useState(true);
   const mainContentAreaRef = useRef<HTMLDivElement>(null);
+  const prevIsGeneratingCommentsRef = useRef<boolean>(isGeneratingComments); // 이전 AI 생성 상태 추적
 
   // --- 독백 상태 관리 ---
   useEffect(() => {
-    // 로딩/오류 > 미션 결과 > AI 상태 > 초기 순으로 우선순위 설정
+    const wasGenerating = prevIsGeneratingCommentsRef.current;
+    prevIsGeneratingCommentsRef.current = isGeneratingComments; // 현재 상태 업데이트
+
+    // 로딩/오류 > 미션 결과 > AI 완료 > AI 진행 중 > 초기 순으로 우선순위 설정
     if (isMissionLoading) {
       setCurrentMonologue('미션 데이터를 불러오는 중...');
     } else if (missionError) {
       setCurrentMonologue(`오류: ${missionError}`);
     } else if (missionResultMonologue) {
       setCurrentMonologue(missionResultMonologue);
-    } else if (aiMonologue) {
+    } else if (wasGenerating && !isGeneratingComments) { // AI 생성이 막 완료된 경우
+      setCurrentMonologue(`댓글이 ${comments.length}개 달렸군. 어디 읽어볼까... `);
+    } else if (aiMonologue) { // AI 생성 중 또는 다른 AI 관련 독백 (AI 완료 조건보다 낮은 우선순위)
       setCurrentMonologue(aiMonologue);
     } else {
       setCurrentMonologue(initialMonologue);
     }
-  }, [isMissionLoading, missionError, missionResultMonologue, aiMonologue, initialMonologue]);
+  }, [
+      isMissionLoading,
+      missionError,
+      missionResultMonologue,
+      aiMonologue,
+      initialMonologue,
+      isGeneratingComments, // 의존성 추가
+      comments.length // 댓글 개수 참조를 위해 comments.length 사용
+  ]);
 
 
   // --- UI 관련 핸들러 ---

@@ -277,9 +277,10 @@ ${allCommentsText}
   };
 
   return (
-    // 전체 화면을 검은색 배경으로 채우고 내용을 중앙 정렬
-    <div className="flex items-center justify-center min-h-screen bg-black text-white p-4">
+    // GameViewport가 중앙 정렬을 담당하므로, 여기서는 배경색과 패딩만 유지
+    <div className="bg-black text-white p-4 w-full h-full flex items-center justify-center"> {/* flex, items-center, justify-center 추가하여 카드 자체를 중앙 정렬 */}
       {/* 카드 너비 조정 및 그림자 효과 개선 */}
+      {/* w-full h-full 추가하여 ResultScene이 GameViewport의 전체 영역을 차지하도록 함 */}
       <Card className="w-full max-w-lg bg-gray-900 border-gray-700 shadow-xl shadow-blue-500/20 rounded-lg">
         {renderContent()}
       </Card>

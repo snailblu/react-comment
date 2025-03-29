@@ -5,13 +5,14 @@ import { Link } from 'react-router-dom';
 function TitleScreen() {
   return (
     // Playfair Display 폰트 적용
-    <div className="flex flex-col items-center justify-between min-h-screen bg-gradient-to-br from-gray-700 via-gray-900 to-black text-gray-300 py-60 font-playfair">
-      {/* 은은한 보라색 계열 그라데이션 제목 */}
-      <h1 className="text-6xl font-bold animate-pulse text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-indigo-400">
+    // justify-between/패딩 제거, relative 추가, 버튼 absolute positioning
+    <div className="relative flex flex-col items-center h-full w-full bg-gradient-to-br from-gray-700 via-gray-900 to-black text-gray-300 font-playfair"> {/* justify-between, pt/pb 제거, relative 추가 */}
+      {/* 제목 (상단 마진 유지) */}
+      <h1 className="text-7xl font-bold animate-pulse text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-indigo-400 mt-64"> {/* mt-24 유지 */}
         Project Comment
       </h1>
-      {/* 버튼을 하단으로 이동 */}
-      <nav className="space-x-4">
+      {/* 버튼 (absolute positioning 적용) */}
+      <nav className="absolute bottom-[30%] left-1/2 -translate-x-1/2 space-x-4"> {/* absolute, bottom-[30%], left-1/2, -translate-x-1/2 추가 */}
         {/* 진한 회색 버튼 */}
         <Link
           to="/game"

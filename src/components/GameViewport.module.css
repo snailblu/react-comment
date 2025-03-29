@@ -1,0 +1,33 @@
+.viewport {
+  width: 100vw; /* 화면 전체 너비 */
+  height: 100vh; /* 화면 전체 높이 */
+  overflow: hidden; /* 내부 컨테이너가 넘칠 경우 숨김 */
+  background-color: black; /* 레터박스/필러박스 색상 */
+  /* position: relative; <- 제거 */
+  position: relative; /* 내부 absolute 컨테이너의 기준점 복원 */
+  /* display: flex; <- 제거 */
+  /* justify-content: center; <- 제거 */
+  /* align-items: center; <- 제거 */
+}
+
+.gameContainer {
+  /* GameViewport.tsx의 inline style 제거 예정 */ /* -> 제거 */
+  /* Absolute centering with transform */
+  position: absolute; /* 절대 위치 지정 */
+  top: 50%; /* 상단에서 50% */
+  left: 50%; /* 좌측에서 50% */
+  /* transform은 GameViewport.tsx에서 인라인으로 적용 */
+  /* width, height 등 다른 크기/위치 속성 제거 */
+  /* max-width: calc(100vh * (16 / 9)); <- 제거 */
+  /* max-height: calc(100vw * (9 / 16)); <- 제거 */
+  /* aspect-ratio: 16 / 9; <- 제거 */
+  /*
+   * 실제 크기, 위치, 스케일은 GameViewport.tsx의 inline style로 동적 제어됩니다. <- 제거 예정
+   * 여기에 필요한 기본 스타일이나 자식 요소에 대한 공통 스타일을 추가할 수 있습니다.
+   * 예를 들어, 내부 요소들이 부드럽게 보이도록 설정할 수 있습니다.
+   */
+  image-rendering: -webkit-optimize-contrast; /* Webkit 브라우저 */
+  image-rendering: crisp-edges; /* Firefox */
+  image-rendering: pixelated; /* 최신 표준 (지원 브라우저 확인 필요) */
+  /* 필요에 따라 다른 기본 스타일 추가 */
+}

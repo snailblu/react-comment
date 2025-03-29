@@ -1,22 +1,24 @@
 .storySceneContainer { /* 클래스 이름 변경 */
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: black;
-  overflow: hidden;
+  /* 부모(.gameContainer)의 크기를 따르도록 수정 */
+  width: 100%;
+  height: 100%;
+  /* 아래 스타일은 GameViewport에서 처리하거나 불필요하므로 제거 */
+  /* display: flex; */
+  /* justify-content: center; */
+  /* align-items: center; */
+  /* background-color: black; */
+  /* overflow: hidden; */
 }
 
 .storyArea { /* 클래스 이름 변경 */
   position: relative;
-  width: 100%;
-  height: 100%;
-  max-width: calc(100vh * (16 / 9));
-  max-height: calc(100vw * (9 / 16));
-  aspect-ratio: 16 / 9;
-  background-color: #eee;
+  /* width, height, max-width, max-height, aspect-ratio 제거 */
+  /* GameViewport가 크기를 제어하므로 StoryScene 자체에서 크기 조절 불필요 */
+  background-color: #eee; /* 배경색은 유지하거나 필요에 따라 조정 */
   /* overflow: hidden; <- 제거 */
+  /* GameViewport의 gameContainer 크기(1920x1080)를 따르도록 함 */
+  width: 100%; /* 부모(.gameContainer)의 너비를 따름 */
+  height: 100%; /* 부모(.gameContainer)의 높이를 따름 */
 }
 
 /* 저장/불러오기 버튼 컨테이너 스타일 (예시) */
