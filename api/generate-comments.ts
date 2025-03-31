@@ -1,13 +1,17 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, GenerateContentResult } from "@google/generative-ai";
 import { v4 as uuidv4 } from 'uuid';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-// ../src/ 경로를 사용하기 위해 상대 경로 조정 또는 tsconfig 설정 필요 가능성 있음
-// 우선 상대 경로로 시도
 import { generateCommentPrompt } from '../src/lib/promptGenerator';
 import { Comment, ArticleReactions as ArticleReactionsType, Mission } from '../src/types';
+import dotenv from 'dotenv'; // dotenv import
+import path from 'path'; // path 모듈 import
+
+// .env.local 파일 경로 명시적 지정 (프로젝트 루트 기준) - 모든 import 이후에 실행
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+
 
 // --- Gemini API 설정 (Server-side) ---
-const API_KEY = process.env.GEMINI_API_KEY; // Vercel 환경 변수 사용
+const API_KEY = process.env.GEMINI_API_KEY; // Vercel 환경 변수 사용 (dotenv 로드 후)
 
 // API 키 유효성 검사
 if (!API_KEY) {
@@ -135,8 +139,13 @@ const parseAiResponse = (responseText: string): Omit<ParsedAiResponse, 'error'> 
 
 // --- Vercel Serverless Function Handler ---
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // 디버깅 로그: 함수 시작 시 환경 변수 값 확인
+  console.log('Serverless Function - GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? 'Exists' : 'Not Found');
+
   // API 키 존재 여부 재확인 (함수 시작 시)
+  const API_KEY = process.env.GEMINI_API_KEY; // 여기서 다시 한번 변수에 할당
   if (!API_KEY) {
+    console.error("Gemini API Key check failed inside handler."); // 추가 로그
     return res.status(500).json({ error: "Gemini API Key not configured on the server." });
   }
 

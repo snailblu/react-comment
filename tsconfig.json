@@ -13,10 +13,10 @@
     "strict": true, // 모든 엄격한 타입 검사 옵션 활성화 (권장)
     "forceConsistentCasingInFileNames": true, // 파일 이름의 대소문자 일관성 강제
     "noFallthroughCasesInSwitch": true, // switch 문에서 fallthrough case 방지
-    "module": "esnext", // 모듈 코드 생성 방식 (ESNext는 최신 ES 모듈 시스템 사용)
+    "module": "commonjs", // 모듈 코드 생성 방식 변경 (CommonJS 사용)
     "moduleResolution": "node", // 모듈 해석 방식 (Node.js 방식)
     "resolveJsonModule": true, // .json 모듈 import 허용
-    "isolatedModules": true, // 각 파일을 별도의 모듈로 변환
+    // "isolatedModules": true, // "module": "commonjs"와 함께 사용 시 문제 발생 가능성 있어 제거
     "noEmit": true, // 컴파일된 출력 파일 생성 안 함 (Babel 등 다른 도구가 처리)
     "jsx": "react-jsx", // JSX 코드 처리 방식 (React 17+의 새로운 JSX 변환 사용)
     "baseUrl": ".", // 경로 별칭의 기준 디렉토리 설정
@@ -25,6 +25,7 @@
     }
   },
   "include": [
-    "src" // 컴파일 대상 파일이 포함된 디렉토리
+    "src", // 컴파일 대상 파일이 포함된 디렉토리
+    "api"  // Vercel Serverless Functions 디렉토리 추가
   ]
 }
