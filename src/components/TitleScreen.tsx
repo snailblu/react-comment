@@ -1,18 +1,24 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 // import styles from './TitleScreen.module.css'; // CSS 모듈 사용 중지
 
 function TitleScreen() {
   return (
     // Playfair Display 폰트 적용
-    // justify-between/패딩 제거, relative 추가, 버튼 absolute positioning
-    <div className="relative flex flex-col items-center h-full w-full bg-gradient-to-br from-gray-700 via-gray-900 to-black text-gray-300 font-playfair"> {/* justify-between, pt/pb 제거, relative 추가 */}
-      {/* 제목 (상단 마진 유지) */}
-      <h1 className="text-7xl font-bold animate-pulse text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-indigo-400 mt-64"> {/* mt-24 유지 */}
-        Project Comment
-      </h1>
+    // 배경 이미지 적용 및 중앙 정렬
+    <div
+      className="relative flex flex-col items-center h-full w-full bg-cover bg-center bg-no-repeat text-gray-300 font-playfair"
+      style={{ backgroundImage: `url('/title_background.png')` }}
+    >
+      {/* 제목 이미지 (상단 마진 유지) */}
+      <img
+        src="/title.png"
+        alt="Project Comment Title"
+        className="mt-64 w-auto h-48" // 이미지 높이를 h-48로 늘림
+      />
       {/* 버튼 (absolute positioning 적용) */}
-      <nav className="absolute bottom-[30%] left-1/2 -translate-x-1/2 space-x-4"> {/* absolute, bottom-[30%], left-1/2, -translate-x-1/2 추가 */}
+      <nav className="absolute bottom-[30%] left-1/2 -translate-x-1/2 space-x-4">
+        {/* absolute, bottom-[30%], left-1/2, -translate-x-1/2 추가 */}
         {/* 진한 회색 버튼 */}
         <Link
           to="/game"

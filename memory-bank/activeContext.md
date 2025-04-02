@@ -1,0 +1,46 @@
+# 활성 컨텍스트 (Active Context)
+
+_이 문서는 현재 작업 초점, 최근 변경 사항, 다음 단계, 활성 결정 및 고려 사항, 중요한 패턴 및 선호도, 학습 및 프로젝트 통찰력을 추적합니다._
+
+## 현재 초점
+
+- **핵심 게임플레이 루프 구현:** 스토리 진행(`StoryScene`), 댓글 상호작용(`CommentScene`), 미션 시스템 연동의 기본적인 기능 구현에 집중합니다.
+- **데이터 연동:** `public/` 폴더의 JSON 데이터(스크립트, 미션 등)를 실제 컴포넌트에 로드하고 표시하는 작업을 우선적으로 진행합니다.
+- **AI 연동:** `CommentScene`에서 Google Gemini API를 호출하여 댓글을 생성하고 표시하는 기능 구현.
+
+## 최근 변경 사항
+
+- 타이틀 화면(`src/components/TitleScreen.tsx`)의 타이틀 이미지(`public/title.png`) 크기를 키웠습니다 (h-24 -> h-48).
+- 타이틀 화면(`src/components/TitleScreen.tsx`)의 텍스트 제목을 `public/title.png` 이미지 로고로 교체했습니다.
+- **Memory Bank 업데이트:** 코드베이스 분석을 통해 `projectbrief.md`, `techContext.md`, `systemPatterns.md`, `progress.md`, `activeContext.md` 파일 업데이트 완료. (`productContext.md`는 사용자 요청으로 템플릿 유지)
+
+## 다음 단계
+
+1.  **스토리 콘텐츠 표시:** `StoryScene`에서 `useScriptLoader` 등을 사용하여 스크립트 데이터를 로드하고, `DialogueBox`, `Character` 컴포넌트를 통해 대사, 캐릭터 이미지 등을 표시합니다.
+2.  **선택지 기능 구현:** `Choices` 컴포넌트 표시 및 사용자 선택 시 `useStoryProgression` 훅을 통해 다음 스토리 ID를 업데이트하는 로직을 구현합니다.
+3.  **AI 댓글 생성 연동:** `CommentScene`에서 `useGeminiComments` 훅 또는 직접 `geminiService`를 사용하여 AI 댓글 생성 API를 호출하고, 결과를 `CommentList`에 표시합니다.
+4.  **사용자 댓글 입력:** `CommentInput` 컴포넌트 기능 구현 및 `useCommentState` 연동.
+5.  **미션 패널 표시:** `MissionPanel` 컴포넌트를 적절한 시점에 표시하고 `useMissionData`, `useMissionStatus` 훅과 연동합니다.
+6.  **오디오 통합:** 주요 씬 전환 및 이벤트 발생 시 `audioManager`를 사용하여 배경음악 및 효과음을 재생합니다.
+
+## 활성 결정 및 고려 사항
+
+- **상태 관리 세부 구현:** 각 Custom Hook (`useGameState`, `useStoryProgression` 등)의 구체적인 상태 구조와 업데이트 로직 정의 필요.
+- **오류 처리 전략:** API 호출 실패, 데이터 로딩 실패 시 사용자에게 어떻게 피드백을 줄 것인지 결정 필요.
+- **UI/UX 세부 디자인:** 각 씬과 컴포넌트의 구체적인 디자인 및 사용자 인터랙션 방식 확정 필요.
+- **Gemini API 프롬프트 최적화:** AI 댓글 생성 시 원하는 결과(톤, 내용 등)를 얻기 위한 프롬프트 엔지니어링 필요.
+
+## 중요한 패턴 및 선호도
+
+- **React Hooks:** 상태 및 로직 관리를 위해 Custom Hooks를 적극적으로 활용합니다 (`useGameState`, `useStoryProgression`, `useCommentState` 등).
+- **Context API:** 전역 설정(`SettingsContext`) 관리에 사용됩니다.
+- **Tailwind CSS & shadcn/ui:** UI 개발의 주요 도구로 사용됩니다. 유틸리티 우선 접근 방식과 사전 빌드된 컴포넌트를 활용합니다.
+- **TypeScript:** 정적 타입을 통해 코드 안정성을 확보합니다.
+- **JSON 기반 데이터:** 게임 스크립트, 미션 등 주요 데이터는 `public/` 폴더 내 JSON 파일로 관리됩니다.
+- **Vercel Serverless Functions:** 간단한 백엔드 API (AI 프록시 등) 구현에 사용됩니다.
+
+## 학습 및 통찰력
+
+- `list_code_definition_names` 도구는 중첩된 디렉토리 구조의 전체적인 파악에는 제한적이므로, 주요 진입점 파일(`App.tsx`)이나 특정 컴포넌트 파일을 직접 읽어 구조를 파악하는 것이 더 효과적이었습니다.
+- 프로젝트는 인터랙티브 내러티브와 AI 기반 댓글 시스템을 결합한 독특한 컨셉을 가지고 있으며, 각 시스템의 유기적인 연동이 중요합니다.
+- 초기 구조는 잘 잡혀 있으나, 실제 게임 로직 구현에 많은 작업이 필요합니다.
