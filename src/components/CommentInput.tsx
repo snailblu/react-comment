@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import styles from './CommentInput.module.css';
+import React, { useState } from "react";
+import styles from "./CommentInput.module.css";
 
 interface CommentInputProps {
   // 대댓글 모드에서는 parentId가 필요 없으므로 onSubmit 시그니처는 유지
@@ -9,13 +9,18 @@ interface CommentInputProps {
   isReplyMode?: boolean; // 대댓글 모드 여부 추가 (선택적)
 }
 
-const DEFAULT_NICKNAME = '연갤러';
+const DEFAULT_NICKNAME = "연갤러";
 
-const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false, onCancel, isReplyMode = false }) => {
+const CommentInput: React.FC<CommentInputProps> = ({
+  onSubmit,
+  disabled = false,
+  onCancel,
+  isReplyMode = false,
+}) => {
   const [useDefaultNickname, setUseDefaultNickname] = useState(true); // 갤닉 사용 여부 상태
   const [nickname, setNickname] = useState(DEFAULT_NICKNAME);
-  const [password, setPassword] = useState('');
-  const [commentText, setCommentText] = useState('');
+  const [password, setPassword] = useState("");
+  const [commentText, setCommentText] = useState("");
   const maxLength = 100;
 
   const handleNicknameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,14 +29,14 @@ const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false,
 
   const handleClearNickname = () => {
     setUseDefaultNickname(false);
-    setNickname(''); // 닉네임 입력 필드 비우기
+    setNickname(""); // 닉네임 입력 필드 비우기
   };
 
-  const handleUseDefaultNickname = () => {
-    setUseDefaultNickname(true);
-    setNickname(DEFAULT_NICKNAME);
-  };
-
+  // 사용하지 않는 함수 제거
+  // const handleUseDefaultNickname = () => {
+  //   setUseDefaultNickname(true);
+  //   setNickname(DEFAULT_NICKNAME);
+  // };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (event.target.value.length <= maxLength) {
@@ -45,7 +50,7 @@ const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false,
       // onSubmit에 실제 사용할 닉네임 전달
       const finalNickname = useDefaultNickname ? DEFAULT_NICKNAME : nickname;
       onSubmit(commentText.trim(), finalNickname, password);
-      setCommentText('');
+      setCommentText("");
       // 비밀번호 필드 초기화는 유지하지 않음 (보통 유지됨)
     }
   };
@@ -53,19 +58,20 @@ const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false,
   // 등록+추천 버튼 핸들러 (임시)
   const handleSubmitWithRecommend = () => {
     if (commentText.trim() && !disabled) {
-      console.log('Submit with recommendation (placeholder)');
+      console.log("Submit with recommendation (placeholder)");
       const finalNickname = useDefaultNickname ? DEFAULT_NICKNAME : nickname;
       onSubmit(commentText.trim(), finalNickname, password);
-      setCommentText('');
+      setCommentText("");
     }
   };
-
 
   return (
     <form onSubmit={handleSubmit} className={styles.commentInputForm}>
       {/* 왼쪽: 닉네임/비밀번호 */}
       <div className={styles.userInfoColumn}>
-        <div className={styles.nicknameSection}> {/* Relative positioning 기준 */}
+        <div className={styles.nicknameSection}>
+          {" "}
+          {/* Relative positioning 기준 */}
           {useDefaultNickname ? (
             <>
               <input
@@ -76,7 +82,14 @@ const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false,
                 disabled={disabled}
               />
               {/* 버튼을 input과 같은 레벨에 두지만, CSS로 위치 조정 */}
-              <button type="button" onClick={handleClearNickname} className={styles.clearNicknameButton} disabled={disabled}>X</button>
+              <button
+                type="button"
+                onClick={handleClearNickname}
+                className={styles.clearNicknameButton}
+                disabled={disabled}
+              >
+                X
+              </button>
             </>
           ) : (
             <>
@@ -105,7 +118,11 @@ const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false,
 
       {/* 오른쪽: 텍스트 영역 및 하단 컨트롤 */}
       {/* isReplyMode일 때 스타일 조정이 필요할 수 있음 */}
-      <div className={`${styles.inputArea} ${isReplyMode ? styles.replyInputArea : ''}`}>
+      <div
+        className={`${styles.inputArea} ${
+          isReplyMode ? styles.replyInputArea : ""
+        }`}
+      >
         <textarea
           value={commentText}
           onChange={handleTextChange}
@@ -121,19 +138,34 @@ const CommentInput: React.FC<CommentInputProps> = ({ onSubmit, disabled = false,
             {/* 도움말 아이콘 제거 */}
           </div>
           <div className={styles.submitButtons}>
-            <span className={styles.charCount}>{commentText.length}/{maxLength}</span>
+            <span className={styles.charCount}>
+              {commentText.length}/{maxLength}
+            </span>
             {/* 대댓글 모드일 때 취소 버튼 표시 */}
             {isReplyMode && onCancel && (
-              <button type="button" onClick={onCancel} className={`${styles.submitButton} ${styles.cancelButton}`}>
+              <button
+                type="button"
+                onClick={onCancel}
+                className={`${styles.submitButton} ${styles.cancelButton}`}
+              >
                 취소
               </button>
             )}
-            <button type="submit" disabled={disabled || !commentText.trim()} className={styles.submitButton}>
+            <button
+              type="submit"
+              disabled={disabled || !commentText.trim()}
+              className={styles.submitButton}
+            >
               등록
             </button>
             {/* 대댓글 모드에서는 등록+추천 버튼 숨김 */}
             {!isReplyMode && (
-              <button type="button" onClick={handleSubmitWithRecommend} disabled={disabled || !commentText.trim()} className={`${styles.submitButton} ${styles.recommendButton}`}>
+              <button
+                type="button"
+                onClick={handleSubmitWithRecommend}
+                disabled={disabled || !commentText.trim()}
+                className={`${styles.submitButton} ${styles.recommendButton}`}
+              >
                 등록+추천
               </button>
             )}

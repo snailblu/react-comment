@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 // ScriptLine과 함께 EpisodeData 타입 import 추가
-import { ScriptLine, EpisodeData } from '../types';
+import { EpisodeData } from "../types"; // ScriptLine 제거
 
 // 로컬 EpisodeData 정의 제거
 
@@ -23,18 +23,22 @@ const useEpisodeLoader = (episodeId: string | null) => {
     if (!episodeId) {
       setIsLoadingEpisode(false);
       setEpisodeData(null);
-      console.log('useEpisodeLoader: No episodeId provided.');
+      console.log("useEpisodeLoader: No episodeId provided.");
       return;
     }
 
     const loadData = async () => {
       setIsLoadingEpisode(true);
-      console.log(`useEpisodeLoader: Loading episode ${episodeId} from script.json...`);
+      console.log(
+        `useEpisodeLoader: Loading episode ${episodeId} from script.json...`
+      );
       try {
         // public/script.json 파일 fetch
-        const response = await fetch('/script.json');
+        const response = await fetch("/script.json");
         if (!response.ok) {
-          throw new Error(`Failed to fetch script.json: ${response.statusText}`);
+          throw new Error(
+            `Failed to fetch script.json: ${response.statusText}`
+          );
         }
         const scriptData: ScriptData = await response.json();
 
@@ -44,13 +48,21 @@ const useEpisodeLoader = (episodeId: string | null) => {
         if (data) {
           // 필요시 데이터 유효성 검사 또는 변환
           setEpisodeData(data);
-          console.log('useEpisodeLoader: Episode loaded successfully from script.json:', data);
+          console.log(
+            "useEpisodeLoader: Episode loaded successfully from script.json:",
+            data
+          );
         } else {
-          console.error(`useEpisodeLoader: Episode ${episodeId} not found in script.json.`);
+          console.error(
+            `useEpisodeLoader: Episode ${episodeId} not found in script.json.`
+          );
           setEpisodeData(null);
         }
       } catch (error) {
-        console.error('useEpisodeLoader: Error loading episode from script.json:', error);
+        console.error(
+          "useEpisodeLoader: Error loading episode from script.json:",
+          error
+        );
         setEpisodeData(null);
       } finally {
         setIsLoadingEpisode(false);
@@ -58,7 +70,6 @@ const useEpisodeLoader = (episodeId: string | null) => {
     };
 
     loadData();
-
   }, [episodeId]); // episodeId가 변경될 때 다시 로드
 
   return { episodeData, isLoadingEpisode };

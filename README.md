@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# Project Comment
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is an interactive narrative game featuring AI-generated comments. It was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
 
