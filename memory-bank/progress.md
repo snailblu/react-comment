@@ -12,6 +12,8 @@ _이 문서는 작동 중인 기능, 구축해야 할 기능, 현재 상태, 알
 - **데이터 로딩 훅:** JSON 파일로부터 스크립트, 미션 데이터를 로드하기 위한 훅 (`useScriptLoader`, `useMissionData`) 구조 존재.
 - **AI 댓글 생성 백엔드:** Google Gemini API를 사용하는 서버리스 함수 (`api/generate-comments.ts`) 및 서비스 (`src/services/geminiService.ts`) 존재.
 - **오디오 관리자:** 오디오 재생을 위한 `audioManager.ts` 존재.
+- **Electron 빌드:** `npm run electron:build` 명령어를 통해 macOS용 애플리케이션 패키징 가능.
+- **Electron 앱 실행:** 빌드된 앱 실행 및 초기 화면(`TitleScreen`) 표시 성공.
 
 ## 구축해야 할 기능
 
@@ -35,6 +37,10 @@ _이 문서는 작동 중인 기능, 구축해야 할 기능, 현재 상태, 알
 ## 알려진 문제
 
 - 현재 코드 분석 단계에서는 구체적인 버그는 파악되지 않았으나, 기능 구현 과정에서 발생할 수 있음.
+- ~~Electron 빌드 시 검은 화면/흰 화면 문제 발생~~ (해결됨)
+  - ~~원인 1: `public/electron.ts`에서 `index.html` 로드 경로 오류~~ (해결: `app.getAppPath()` 사용)
+  - ~~원인 2: `BrowserRouter`가 `file://` 환경에서 작동하지 않음~~ (해결: `HashRouter`로 변경)
+  - ~~원인 3: `TitleScreen` 등에서 정적 파일(이미지, JSON) 로드 시 절대 경로 사용~~ (해결: 상대 경로로 변경)
 - `list_code_definition_names` 도구가 제한적인 정보만 제공하여 전체 구조 파악에 어려움이 있었음.
 
 ## 결정 진화

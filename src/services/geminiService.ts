@@ -55,27 +55,28 @@ export const generateAiComments = async (
       `Requesting AI comments via serverless function for article: ${missionData.articleTitle}`
     );
 
-    // Vercel Serverless Function 엔드포인트 호출
-    const response = await fetch("/api/generate-comments", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        missionData,
-        currentComments,
-        currentReactions,
-      }),
-    });
+    // Vercel Serverless Function 엔드포인트 호출 (전체 URL 사용)
+    const response = await fetch(
+      "https://react-comment-eight.vercel.app/api/generate-comments",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          missionData,
+          currentComments,
+          currentReactions,
+        }),
+      }
+    );
 
     // 응답 상태 코드 확인
     if (!response.ok) {
       // 서버에서 오류 응답을 보낸 경우
-      const errorData = await response
-        .json()
-        .catch(() => ({
-          error: "Failed to parse error response from server.",
-        })); // 오류 응답 파싱 실패 대비
+      const errorData = await response.json().catch(() => ({
+        error: "Failed to parse error response from server.",
+      })); // 오류 응답 파싱 실패 대비
       console.error(
         `Serverless function error: ${response.status} ${response.statusText}`,
         errorData

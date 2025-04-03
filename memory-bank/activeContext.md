@@ -13,6 +13,13 @@ _이 문서는 현재 작업 초점, 최근 변경 사항, 다음 단계, 활성
 - 타이틀 화면(`src/components/TitleScreen.tsx`)의 타이틀 이미지(`public/title.png`) 크기를 키웠습니다 (h-24 -> h-48).
 - 타이틀 화면(`src/components/TitleScreen.tsx`)의 텍스트 제목을 `public/title.png` 이미지 로고로 교체했습니다.
 - **Memory Bank 업데이트:** 코드베이스 분석을 통해 `projectbrief.md`, `techContext.md`, `systemPatterns.md`, `progress.md`, `activeContext.md` 파일 업데이트 완료. (`productContext.md`는 사용자 요청으로 템플릿 유지)
+- **Electron 빌드 디버깅:**
+  - `package.json`에 누락된 `description`, `author` 필드 추가.
+  - `package.json`의 `build` 설정에서 `asar` 활성화.
+  - `public/electron.ts`에서 `index.html` 로드 경로를 `app.getAppPath()` 사용하도록 수정.
+  - `src/index.tsx`에서 `BrowserRouter`를 `HashRouter`로 변경.
+  - `src/components/TitleScreen.tsx`에서 이미지 경로를 상대 경로로 수정.
+  - `src/hooks/useEpisodeLoader.ts`에서 `script.json` 로드 경로를 상대 경로로 수정.
 
 ## 다음 단계
 
@@ -29,6 +36,7 @@ _이 문서는 현재 작업 초점, 최근 변경 사항, 다음 단계, 활성
 - **오류 처리 전략:** API 호출 실패, 데이터 로딩 실패 시 사용자에게 어떻게 피드백을 줄 것인지 결정 필요.
 - **UI/UX 세부 디자인:** 각 씬과 컴포넌트의 구체적인 디자인 및 사용자 인터랙션 방식 확정 필요.
 - **Gemini API 프롬프트 최적화:** AI 댓글 생성 시 원하는 결과(톤, 내용 등)를 얻기 위한 프롬프트 엔지니어링 필요.
+- **Electron 빌드 환경:** 개발 환경(`npm start`)과 빌드된 Electron 앱(`file://` 프로토콜) 간의 경로 처리 방식 차이 주의. 정적 파일(이미지, JSON 등) 로드 시 상대 경로 또는 `HashRouter` 사용 고려.
 
 ## 중요한 패턴 및 선호도
 
@@ -44,3 +52,5 @@ _이 문서는 현재 작업 초점, 최근 변경 사항, 다음 단계, 활성
 - `list_code_definition_names` 도구는 중첩된 디렉토리 구조의 전체적인 파악에는 제한적이므로, 주요 진입점 파일(`App.tsx`)이나 특정 컴포넌트 파일을 직접 읽어 구조를 파악하는 것이 더 효과적이었습니다.
 - 프로젝트는 인터랙티브 내러티브와 AI 기반 댓글 시스템을 결합한 독특한 컨셉을 가지고 있으며, 각 시스템의 유기적인 연동이 중요합니다.
 - 초기 구조는 잘 잡혀 있으나, 실제 게임 로직 구현에 많은 작업이 필요합니다.
+- Electron 빌드 시 `file://` 프로토콜 환경에서 발생하는 경로 문제 해결 경험. (절대 경로 -> 상대 경로, BrowserRouter -> HashRouter)
+- `webSecurity: false` 설정은 로컬 파일 로드 오류 해결에 도움이 될 수 있으나, 보안상 권장되지 않음. (현재는 이 설정 없이도 로드 성공)

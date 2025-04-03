@@ -10,6 +10,7 @@ function createWindow(): void {
     webPreferences: {
       nodeIntegration: true, // 필요한 경우 true로 설정 (보안 고려 필요)
       contextIsolation: false, // 필요한 경우 false로 설정 (보안 고려 필요)
+      webSecurity: false, // 로컬 리소스 로드 허용 (보안 주의)
       // preload: path.join(__dirname, 'preload.js') // 필요시 preload 스크립트 지정
     },
   });
@@ -19,7 +20,8 @@ function createWindow(): void {
   // 프로덕션 모드에서는 빌드된 index.html 파일 로드
   const startUrl: string = !app.isPackaged // Add type annotation
     ? "http://localhost:3000"
-    : `file://${path.join(__dirname, "index.html")}`; // build 폴더가 기준이 되므로 index.html 직접 참조
+    : // app.getAppPath()를 사용하여 경로 구성
+      `file://${path.join(app.getAppPath(), "build", "index.html")}`;
   mainWindow.loadURL(startUrl);
 
   // 개발자 도구 열기 (항상)

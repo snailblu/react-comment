@@ -8,11 +8,13 @@ function TitleScreen() {
     // 배경 이미지 적용 및 중앙 정렬
     <div
       className="relative flex flex-col items-center h-full w-full bg-cover bg-center bg-no-repeat text-gray-300 font-playfair"
-      style={{ backgroundImage: `url('/title_background.png')` }}
+      style={{
+        backgroundImage: `url('title_background.png')`, // 상대 경로 사용
+      }}
     >
       {/* 제목 이미지 (상단 마진 유지) */}
       <img
-        src="/title.png"
+        src="Title.png" // 상대 경로 및 대소문자 수정
         alt="Project Comment Title"
         className="mt-64 w-auto h-48" // 이미지 높이를 h-48로 늘림
       />

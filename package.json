@@ -1,5 +1,7 @@
 {
   "name": "project-comment",
+  "description": "인터랙티브 내러티브 게임과 AI 댓글 시스템을 결합한 게임",
+  "author": "snail",
   "version": "0.1.0",
   "private": true,
   "main": "public/electron.ts",
@@ -76,7 +78,7 @@
     "wait-on": "^8.0.3"
   },
   "build": {
-    "asar": false,
+    "asar": true,
     "appId": "com.example.project-comment",
     "productName": "Project Comment",
     "files": [
@@ -87,6 +89,7 @@
     "directories": {
       "buildResources": "assets"
     },
+    "icon": "public/logo512.png",
     "mac": {
       "target": "dmg"
     },

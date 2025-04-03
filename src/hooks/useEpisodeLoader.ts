@@ -33,8 +33,8 @@ const useEpisodeLoader = (episodeId: string | null) => {
         `useEpisodeLoader: Loading episode ${episodeId} from script.json...`
       );
       try {
-        // public/script.json 파일 fetch
-        const response = await fetch("/script.json");
+        // public/script.json 파일 fetch (상대 경로 사용)
+        const response = await fetch("./script.json");
         if (!response.ok) {
           throw new Error(
             `Failed to fetch script.json: ${response.statusText}`
