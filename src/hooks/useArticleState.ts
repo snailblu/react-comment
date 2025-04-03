@@ -1,51 +1,50 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Opinion } from '../types'; // Opinion 타입 import
+import { useState, useEffect, useCallback } from "react";
+import { Opinion } from "../types"; // Opinion 타입 import
+import { useMissionStore } from "../stores/missionStore"; // Import mission store
 
 interface UseArticleStateResult {
-  articleLikes: number;
-  articleDislikes: number;
-  opinion: Opinion;
+  // articleLikes and articleDislikes will come from the store
+  opinion: Opinion; // Keep opinion calculation local to this hook
   handleLikeArticle: () => void;
   handleDislikeArticle: () => void;
-  setPredictedReactions: (added_likes: number, added_dislikes: number) => void; // AI 예측 '추가' 반영 함수로 수정
+  setPredictedReactions: (added_likes: number, added_dislikes: number) => void;
 }
 
 const useArticleState = (
-  initialLikes: number = 0,
-  initialDislikes: number = 0,
+  // initialLikes and initialDislikes are now primarily managed by missionStore via setMission
   initialOpinion: Opinion = { positive: 50, negative: 50 }
 ): UseArticleStateResult => {
-  const [articleLikes, setArticleLikes] = useState(initialLikes);
-  const [articleDislikes, setArticleDislikes] = useState(initialDislikes);
+  // Get state and actions from missionStore
+  const {
+    articleLikes,
+    articleDislikes,
+    likeArticle,
+    dislikeArticle,
+    setArticleLikes,
+    setArticleDislikes,
+  } = useMissionStore();
+
+  // Keep opinion state local to this hook
   const [opinion, setOpinion] = useState<Opinion>(initialOpinion);
 
-  // 초기값이 변경될 때 상태 업데이트 (useMissionData 로딩 완료 후 반영 위함)
-  useEffect(() => {
-    setArticleLikes(initialLikes);
-  }, [initialLikes]);
-
-  useEffect(() => {
-    setArticleDislikes(initialDislikes);
-  }, [initialDislikes]);
-
+  // Update local opinion state when initialOpinion prop changes
   useEffect(() => {
     setOpinion(initialOpinion);
   }, [initialOpinion]);
 
-
-  // 기사 좋아요 핸들러
+  // 기사 좋아요 핸들러 (Call store action)
   const handleLikeArticle = useCallback(() => {
-    setArticleLikes(prev => prev + 1);
+    likeArticle();
     // TODO: 필요시 추가 로직 (예: 게임 플래그 변경 등)
-  }, []);
+  }, [likeArticle]);
 
-  // 기사 싫어요 핸들러
+  // 기사 싫어요 핸들러 (Call store action)
   const handleDislikeArticle = useCallback(() => {
-    setArticleDislikes(prev => prev + 1);
+    dislikeArticle();
     // TODO: 필요시 추가 로직
-  }, []);
+  }, [dislikeArticle]);
 
-  // 기사 반응 변경 시 여론 업데이트
+  // 기사 반응 변경 시 여론 업데이트 (Use values from store)
   useEffect(() => {
     const totalReactions = articleLikes + articleDislikes;
     if (totalReactions > 0) {
@@ -61,18 +60,27 @@ const useArticleState = (
       setOpinion(initialOpinion);
     }
     // initialOpinion도 의존성에 추가하여 초기값 변경 시 재계산
-  }, [articleLikes, articleDislikes, initialOpinion]);
+  }, [articleLikes, articleDislikes, initialOpinion]); // Depend on store values
+
+  // Function to update store state based on AI predictions
+  const setPredictedReactions = useCallback(
+    (added_likes: number, added_dislikes: number) => {
+      // Get current values from store and add predictions
+      const currentLikes = useMissionStore.getState().articleLikes;
+      const currentDislikes = useMissionStore.getState().articleDislikes;
+      setArticleLikes(currentLikes + added_likes);
+      setArticleDislikes(currentDislikes + added_dislikes);
+    },
+    [setArticleLikes, setArticleDislikes]
+  );
 
   return {
-    articleLikes,
-    articleDislikes,
+    // articleLikes, // Get from store where needed
+    // articleDislikes, // Get from store where needed
     opinion,
     handleLikeArticle,
     handleDislikeArticle,
-    setPredictedReactions: (added_likes: number, added_dislikes: number) => { // 함수 구현 수정: 기존 값에 더하기
-      setArticleLikes(prev => prev + added_likes);
-      setArticleDislikes(prev => prev + added_dislikes);
-    },
+    setPredictedReactions,
   };
 };
 

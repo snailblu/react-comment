@@ -1,45 +1,52 @@
-import React, { useEffect } from 'react';
-// useNavigate 제거 (useStoryProgression 내부에서 사용)
-// audioManager 관련 import 제거 (useStoryProgression 내부에서 사용)
-import { playBgm, stopBgm } from '../utils/audioManager'; // BGM 관련만 남김
-import Background from './Background';
-import Character from './Character';
-import DialogueBox from './DialogueBox';
-import Choices from './Choices';
-import SettingsMenu from './SettingsMenu';
-import PhoneChat from './PhoneChat';
-import useEpisodeLoader from '../hooks/useEpisodeLoader';
-import useGameState from '../hooks/useGameState';
-import useStoryProgression from '../hooks/useStoryProgression'; // 새로 만든 훅 import
-import useStoryUIState from '../hooks/useStoryUIState'; // 새로 만든 훅 import
-import StoryMenuBar from './StoryMenuBar'; // 새로 만든 컴포넌트 import
-import { getCharacterImageUrl } from '../config/characterSprites'; // 캐릭터 이미지 함수 import
-import { ScriptLine } from '../types'; // 필요한 타입만 import
-import styles from './StoryScene.module.css';
-import roomBackground from '../assets/oneroom.png';
+import React, { useEffect, useCallback } from "react"; // useCallback 추가
+import { useNavigate } from "react-router-dom"; // useNavigate 다시 추가
+import {
+  playBgm,
+  stopBgm,
+  playSfx,
+  signalInteraction,
+} from "../utils/audioManager"; // 오디오 함수 다시 추가
+import Background from "./Background";
+import Character from "./Character";
+import DialogueBox from "./DialogueBox";
+import Choices from "./Choices";
+import SettingsMenu from "./SettingsMenu";
+import PhoneChat from "./PhoneChat";
+import useEpisodeLoader from "../hooks/useEpisodeLoader";
+// import useGameState from '../hooks/useGameState'; // 제거
+// import useStoryProgression from '../hooks/useStoryProgression'; // 제거
+import { useGameState } from "../stores/gameStateStore"; // Zustand 스토어 import
+import { useStoryStore } from "../stores/storyStore"; // Zustand 스토어 import
+import useStoryUIState from "../hooks/useStoryUIState";
+import StoryMenuBar from "./StoryMenuBar";
+import { getCharacterImageUrl } from "../config/characterSprites";
+import { ScriptLine } from "../types"; // Choice 타입 추가
+import styles from "./StoryScene.module.css";
+import roomBackground from "../assets/oneroom.png";
 // 캐릭터 이미지 import 제거 (config 파일에서 관리)
-
 
 const StoryScene: React.FC = () => {
   // --- 커스텀 Hook 사용 ---
   // TODO: 현재는 테스트용 ID 사용. 라우팅 또는 상태 관리 통해 동적으로 받아와야 함.
   // 스크립트 시작 ID로 되돌림 (script.json의 키)
-  const episodeIdToLoad = '123e4567-e89b-12d3-a456-426614174000'; // 유효 ID -> 스크립트 시작 ID로 변경
+  const episodeIdToLoad = "123e4567-e89b-12d3-a456-426614174000"; // 유효 ID -> 스크립트 시작 ID로 변경
   const { episodeData, isLoadingEpisode } = useEpisodeLoader(episodeIdToLoad);
+  const navigate = useNavigate(); // useNavigate 훅 사용
 
-  // episodeData에서 실제 스크립트 데이터 추출 (intro_dialogues 사용 가정)
-  const currentEpisodeScript = episodeData?.intro_dialogues ?? [];
+  // Zustand 스토어 사용
+  const { gameFlags, setCurrentScene } = useGameState(); // setGameFlag 추가, setCurrentScene 추가
+  const { scriptData, currentDialogueIndex, setScriptData, advanceDialogue } =
+    useStoryStore(); // setScriptData 추가
 
-  const {
-    currentScriptIndex,
-    gameFlags,
-    setCurrentScriptIndex,
-    setGameFlags,
-    saveGame,
-    loadGame
-  } = useGameState(currentEpisodeScript);
+  // Load script data into store when episodeData is loaded
+  useEffect(() => {
+    if (episodeData?.intro_dialogues) {
+      setScriptData(episodeData.intro_dialogues);
+    }
+    // TODO: Handle loading other script parts (e.g., ending_dialogues) if necessary
+  }, [episodeData, setScriptData]);
 
-  // UI 상태 훅 호출
+  // UI 상태 훅 호출 (기존 유지)
   const {
     showSettings,
     setShowSettings,
@@ -49,23 +56,100 @@ const StoryScene: React.FC = () => {
     togglePhoneChat,
   } = useStoryUIState();
 
-  // 스토리 진행 훅 호출
-  const { handleNext, handleChoiceSelect } = useStoryProgression({
-    currentScript: currentEpisodeScript,
-    currentScriptIndex,
-    setCurrentScriptIndex,
-    gameFlags,
-    setGameFlags,
-    episodeData, // episodeData 전달
-  });
+  // --- New handlers using Zustand store ---
+  const handleNextClick = useCallback(() => {
+    signalInteraction();
+    playSfx("click");
 
-  // --- BGM 자동 재생 시도 및 정리 ---
+    const nextSceneType = advanceDialogue(); // Call store action
+
+    if (nextSceneType === "comment" && episodeData?.mission_id) {
+      console.log(
+        "Transitioning to Comment Scene for mission:",
+        episodeData.mission_id
+      );
+      setCurrentScene("comment"); // Update global scene state if needed
+      navigate(`/comment/${episodeData.mission_id}`);
+    } else if (nextSceneType) {
+      console.warn(
+        `Unhandled next scene type: ${nextSceneType}. Navigating to title.`
+      );
+      setCurrentScene("title");
+      navigate("/");
+    } else if (scriptData && currentDialogueIndex >= scriptData.length - 1) {
+      // End of script and no scene transition defined
+      console.log("End of script reached. Navigating to title.");
+      setCurrentScene("title");
+      navigate("/");
+    }
+    // If nextSceneType is null and not end of script, advanceDialogue already updated the index.
+  }, [
+    advanceDialogue,
+    navigate,
+    episodeData,
+    setCurrentScene,
+    scriptData,
+    currentDialogueIndex,
+  ]);
+
+  // Modified to accept choiceId and find the choice object
+  const handleChoiceClick = useCallback(
+    (choiceId: string | number) => {
+      signalInteraction();
+      playSfx("click");
+
+      // Find the selected choice object from the current line's choices
+      const currentLine = scriptData?.[currentDialogueIndex];
+      const selectedChoice = currentLine?.choices?.find(
+        (c) => c.id === choiceId
+      ); // Use optional chaining and find
+
+      if (!selectedChoice) {
+        console.error(`Could not find choice with id: ${choiceId}`);
+        return; // Exit if choice not found
+      }
+
+      // Pass the found choice object to the store action
+      const nextSceneType = advanceDialogue(selectedChoice); // Pass the found object
+
+      if (nextSceneType === "comment" && episodeData?.mission_id) {
+        console.log(
+          "Transitioning to Comment Scene after choice for mission:",
+          episodeData.mission_id
+        );
+        setCurrentScene("comment");
+        navigate(`/comment/${episodeData.mission_id}`);
+      } else if (nextSceneType) {
+        console.warn(
+          `Unhandled next scene type after choice: ${nextSceneType}. Navigating to title.`
+        );
+        setCurrentScene("title");
+        navigate("/");
+      } else if (scriptData && currentDialogueIndex >= scriptData.length - 1) {
+        // End of script and no scene transition defined after choice processing
+        console.log("End of script reached after choice. Navigating to title.");
+        setCurrentScene("title");
+        navigate("/");
+      }
+      // If nextSceneType is null and not end of script, advanceDialogue already updated the index.
+    },
+    [
+      advanceDialogue,
+      navigate,
+      episodeData,
+      setCurrentScene,
+      scriptData,
+      currentDialogueIndex,
+    ]
+  );
+
+  // --- BGM 자동 재생 시도 및 정리 --- (기존 유지)
   useEffect(() => {
-    console.log('StoryScene 마운트 - BGM 재생 시도');
-    playBgm('mainTheme');
+    console.log("StoryScene 마운트 - BGM 재생 시도");
+    playBgm("mainTheme");
 
     return () => {
-      console.log('StoryScene 언마운트 - BGM 정지');
+      console.log("StoryScene 언마운트 - BGM 정지");
       stopBgm();
     };
   }, []);
@@ -75,29 +159,37 @@ const StoryScene: React.FC = () => {
     return <div>Loading episode...</div>;
   }
 
-  // --- 현재 스크립트 라인 결정 ---
-  const currentLine: ScriptLine | null = currentEpisodeScript && currentEpisodeScript.length > currentScriptIndex
-    ? currentEpisodeScript[currentScriptIndex]
-    : null;
+  // --- 현재 스크립트 라인 결정 (Zustand 스토어 사용) ---
+  const currentLine: ScriptLine | null =
+    scriptData && scriptData.length > currentDialogueIndex
+      ? scriptData[currentDialogueIndex]
+      : null;
 
   // --- 스크립트 종료 또는 오류 처리 ---
   if (!currentLine) {
-    if (currentEpisodeScript.length === 0 && !isLoadingEpisode) {
-      return <div>Error: Failed to load episode data or script is empty.</div>;
+    // Handle cases where scriptData is null, empty, or index is out of bounds
+    if (!isLoadingEpisode && (!scriptData || scriptData.length === 0)) {
+      // Changed condition to check scriptData from store
+      return <div>Error: Failed to load script data or script is empty.</div>;
     }
-    // 스크립트 정상 종료 (useStoryProgression 내부에서 navigate 처리)
-    // 여기서는 null을 반환하거나 로딩 스피너 등을 표시할 수 있음
-    return null; // 또는 <div>Episode ended. Preparing next scene...</div>
+    // If loading or script ended (handled by advanceDialogue), show nothing or loading indicator
+    return null;
   }
 
-  // --- 캐릭터 이미지 URL 결정 ---
-  const characterImageUrl = getCharacterImageUrl(currentLine.character, currentLine.expression);
+  // --- 캐릭터 이미지 URL 결정 --- (기존 로직 유지, currentLine 사용)
+  const characterImageUrl = getCharacterImageUrl(
+    currentLine.character,
+    currentLine.expression
+  );
 
-  // --- 조건부 대사 결정 ---
-  let dialogueTextToShow = currentLine.text ?? '';
-  if (currentLine.condition && gameFlags[currentLine.condition.flag] === currentLine.condition.value) {
-    dialogueTextToShow = currentLine.altText || currentLine.text || '';
-    console.log(`조건 만족 (${currentLine.condition.flag} === ${currentLine.condition.value}), 대체 텍스트 표시: ${dialogueTextToShow}`);
+  // --- 조건부 대사 결정 (Zustand 스토어의 gameFlags 사용) ---
+  let dialogueTextToShow = currentLine.text ?? "";
+  if (
+    currentLine.condition &&
+    gameFlags[currentLine.condition.flag] === currentLine.condition.value
+  ) {
+    dialogueTextToShow = currentLine.altText || currentLine.text || "";
+    // console.log(`조건 만족 (${currentLine.condition.flag} === ${currentLine.condition.value}), 대체 텍스트 표시: ${dialogueTextToShow}`); // 로그 레벨 조정 가능
   }
 
   // --- 렌더링 ---
@@ -106,8 +198,8 @@ const StoryScene: React.FC = () => {
       <div className={styles.storyArea}>
         {/* 메뉴 바 컴포넌트 사용 */}
         <StoryMenuBar
-          onSave={saveGame}
-          onLoad={loadGame}
+          onSave={() => console.log("Save Game - Not implemented yet")} // 임시 처리
+          onLoad={() => console.log("Load Game - Not implemented yet")} // 임시 처리
           onSettings={() => setShowSettings(true)}
           onTogglePhoneChat={togglePhoneChat}
           isPhoneChatVisible={showPhoneChat}
@@ -116,32 +208,37 @@ const StoryScene: React.FC = () => {
 
         {/* 상단 알림 메시지 */}
         {notificationMessage && (
-          <div className={styles.notification}>
-            {notificationMessage}
-          </div>
+          <div className={styles.notification}>{notificationMessage}</div>
         )}
 
         <Background imageUrl={roomBackground} />
 
         {/* 캐릭터 표시 */}
-        {currentLine.character && currentLine.character !== '나' && currentLine.type !== 'narrator' && characterImageUrl && (
-          <Character
-            imageUrl={characterImageUrl}
-            name={currentLine.character} // non-null assertion 제거 (위에서 체크)
-          />
-        )}
+        {currentLine.character &&
+          currentLine.character !== "나" &&
+          currentLine.type !== "narrator" &&
+          characterImageUrl && (
+            <Character
+              imageUrl={characterImageUrl}
+              name={currentLine.character} // non-null assertion 제거 (위에서 체크)
+            />
+          )}
 
         {/* 대화 또는 선택지 표시 */}
-        {currentLine.type === 'choice' ? (
+        {currentLine.type === "choice" ? (
           <Choices
             choices={currentLine.choices ?? []}
-            onChoiceSelect={handleChoiceSelect} // 훅에서 가져온 핸들러 전달
+            // onChoiceSelect expects (choiceId, nextId), but our handler takes the choice object.
+            // Pass only the choiceId to the handler, as expected by Choices component
+            onChoiceSelect={(choiceId) => handleChoiceClick(choiceId)}
           />
         ) : (
           <DialogueBox
-            characterName={currentLine.type === 'narrator' ? null : currentLine.character}
+            characterName={
+              currentLine.type === "narrator" ? null : currentLine.character
+            }
             dialogueText={dialogueTextToShow}
-            onNext={handleNext} // 훅에서 가져온 핸들러 전달
+            onNext={handleNextClick} // Use new handler
           />
         )}
 

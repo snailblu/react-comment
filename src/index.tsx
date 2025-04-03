@@ -5,7 +5,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 // BrowserRouter 대신 HashRouter 임포트
 import { HashRouter } from "react-router-dom";
-import { SettingsProvider } from "./contexts/SettingsContext"; // Import SettingsProvider
+// SettingsProvider import should be completely removed
 import { Container } from "react-dom/client"; // Import Container type
 
 const rootElement = document.getElementById("root");
@@ -16,10 +16,8 @@ root.render(
   <React.StrictMode>
     {/* BrowserRouter 대신 HashRouter 사용 */}
     <HashRouter>
-      {/* Wrap App with SettingsProvider */}
-      <SettingsProvider>
-        <App />
-      </SettingsProvider>
+      {/* SettingsProvider wrapper should be completely removed */}
+      <App />
     </HashRouter>
   </React.StrictMode>
 );

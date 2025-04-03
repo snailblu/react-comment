@@ -1,19 +1,23 @@
-import React, { useContext, ChangeEvent } from 'react'; // ChangeEvent 추가
-import { useNavigate } from 'react-router-dom'; // useNavigate 추가
-import { SettingsContext, SettingsContextType } from '../contexts/SettingsContext'; // SettingsContextType 추가
-import styles from './SettingsMenu.module.css'; // CSS 모듈 import
-// import useGameState from '../hooks/useGameState'; // 기능 구현 시 필요할 수 있음
+import React, { ChangeEvent } from "react"; // useContext 제거, ChangeEvent 유지
+import { useNavigate } from "react-router-dom";
+import { useSettingsStore } from "../stores/settingsStore"; // Zustand 스토어 import
+import styles from "./SettingsMenu.module.css";
+// import { useGameState } from '../stores/gameStateStore'; // Zustand 스토어로 변경 고려
+// import { saveGame, loadGame } from '../utils/saveLoad'; // 저장/로드 유틸리티 함수 import 고려
 
 // Props 타입 정의
 interface SettingsMenuProps {
   onClose: () => void; // onClose 함수 타입 정의
 }
 
-const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => { // 컴포넌트 타입 및 props 타입 지정
-  // useContext에 타입 명시
-  const { bgmVolume, setBgmVolume, sfxVolume, setSfxVolume } = useContext<SettingsContextType>(SettingsContext);
-  const navigate = useNavigate(); // useNavigate 훅 사용
-  // const { saveGame, loadGame } = useGameState(); // 기능 구현 시 필요
+const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => {
+  // Zustand 스토어에서 상태와 액션 가져오기
+  const { bgmVolume, setBgmVolume, sfxVolume, setSfxVolume } =
+    useSettingsStore();
+  const navigate = useNavigate();
+  // TODO: 저장/로드 기능 구현 시 관련 스토어 또는 유틸리티 사용
+  // const { saveGameState } = useGameState(); // 예시
+  // const { loadGameState } = useGameState(); // 예시
 
   // 이벤트 핸들러 파라미터 타입 지정
   const handleBgmChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -60,15 +64,57 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => { // 컴포�
 
         {/* 시스템 메뉴 버튼들 */}
         <div className={styles.systemButtons}>
-          {/* 기능 구현 시 onClick 핸들러 수정 필요 */}
-          <button onClick={() => console.log('Save clicked')} className={styles.systemButton}>저장</button>
-          <button onClick={() => console.log('Load clicked')} className={styles.systemButton}>로드</button>
-          <button onClick={() => console.log('Language clicked')} className={styles.systemButton}>언어 변경</button>
-          <button onClick={() => { console.log('Go to Title clicked'); navigate('/'); onClose(); }} className={styles.systemButton}>타이틀로</button>
-          <button onClick={() => { console.log('Exit clicked'); window.close(); }} className={styles.systemButton}>종료</button> {/* 웹페이지에서는 종료 기능 제한적 */}
+          {/* TODO: 저장/로드 기능 연결 */}
+          <button
+            onClick={() =>
+              console.log("Save clicked - Implement saveGame logic")
+            }
+            className={styles.systemButton}
+          >
+            저장
+          </button>
+          <button
+            onClick={() =>
+              console.log("Load clicked - Implement loadGame logic")
+            }
+            className={styles.systemButton}
+          >
+            로드
+          </button>
+          {/* TODO: 언어 변경 기능 연결 */}
+          <button
+            onClick={() =>
+              console.log("Language clicked - Implement language change")
+            }
+            className={styles.systemButton}
+          >
+            언어 변경
+          </button>
+          <button
+            onClick={() => {
+              console.log("Go to Title clicked");
+              navigate("/");
+              onClose();
+            }}
+            className={styles.systemButton}
+          >
+            타이틀로
+          </button>
+          <button
+            onClick={() => {
+              console.log("Exit clicked");
+              window.close();
+            }}
+            className={styles.systemButton}
+          >
+            종료
+          </button>{" "}
+          {/* 웹페이지에서는 종료 기능 제한적 */}
         </div>
 
-        <button onClick={onClose} className={styles.closeButton}>닫기</button>
+        <button onClick={onClose} className={styles.closeButton}>
+          닫기
+        </button>
       </div>
     </div>
   );

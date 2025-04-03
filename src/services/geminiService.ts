@@ -55,21 +55,21 @@ export const generateAiComments = async (
       `Requesting AI comments via serverless function for article: ${missionData.articleTitle}`
     );
 
-    // Vercel Serverless Function 엔드포인트 호출 (전체 URL 사용)
-    const response = await fetch(
-      "https://react-comment-eight.vercel.app/api/generate-comments",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          missionData,
-          currentComments,
-          currentReactions,
-        }),
-      }
-    );
+    // Use relative path for API calls, works for both dev and prod
+    const apiUrl = "/api/generate-comments";
+
+    // Vercel Serverless Function 엔드포인트 호출
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        missionData,
+        currentComments,
+        currentReactions,
+      }),
+    });
 
     // 응답 상태 코드 확인
     if (!response.ok) {
