@@ -166,6 +166,8 @@ const ResultScene: React.FC = () => {
               <Button
                 onClick={handleProceed}
                 disabled={isCheckingEnding || isLoading}
+                // 픽셀 아트 스타일 적용 (TitleScreen 버튼 스타일 참고)
+                className="px-8 py-3 bg-primary text-primary-foreground border border-border hover:bg-accent hover:text-accent-foreground active:translate-y-px transition duration-300 ease-in-out transform hover:-translate-y-1"
               >
                 {isCheckingEnding
                   ? "엔딩 확인 중..."
@@ -198,7 +200,12 @@ const ResultScene: React.FC = () => {
             <p className="text-center">결과가 좋지 않습니다...</p>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <Button onClick={handleProceed} disabled={isCheckingEnding}>
+            <Button
+              onClick={handleProceed}
+              disabled={isCheckingEnding}
+              // 픽셀 아트 스타일 적용
+              className="px-8 py-3 bg-primary text-primary-foreground border border-border hover:bg-accent hover:text-accent-foreground active:translate-y-px transition duration-300 ease-in-out transform hover:-translate-y-1"
+            >
               {isCheckingEnding
                 ? "엔딩 확인 중..."
                 : isLastMission

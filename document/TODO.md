@@ -51,7 +51,7 @@
   - [x] `CommentOverlay.tsx` 생성 및 기본 구조/스타일/애니메이션 적용.
   - [x] 위 컴포넌트들을 `InstagramActivityScene.tsx`에 통합 및 기본 연결 완료 (댓글 오버레이 방식 적용).
   - [x] `InstagramPost.tsx` UI 개선 (옵션 버튼, 좋아요 표시, 캡션 더보기).
-- [ ] **2-3. 댓글 기능 구현:**
+- [x] **2-3. 댓글 기능 구현:**
   - [x] `InstagramPostInput.tsx`: 댓글 입력 및 제출 기본 기능 완성 (오버레이 내).
   - [x] `InstagramCommentList.tsx`: 댓글 및 대댓글 표시, 답글 달기 UI/기능 기본 완성 (오버레이 내).
   - [x] `CommentOverlay.tsx`: 댓글/답글 제출 핸들러 로직 구현 및 스토어 연동.
@@ -60,9 +60,8 @@
   - [x] `InstagramCommentList.tsx` UI 구현 및 데이터 연동 (`commentStore`).
   - [x] `InstagramPost.tsx`: 좋아요/댓글 수 등 반응 표시 UI 구현 (`missionStore` 연동).
   - [x] `InstagramFeed.tsx`: `InstagramPost` 컴포넌트 사용하여 실제 게시물(`missionData`) 렌더링.
-- [ ] **2-5. 기본 LLM 연동 (조건 판별):**
-  - [ ] 댓글/답글 제출 시 (`CommentOverlay.tsx`의 핸들러 내부), 해당 내용과 `missionStore`의 미션 조건(키워드, 해시태그 등)을 비교하는 로직 구현.
-  - [ ] 조건 충족 여부에 따라 반응 수치(좋아요 등)를 기본적으로 업데이트하는 로직 구현 (`missionStore` 활용).
+- [ ] **2-5. 기본 LLM 연동 (조건 판별) (향후 TODO):**
+  - [ ] AI 응답에 조건 만족 평가 결과 포함 및 이를 반영한 반응 수치 업데이트 로직 구현 (기획 논의 필요).
 - [ ] **2-X. 콘텐츠 게시 시뮬레이션 (MVP 이후):**
   - [ ] `InstagramPostInput.tsx`에서 이미지 선택 기능 구현 (현재는 댓글 입력 전용).
   - [ ] '게시' 버튼 클릭 시 `handlePostSubmit` 핸들러 호출 및 실제 게시물 생성/저장 로직 구현.
@@ -73,12 +72,12 @@
   - [ ] 컴포넌트 파일 생성 (`src/components/ResultScene.tsx`).
   - [ ] `App.tsx`에 `/result` 경로 라우팅 추가.
   - [ ] `missionStore` 또는 `instagramStore` 상태 기반으로 미션 성공/실패 텍스트 표시.
-  - [ ] '다음으로' 버튼 UI 구현 (픽셀 아트 스타일).
-  - [ ] '다음으로' 버튼 클릭 시 다음 스토리 ID로 이동하는 로직 구현 (`storyStore` 액션 호출).
-- [ ] **3-2. 스토리 씬 (`StoryScene.tsx`) - 선택지 및 분기 구현:**
-  - [ ] `Choices.tsx` 컴포넌트 생성.
-  - [ ] 스크립트 데이터 타입이 'choices'일 경우, `Choices.tsx`를 통해 선택지 버튼 목록 표시.
-  - [ ] 선택지 버튼 클릭 시 해당 선택지의 `next` 스토리 ID로 진행하는 로직 구현 (`storyStore` 액션 호출).
+  - [x] '다음으로' 버튼 UI 구현 (픽셀 아트 스타일).
+  - [ ] '다음으로' 버튼 클릭 시 다음 스토리 ID로 이동하는 로직 구현 (`storyStore` 액션 호출) (임시 로직 유지).
+- [x] **3-2. 스토리 씬 (`StoryScene.tsx`) - 선택지 및 분기 구현:**
+  - [x] `Choices.tsx` 컴포넌트 생성 확인.
+  - [x] 스크립트 데이터 타입이 'choices'일 경우, `Choices.tsx`를 통해 선택지 버튼 목록 표시 확인.
+  - [x] 선택지 버튼 클릭 시 해당 선택지의 `next` 스토리 ID로 진행하는 로직 구현 확인 (`storyStore` 액션 호출).
 - [ ] **3-3. 기본 엔딩 구현:**
   - [ ] 특정 스토리 ID 도달 시 엔딩으로 간주하는 로직 구현.
   - [ ] 간단한 엔딩 텍스트 또는 이미지 표시 컴포넌트 생성 및 라우팅 연결.
