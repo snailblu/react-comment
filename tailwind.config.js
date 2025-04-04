@@ -17,6 +17,22 @@ module.exports = {
         "2xl": "1400px",
       },
     },
+    fontSize: {
+      // fontSize 설정 추가 (extend 밖)
+      xs: ["1rem", "1.5rem"], // 12px -> 16px
+      sm: ["1rem", "1.5rem"], // 14px -> 16px
+      base: ["1rem", "1.5rem"], // 16px (유지)
+      lg: ["1rem", "1.5rem"], // 18px -> 16px
+      xl: ["1rem", "1.5rem"], // 20px -> 16px
+      "2xl": ["2rem", "2.5rem"], // 24px -> 32px
+      "3xl": ["2rem", "2.5rem"], // 30px -> 32px
+      "4xl": ["2rem", "2.5rem"], // 36px -> 32px
+      "5xl": ["3rem", "1"], // 48px (유지)
+      "6xl": ["4rem", "1"], // 60px -> 64px
+      "7xl": ["4rem", "1"], // 72px -> 64px
+      "8xl": ["6rem", "1"], // 96px (유지)
+      "9xl": ["8rem", "1"], // 128px (유지)
+    },
     extend: {
       // Extend the default theme
       colors: {

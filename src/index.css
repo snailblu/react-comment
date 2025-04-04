@@ -90,6 +90,18 @@
   }
 }
 
+/* 커스텀 유틸리티 레이어 추가 (text-stroke 사용) */
+@layer utilities {
+  .text-stroke-black {
+    -webkit-text-stroke: 1px black; /* 1px 검은색 외곽선 */
+    paint-order: stroke fill; /* 외곽선이 글자 뒤로 가도록 (선택 사항) */
+  }
+  .text-stroke-white {
+    -webkit-text-stroke: 1px white; /* 1px 흰색 외곽선 */
+    paint-order: stroke fill; /* 외곽선이 글자 뒤로 가도록 (선택 사항) */
+  }
+}
+
 body {
   /* 위의 @layer base에서 height: 100%가 이미 적용되었으므로,
      여기서는 기본 스타일만 유지합니다. */
@@ -102,6 +114,13 @@ body {
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: unset; /* grayscale 대신 unset 또는 none 사용 고려 */
   font-smooth: never;
+  /* 이미지 렌더링 방식 설정 (픽셀 아트 폰트 선명도 개선 시도) */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges; /* 일부 브라우저 호환성 */
+  /* 폰트 합성 방지 (선명도 개선 시도) */
+  font-synthesis: none;
+  /* 커닝 적용 시도 */
+  font-kerning: normal;
 }
 
 code {

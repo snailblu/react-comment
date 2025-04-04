@@ -15,7 +15,7 @@
   z-index: 1000; /* 다른 요소들 위에 표시 */
   cursor: pointer; /* 클릭 가능 표시 */
   text-align: center; /* 텍스트 중앙 정렬 */
-  font-size: 1.1rem; /* 글자 크기 */
+  font-size: 1rem; /* 글자 크기 */
   line-height: 1.6; /* 줄 간격 */
 }
 

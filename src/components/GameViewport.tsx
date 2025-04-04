@@ -12,13 +12,11 @@ const GameViewport: React.FC<GameViewportProps> = ({
   targetWidth = 800, // 기준 너비 (4:3 비율에 가까움)
   targetHeight = 600, // 기준 높이 (4:3 비율에 가까움)
 }) => {
-  // scale 상태만 유지, offsetX/offsetY 제거
+  // scale 상태 복원
   const [scale, setScale] = useState(1);
-  // const [offsetX, setOffsetX] = useState(0); // 제거
-  // const [offsetY, setOffsetY] = useState(0); // 제거
   const viewportRef = useRef<HTMLDivElement>(null);
 
-  // useEffect 및 handleResize 로직 수정: scale 계산만 수행
+  // 스케일 계산 로직 수정: 정수 배율 적용
   useEffect(() => {
     const handleResize = () => {
       if (!viewportRef.current) return;
@@ -29,40 +27,20 @@ const GameViewport: React.FC<GameViewportProps> = ({
       const windowRatio = windowWidth / windowHeight;
 
       let newScale = 1;
-      // let newOffsetX = 0; // 제거
-      // let newOffsetY = 0; // 제거
 
       if (windowRatio > targetRatio) {
         // Pillarboxing (화면이 기준보다 넓음)
         newScale = windowHeight / targetHeight;
-        // const scaledWidth = targetWidth * newScale; // 제거
-        // newOffsetX = (windowWidth - scaledWidth) / 2; // 제거
-        // newOffsetY = 0; // 제거
       } else {
         // Letterboxing (화면이 기준보다 좁거나 같음)
         newScale = windowWidth / targetWidth;
-        // const scaledHeight = targetHeight * newScale; // 제거
-        // newOffsetX = 0; // 제거
-        // newOffsetY = (windowHeight - scaledHeight) / 2; // 제거
       }
 
-      setScale(newScale);
-      // setOffsetX(newOffsetX); // 제거
-      // setOffsetY(newOffsetY); // 제거
+      // 계산된 스케일 값을 가장 가까운 정수로 내림하여 적용
+      const integerScale = Math.max(1, Math.floor(newScale)); // 최소 1배율 보장
+      setScale(integerScale);
 
-      // 디버깅 로그 제거
-      // console.log(
-      //   `Window: ${windowWidth}x${windowHeight} (Ratio: ${windowRatio.toFixed(
-      //     2
-      //   )})`
-      // );
-      // console.log(
-      //   `Target: ${targetWidth}x${targetHeight} (Ratio: ${targetRatio.toFixed(
-      //     2
-      //   )})`
-      // );
-      // console.log(`Calculated Scale: ${newScale.toFixed(4)}`);
-      // console.log(`Applying to container: top=${newOffsetY.toFixed(2)}px, left=${newOffsetX.toFixed(2)}px, scale=${newScale.toFixed(4)}`); // 제거
+      // 디버깅 로그는 제거된 상태 유지
     };
 
     // 초기 계산 및 리사이즈 이벤트 리스너 등록
@@ -75,20 +53,16 @@ const GameViewport: React.FC<GameViewportProps> = ({
     };
   }, [targetWidth, targetHeight]);
 
-  // 인라인 스타일 수정: width, height, transform: translate + scale, transformOrigin 적용
+  // 인라인 스타일 수정: scale 복원
   const gameContainerStyle: React.CSSProperties = {
     width: `${targetWidth}px`,
     height: `${targetHeight}px`,
-    // transform 속성에 translate(-50%, -50%)와 scale 함께 적용
-    transform: `translate(-50%, -50%) scale(${scale})`,
-    transformOrigin: "center center", // 스케일 기준점 중앙
-    // position, top, left는 CSS에서 처리
+    transform: `translate(-50%, -50%) scale(${scale})`, // scale 복원
+    transformOrigin: "center center",
   };
 
   return (
-    // viewportRef는 유지
     <div ref={viewportRef} className={styles.viewport}>
-      {/* 인라인 스타일 적용 복원 */}
       <div style={gameContainerStyle} className={styles.gameContainer}>
         {children}
       </div>

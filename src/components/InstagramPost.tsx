@@ -72,7 +72,8 @@ const InstagramPost: React.FC<InstagramPostProps> = ({
           {/* 프로필 이미지와 닉네임 그룹 */}
           {/* TODO: 사용자 프로필 이미지 */}
           <div className="w-8 h-8 rounded-full bg-muted mr-3"></div>
-          <span className="font-semibold">{nickname}</span>
+          {/* text-outline-black -> text-stroke-black */}
+          <span className="text-stroke-black">{nickname}</span>
         </div>
         {/* 옵션 버튼 (...) */}
         <button className="hover:text-foreground">
@@ -124,8 +125,10 @@ const InstagramPost: React.FC<InstagramPostProps> = ({
                 alt="User 2"
               />
             </div>
-            <span className="font-semibold">Grace</span>님 외{" "}
-            <span className="font-semibold">{articleLikes - 1}명</span>이
+            {/* text-outline-black -> text-stroke-black */}
+            <span className="text-stroke-black">Grace</span>님 외{" "}
+            {/* text-outline-black -> text-stroke-black */}
+            <span className="text-stroke-black">{articleLikes - 1}명</span>이
             좋아합니다
           </div>
         )}
@@ -134,7 +137,8 @@ const InstagramPost: React.FC<InstagramPostProps> = ({
         <div className="mb-2 text-sm">
           {" "}
           {/* 텍스트 크기 조정 */}
-          <span className="font-semibold mr-1">{nickname}</span>
+          {/* text-outline-black -> text-stroke-black */}
+          <span className="text-stroke-black mr-1">{nickname}</span>
           {caption.length > captionLimit && !showFullCaption ? (
             <>
               {caption.substring(0, captionLimit)}...
