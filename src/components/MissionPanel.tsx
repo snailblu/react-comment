@@ -82,9 +82,9 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
   const getGoalDisplay = (key: string) => {
     switch (key.toLowerCase()) {
       case "positive":
-        return { icon: ThumbsUp, text: "긍정적 반응", color: "text-green-600" };
+        return { icon: ThumbsUp, text: "", color: "text-green-600" };
       case "negative":
-        return { icon: ThumbsDown, text: "부정적 반응", color: "text-red-600" };
+        return { icon: ThumbsDown, text: "", color: "text-red-600" };
       // 다른 목표 유형 추가 가능
       default:
         return { icon: HelpCircle, text: key, color: "text-muted-foreground" };
@@ -128,28 +128,35 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
     <Card className="w-full shadow-lg border border-border/40">
       {" "}
       {/* Enhanced shadow and border */}
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         {" "}
-        {/* Reduced bottom padding */}
-        <CardTitle className="text-xl font-semibold tracking-tight">
+        {/* Padding 줄임 */} {/* Reduced bottom padding */}
+        <CardTitle className="text-lg font-semibold tracking-tight">
           {" "}
+          {/* text-xl -> text-lg */}{" "}
           {/* Larger title, adjusted weight/tracking */}
           {mission.title || "제목 없음"}{" "}
           {/* Use title directly (missionData -> mission) */}
         </CardTitle>
       </CardHeader>
       <Separator /> {/* Separator without margin */}
-      <CardContent className="pt-4 space-y-4 text-sm">
+      <CardContent className="pt-3 space-y-3 text-sm">
         {" "}
-        {/* Adjusted padding and spacing */}
+        {/* Padding 및 space 줄임 */} {/* Adjusted padding and spacing */}
         {/* 목표 */}
         <div>
           <strong className="font-medium text-muted-foreground flex items-center">
-            <Target className="inline-block mr-2 h-4 w-4" /> {/* Goal Icon */}
-            목표 달성 조건:
+            {" "}
+            {/* font-normal -> font-medium */}{" "}
+            {/* font-medium -> font-normal */}
+            <Target className="inline-block mr-1 h-4 w-4" />{" "}
+            {/* 아이콘 간격 줄임 */}
+            목표: {/* 레이블 변경 */}
           </strong>
           {/* 목표 항목들을 리스트로 표시 */}
-          <div className="mt-2 pl-6 space-y-1">
+          <div className="mt-1 pl-4 space-y-0.5">
+            {" "}
+            {/* Padding, margin, space 줄임 */}
             {mission.goal &&
               Object.entries(mission.goal).map(([key, value]) => {
                 const {
@@ -159,9 +166,10 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
                 } = getGoalDisplay(key);
                 return (
                   <div key={key} className={`flex items-center ${color}`}>
-                    <Icon className="inline-block mr-2 h-4 w-4 flex-shrink-0" />
+                    <Icon className="inline-block mr-1 h-4 w-4 flex-shrink-0" />{" "}
+                    {/* 아이콘 간격 줄임 */}
                     <span className="font-medium">{goalText}:</span>
-                    <span className="ml-1">{value}% 이상</span>
+                    <span className="ml-1">{value}%+</span>
                   </div>
                 );
               })}
@@ -175,12 +183,16 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
           mission.keywords.length > 0 && ( // missionData -> mission
             <div>
               <strong className="font-medium text-muted-foreground flex items-center">
-                <Tags className="inline-block mr-2 h-4 w-4" />{" "}
-                {/* Keywords Icon */}
+                {" "}
+                {/* font-normal -> font-medium */}{" "}
+                {/* font-medium -> font-normal */}
+                <Tags className="inline-block mr-1 h-4 w-4" />{" "}
+                {/* 아이콘 간격 줄임 */}
                 키워드:
               </strong>
-              <div className="mt-2 flex flex-wrap justify-center gap-2 pl-6">
+              <div className="mt-1 flex flex-wrap justify-start gap-1 pl-4">
                 {" "}
+                {/* Padding, margin, gap 줄임, justify-start */}{" "}
                 {/* Indent content */}
                 {mission.keywords.map(
                   (
@@ -202,13 +214,16 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
           mission.conditions.length > 0 && ( // missionData -> mission
             <div>
               <strong className="font-medium text-muted-foreground flex items-center">
-                <ListChecks className="inline-block mr-2 h-4 w-4" />{" "}
-                {/* Conditions Icon */}
+                {" "}
+                {/* font-normal -> font-medium */}{" "}
+                {/* font-medium -> font-normal */}
+                <ListChecks className="inline-block mr-1 h-4 w-4" />{" "}
+                {/* 아이콘 간격 줄임 */}
                 조건:
               </strong>
-              <ul className="list-none pl-6 mt-1 space-y-1 text-foreground">
+              <ul className="list-none pl-4 mt-1 space-y-0.5 text-foreground">
                 {" "}
-                {/* Indent content */}
+                {/* Padding, margin, space 줄임 */} {/* Indent content */}
                 {mission.conditions.map(
                   (
                     condition: string,
@@ -230,11 +245,16 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
           totalAttempts > 0 && (
             <div>
               <strong className="font-medium text-muted-foreground flex items-center">
-                <Repeat className="inline-block mr-2 h-4 w-4" />{" "}
-                {/* Turn Icon */}
+                {" "}
+                {/* font-normal -> font-medium */}{" "}
+                {/* font-medium -> font-normal */}
+                <Repeat className="inline-block mr-1 h-4 w-4" />{" "}
+                {/* 아이콘 간격 줄임 */}
                 턴:
               </strong>
-              <p className="mt-1 pl-6 text-foreground">
+              <p className="mt-1 pl-4 text-foreground">
+                {" "}
+                {/* Padding, margin 줄임 */}
                 {/* 현재 턴 계산: 총 턴 - 남은 턴 + 1 */}
                 {totalAttempts - attemptsLeft + 1} / {totalAttempts} (
                 {attemptsLeft} 남음) {/* 남은 턴 정보 추가 */}

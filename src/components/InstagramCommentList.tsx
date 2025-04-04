@@ -37,31 +37,52 @@ const CommentItem: React.FC<{
   };
 
   return (
+    // 최상위 div에서 flex 제거, mb-2 유지
     <div style={{ marginLeft: `${level * 20}px` }} className="mb-2">
-      {" "}
-      {/* 들여쓰기 적용 */}
-      <div className="text-sm">
-        <span className="font-semibold mr-1">{comment.nickname || "익명"}</span>
-        <span>{comment.content}</span>
-        <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-          <span>
-            {new Date(comment.created_at).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
-          {/* TODO: 좋아요 버튼 구현 */}
-          <button
-            onClick={() => setShowReplyInput(!showReplyInput)}
-            className="hover:text-foreground"
-          >
-            {showReplyInput ? "취소" : "답글 달기"}
-          </button>
+      <div className="flex items-start gap-2">
+        {" "}
+        {/* 이미지와 내용을 묶는 flex 컨테이너 추가 */}
+        {/* 프로필 이미지 */}
+        <img
+          src={comment.profileImageUrl || "/logo192.png"} // 기본 이미지 사용
+          alt={comment.nickname || "익명"}
+          className="w-6 h-6 rounded-full flex-shrink-0 mt-0.5" // 크기 및 마진 조정
+        />
+        {/* 댓글 내용 */}
+        <div className="text-sm flex-1">
+          {" "}
+          {/* flex-1 추가 */}
+          <div>
+            {" "}
+            {/* 닉네임과 내용 묶기 */}
+            <span className="font-semibold mr-1">
+              {comment.nickname || "익명"}
+            </span>
+            <span>{comment.content}</span>
+          </div>
+          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+            <span>
+              {new Date(comment.created_at).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+            {/* TODO: 좋아요 버튼 구현 */}
+            <button
+              onClick={() => setShowReplyInput(!showReplyInput)}
+              className="hover:text-foreground"
+            >
+              {showReplyInput ? "취소" : "답글 달기"}
+            </button>
+          </div>
         </div>
-      </div>
-      {/* 답글 입력창 */}
+      </div>{" "}
+      {/* 댓글 내용 div 닫기 */}
+      {/* 답글 입력창 (댓글 내용 div 밖으로 이동 및 들여쓰기 적용) */}
       {showReplyInput && (
-        <div className="mt-1 flex gap-1">
+        <div className="mt-1 flex gap-1 pl-8">
+          {" "}
+          {/* pl-8 = w-6 (이미지) + gap-2 */}
           <input
             type="text"
             value={replyText}
@@ -81,6 +102,8 @@ const CommentItem: React.FC<{
       {/* 대댓글 렌더링 */}
       {replies.length > 0 && (
         <div className="mt-2">
+          {" "}
+          {/* 대댓글 영역은 부모의 들여쓰기를 따름 */}
           {replies.map((reply) => (
             <CommentItem
               key={reply.id}

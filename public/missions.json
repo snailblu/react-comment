@@ -1,231 +1,26 @@
 {
-  "a1b2c3d4-e5f6-7890-1234-567890abcdef": {
-    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-    "title": "첫 번째 댓글 알바",
-    "goal": { "positive": 70 },
-    "keywords": ["아이돌", "노래", "비주얼"],
-    "conditions": ["부정적 표현 금지", "탑스타 언급 금지"],
-    "totalAttempts": 5,
-    "articleTitle": "[일반] NJZ 어떻게 생각함?",
-    "articleContent": "NJZ 솔직히 거품 아님? ㅋㅋㅋ 노래는 맨날 비슷비슷하고 라이브는 뭐... 말 안 해도 알지? 민희진 빨 떨어지면 바로 나락 갈 거 같은데 왜 이렇게 빠는지 이해 불가임. 바이럴 마케팅 오지게 돌리는 거 같은데 언제까지 갈지 보자고 ㅋㅋ 반박 시 니 말이 다 맞음.",
-    "articleImage": "oneroom.png",
-    "articleCreatedAt": "2025-03-28T17:00:00Z",
-    "initialOpinion": { "positive": 60, "negative": 25, "neutral": 15 },
-    "initialLikes": 0,
-    "initialDislikes": 0,
-    "initialMonologue": "여기가 나의 전장이다... ",
-    "initialComments": [
-      {
-        "id": "sample-1",
-        "nickname": "ㅇㅇ",
-        "ip": "118.235",
-        "content": "솔직히 요즘 아이돌 중에 제일 낫지 않나?",
-        "likes": 15,
-        "is_player": false,
-        "created_at": "2025-03-28T17:55:00Z"
-      },
-      {
-        "id": "sample-2",
-        "nickname": "뮤직러버",
-        "ip": "211.176",
-        "content": "노래는 좋은데 컨셉이 너무 난해함",
-        "likes": 8,
-        "is_player": false,
-        "created_at": "2025-03-28T17:55:20Z"
-      },
-      {
-        "id": "sample-3",
-        "nickname": "지나가던",
-        "ip": "175.198",
-        "content": "ㄴ 222 노래만 좀 더 대중적으로 뽑으면 좋을 듯",
-        "likes": 3,
-        "is_player": false,
-        "created_at": "2025-03-28T17:55:25Z",
-        "isReply": true
-      },
-      {
-        "id": "sample-4",
-        "nickname": "NJZ팬",
-        "ip": "39.115",
-        "content": "난해한 게 매력인데 뭘 모르네 ㅉㅉ",
-        "likes": 25,
-        "is_player": false,
-        "created_at": "2025-03-28T17:55:30Z",
-        "isReply": true
-      },
-      {
-        "id": "sample-5",
-        "nickname": "팩트체커",
-        "ip": "112.154",
-        "content": "음방 1위 한번 못해본 그룹 아님?",
-        "likes": 2,
-        "is_player": false,
-        "created_at": "2025-03-28T17:55:50Z"
-      },
-      {
-        "id": "sample-6",
-        "nickname": "ㅇㅇ",
-        "ip": "118.235",
-        "content": "ㄴ 팩트) 저번 활동 때 케이블 1위 함",
-        "likes": 18,
-        "is_player": false,
-        "created_at": "2025-03-28T17:55:55Z",
-        "isReply": true
-      },
-      {
-        "id": "sample-7",
-        "nickname": "안티아님",
-        "ip": "223.38",
-        "content": "멤버들 비주얼은 인정 근데 실력이 좀...",
-        "likes": 5,
-        "is_player": false,
-        "created_at": "2025-03-28T17:56:20Z"
-      },
-      {
-        "id": "sample-8",
-        "nickname": "춤신춤왕",
-        "ip": "106.101",
-        "content": "퍼포먼스는 진짜 깔 게 없음. 무대 장인들임.",
-        "likes": 30,
-        "is_player": false,
-        "created_at": "2025-03-28T17:56:40Z"
-      },
-      {
-        "id": "sample-9",
-        "nickname": "ㅇㅇ",
-        "ip": "118.235",
-        "content": "ㄴ 춤만 잘 추면 가수냐? 라이브 들어보면 답 나옴",
-        "likes": 4,
-        "is_player": false,
-        "created_at": "2025-03-28T17:56:45Z",
-        "isReply": true
-      },
-      {
-        "id": "sample-10",
-        "nickname": "NJZ사랑",
-        "ip": "121.165",
-        "content": "라이브도 늘고 있거든? 성장하는 모습이 보기 좋은 거임!",
-        "likes": 22,
-        "is_player": false,
-        "created_at": "2025-03-28T17:56:50Z",
-        "isReply": true
-      },
-      {
-        "id": "sample-11",
-        "nickname": "알바의심",
-        "ip": "175.223",
-        "content": "댓글들 왜 이렇게 빠는 글만 많냐? 소속사에서 관리함?",
-        "likes": 1,
-        "is_player": false,
-        "created_at": "2025-03-28T17:57:10Z"
-      },
-      {
-        "id": "sample-12",
-        "nickname": "지나가는덕후",
-        "ip": "211.36",
-        "content": "얘네 팬덤 화력 장난 아님. 코어 팬 많은 듯.",
-        "likes": 12,
-        "is_player": false,
-        "created_at": "2025-03-28T17:57:20Z"
-      },
-      {
-        "id": "sample-13",
-        "nickname": "ㅇㅇ",
-        "ip": "118.235",
-        "content": "솔직히 비주얼 원툴 아니냐? 노래는 진짜 별로던데",
-        "likes": 6,
-        "is_player": false,
-        "created_at": "2025-03-28T17:57:40Z"
-      },
-      {
-        "id": "sample-14",
-        "nickname": "음악평론가인척",
-        "ip": "58.231",
-        "content": "ㄴ 취향 차이 존중 좀. 난 얘네 음악 스타일 좋음.",
-        "likes": 9,
-        "is_player": false,
-        "created_at": "2025-03-28T17:57:45Z",
-        "isReply": true
-      },
-      {
-        "id": "sample-15",
-        "nickname": "궁금",
-        "ip": "119.194",
-        "content": "그래서 다음 컴백 언제 함? 기다리는 중인데",
-        "likes": 11,
-        "is_player": false,
-        "created_at": "2025-03-28T17:58:00Z"
-      },
-      {
-        "id": "sample-16",
-        "nickname": "정보통",
-        "ip": "220.85",
-        "content": "곧 티저 뜰 거라는 썰 있던데... 확실하진 않음",
-        "likes": 7,
-        "is_player": false,
-        "created_at": "2025-03-28T17:58:10Z",
-        "isReply": true
-      },
-      {
-        "id": "sample-17",
-        "nickname": "해외팬",
-        "ip": "189.12",
-        "content": "NJZ fighting! Love from Brazil ❤️",
-        "likes": 28,
-        "is_player": false,
-        "created_at": "2025-03-28T17:58:30Z"
-      },
-      {
-        "id": "sample-18",
-        "nickname": "어그로꾼",
-        "ip": "1.234",
-        "content": "그래서 얘네가 누군데? 듣보 아님?",
-        "likes": 0,
-        "is_player": false,
-        "created_at": "2025-03-28T17:59:00Z"
-      },
-      {
-        "id": "sample-19",
-        "nickname": "팩트폭격기",
-        "ip": "116.36",
-        "content": "ㄴ 검색이라도 좀 해보고 와라... 빌보드 차트인도 했는데",
-        "likes": 19,
-        "is_player": false,
-        "created_at": "2025-03-28T17:59:05Z",
-        "isReply": true
-      },
-      {
-        "id": "sample-20",
-        "nickname": "마무리",
-        "ip": "125.180",
-        "content": "결론: 호불호 갈리지만 코어 팬덤 탄탄하고 성장 가능성 있음.",
-        "likes": 10,
-        "is_player": false,
-        "created_at": "2025-03-28T17:59:30Z"
-      }
-    ]
-  },
   "initial_mission": {
     "id": "initial_mission",
-    "title": "튜토리얼: 여론 조작 연습",
-    "nickname": "도림이",
+    "title": "[광고] 골드표 고양이 간식",
+    "nickname": "집사_김씨",
     "profileImageUrl": "/assets/dorim_smile.png",
-    "goal": { "positive": 65 },
-    "keywords": ["도림", "도움", "여론"],
-    "conditions": ["긍정적인 반응 유도"],
-    "totalAttempts": 3,
-    "articleTitle": "[튜토리얼] 도림이를 도와주세요!",
-    "articleContent": "안녕하세요, 저는 도림이라고 해요. 요즘 저에 대한 안 좋은 이야기들이 많아서 속상해요... 혹시 저를 응원하는 댓글을 달아주실 수 있을까요? 작은 응원 하나하나가 저에게 큰 힘이 될 거예요!",
+    "goal": { "positive": 75 },
+    "keywords": ["#고양이간식", "#골드표", "#냥스타그램", "#집사추천"],
+    "conditions": ["장점 어필", "경쟁 제품 간접 비교"],
+    "totalAttempts": 4,
+    "articleTitle": "🚨집사들 주목🚨 츄르 대체할 인생 간식 찾음!",
+    "articleContent": "우리 냥이가 입맛이 까다로워서 츄르도 잘 안 먹었는데, 골드표 간식은 환장하고 먹네요! 성분도 좋고 기호성도 최고👍 츄르보다 나은 듯? #고양이간식 #골드표 #냥스타그램 #집사추천",
     "articleImage": "social_media_cozy.png",
-    "articleCreatedAt": "2025-03-28T18:00:00Z",
-    "initialOpinion": { "positive": 50, "negative": 50 },
-    "initialLikes": 0,
-    "initialDislikes": 0,
-    "initialMonologue": "튜토리얼 미션이다. 도림이를 도와 긍정적인 여론을 만들어보자.",
+    "articleCreatedAt": "2025-04-04T10:00:00Z",
+    "initialOpinion": { "positive": 55, "negative": 45 },
+    "initialLikes": 12,
+    "initialDislikes": 3,
+    "initialMonologue": "이번엔 고양이 간식 바이럴이군.",
     "initialComments": [
       {
         "id": "tut-1",
         "nickname": "지나가던",
+        "profileImageUrl": "/logo192.png",
         "ip": "118.235",
         "content": "얘가 누군데 자꾸 글 올라옴?",
         "likes": 2,
@@ -236,6 +31,7 @@
         "id": "tut-1-reply",
         "parentId": "tut-1",
         "nickname": "정보봇",
+        "profileImageUrl": "/logo192.png",
         "ip": "121.165",
         "content": "ㄴ 도림이라고 새로 데뷔한 아이돌이래요!",
         "likes": 3,
@@ -246,6 +42,7 @@
       {
         "id": "tut-2",
         "nickname": "ㅇㅇ",
+        "profileImageUrl": "/logo192.png",
         "ip": "211.176",
         "content": "관심 없는데...",
         "likes": 1,
@@ -255,6 +52,7 @@
       {
         "id": "tut-3",
         "nickname": "도림팬",
+        "profileImageUrl": "/assets/dorim_smile.png",
         "ip": "175.198",
         "content": "도림이 힘내! 항상 응원하고 있어!",
         "likes": 5,
@@ -265,6 +63,7 @@
         "id": "tut-3-reply",
         "parentId": "tut-3",
         "nickname": "나도팬",
+        "profileImageUrl": "/logo192.png",
         "ip": "220.85",
         "content": "ㄴ 맞아요! 우리 도림이 꽃길만 걷자🌸",
         "likes": 4,

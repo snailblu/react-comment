@@ -53,6 +53,7 @@ export interface Script {
 export interface Comment {
   id: string;
   nickname?: string;
+  profileImageUrl?: string; // 프로필 이미지 URL 추가 (옵셔널)
   ip?: string; // IP 주소 (ipRange 제거)
   isReply?: boolean;
   parentId?: string; // 부모 댓글 ID (대댓글인 경우)

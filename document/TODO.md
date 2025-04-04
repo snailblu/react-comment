@@ -46,21 +46,25 @@
   - [x] `InstagramPostInput.tsx` 생성 및 댓글 입력용으로 수정.
   - [x] `InstagramCommentList.tsx` 생성 및 기본 구조/UI 구현 (오류 수정 완료).
   - [x] `ReactionStats.tsx` 생성 및 기본 구조/UI 구현.
-  - [x] 위 컴포넌트들을 `InstagramActivityScene.tsx`에 통합 및 기본 연결 완료.
+  - [x] `StoriesBar.tsx` 생성 및 기본 구조 작성.
+  - [x] `BottomNavBar.tsx` 생성 및 기본 구조 작성.
+  - [x] `CommentOverlay.tsx` 생성 및 기본 구조/스타일/애니메이션 적용.
+  - [x] 위 컴포넌트들을 `InstagramActivityScene.tsx`에 통합 및 기본 연결 완료 (댓글 오버레이 방식 적용).
+  - [x] `InstagramPost.tsx` UI 개선 (옵션 버튼, 좋아요 표시, 캡션 더보기).
 - [ ] **2-3. 댓글 기능 구현:**
-  - [ ] `InstagramPostInput.tsx`: 댓글 입력 및 제출 기능 완성.
-  - [ ] `InstagramCommentList.tsx`: 댓글 및 대댓글 표시, 답글 달기 UI/기능 완성.
-  - [ ] `InstagramActivityScene.tsx`: 댓글/답글 제출 시 `handleCommentSubmit`/`handleReplySubmit` 핸들러 로직 확인 및 `commentStore` 연동.
+  - [x] `InstagramPostInput.tsx`: 댓글 입력 및 제출 기본 기능 완성 (오버레이 내).
+  - [x] `InstagramCommentList.tsx`: 댓글 및 대댓글 표시, 답글 달기 UI/기능 기본 완성 (오버레이 내).
+  - [x] `CommentOverlay.tsx`: 댓글/답글 제출 핸들러 로직 구현 및 스토어 연동.
 - [x] **2-4. 기본 반응 표시:**
   - [x] `ReactionStats.tsx` UI 구현 및 데이터 연동 (`missionStore`).
   - [x] `InstagramCommentList.tsx` UI 구현 및 데이터 연동 (`commentStore`).
-  - [ ] `InstagramPost.tsx`: 좋아요/댓글 수 등 반응 표시 UI 구현.
-  - [ ] `InstagramFeed.tsx`: `InstagramPost` 컴포넌트 사용하여 실제 게시물(현재는 댓글 데이터) 렌더링.
+  - [x] `InstagramPost.tsx`: 좋아요/댓글 수 등 반응 표시 UI 구현 (`missionStore` 연동).
+  - [x] `InstagramFeed.tsx`: `InstagramPost` 컴포넌트 사용하여 실제 게시물(`missionData`) 렌더링.
 - [ ] **2-5. 기본 LLM 연동 (조건 판별):**
-  - [ ] 댓글/답글 제출 시, 해당 내용과 `missionStore`의 미션 조건(키워드, 해시태그 등)을 비교하는 로직 구현 (`handleSubmitAndGenerateAi` 내부 또는 별도 함수).
-  - [ ] 조건 충족 여부에 따라 반응 수치(좋아요 등)를 기본적으로 업데이트하는 로직 구현 (`missionStore` 또는 `useArticleState` 활용).
+  - [ ] 댓글/답글 제출 시 (`CommentOverlay.tsx`의 핸들러 내부), 해당 내용과 `missionStore`의 미션 조건(키워드, 해시태그 등)을 비교하는 로직 구현.
+  - [ ] 조건 충족 여부에 따라 반응 수치(좋아요 등)를 기본적으로 업데이트하는 로직 구현 (`missionStore` 활용).
 - [ ] **2-X. 콘텐츠 게시 시뮬레이션 (MVP 이후):**
-  - [ ] `InstagramPostInput.tsx`에서 이미지 선택 기능 구현.
+  - [ ] `InstagramPostInput.tsx`에서 이미지 선택 기능 구현 (현재는 댓글 입력 전용).
   - [ ] '게시' 버튼 클릭 시 `handlePostSubmit` 핸들러 호출 및 실제 게시물 생성/저장 로직 구현.
 
 ### Phase 3: 게임 루프 완성 및 MVP 마무리

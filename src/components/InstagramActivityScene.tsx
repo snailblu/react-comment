@@ -20,6 +20,7 @@ import InstagramFeed from "./InstagramFeed";
 // import InstagramCommentList from "./InstagramCommentList"; // Post 내부에서 사용
 import ReactionStats from "./ReactionStats"; // 반응 통계 UI
 import MissionPanel from "./MissionPanel"; // 미션 패널은 재사용 가능
+import OpinionStats from "./OpinionStats"; // 여론 패널 import 추가
 import BottomNavBar from "./BottomNavBar"; // 하단 네비게이션 바 import 추가
 import StoriesBar from "./StoriesBar"; // 스토리 바 import 추가
 import CommentOverlay from "./CommentOverlay"; // 댓글 오버레이 import 추가
@@ -60,7 +61,7 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
     useArticleState(); // initialOpinion 인자 제거
 
   // opinion 상태는 missionStore에서 직접 가져옴
-  // const { opinion } = useMissionStore(); // checkMissionCompletion에서 opinion 사용 안 함
+  const { opinion } = useMissionStore(); // 주석 제거
 
   const { comments, setComments } = useCommentStore(); // addComment, addReply 제거
 
@@ -190,6 +191,10 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
           attemptsLeft={attemptsLeft}
           totalAttempts={totalAttempts}
         />
+        {/* OpinionStats 컴포넌트 추가 (상단 마진 추가) */}
+        <div className="mt-4">
+          <OpinionStats opinion={opinion} attemptsLeft={attemptsLeft} />
+        </div>
         {/* 독백은 왼쪽 패널 하단에 고정? */}
         {currentMonologue && (
           <div className="mt-4 p-2 bg-muted text-muted-foreground rounded text-sm">
