@@ -1,19 +1,20 @@
 // src/types/index.ts
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction } from "react";
 
 // 기존 타입 정의 유지
 export interface DialogueLine {
   character?: string; // 옵셔널 처리
   line: string;
   expression?: string; // 표정 추가
-  position?: 'left' | 'right' | 'center'; // 위치 추가
+  position?: "left" | "right" | "center"; // 위치 추가
   audio?: string; // 오디오 파일 경로 추가
 }
 
 export interface Choice {
   text: string;
   nextSceneId: string;
-  opinionChange?: { // 여론 변화 추가
+  opinionChange?: {
+    // 여론 변화 추가
     positive?: number;
     negative?: number;
   };
@@ -21,21 +22,28 @@ export interface Choice {
 
 export interface Scene {
   id: string;
-  type: 'dialogue' | 'monologue' | 'choice' | 'phone' | 'comment' | 'ending' | 'result'; // 'comment', 'ending', 'result' 타입 추가
+  type:
+    | "dialogue"
+    | "monologue"
+    | "choice"
+    | "phone"
+    | "comment"
+    | "ending"
+    | "result"; // 'comment', 'ending', 'result' 타입 추가
   background?: string;
   dialogue?: DialogueLine[];
   monologue?: string;
   choices?: Choice[];
   nextSceneId?: string; // 다음 씬 ID (선택적)
-  phoneMessages?: { sender: 'player' | 'other'; text: string }[]; // 폰 메시지 타입 추가
+  phoneMessages?: { sender: "player" | "other"; text: string }[]; // 폰 메시지 타입 추가
   missionId?: string; // 댓글 미션 ID 추가
-  endingType?: 'good_ending' | 'bad_ending' | 'neutral_ending'; // 엔딩 타입 추가
+  endingType?: "good_ending" | "bad_ending" | "neutral_ending"; // 엔딩 타입 추가
   resultData?: any; // 결과 데이터 (추후 구체화)
   audio?: string; // 씬 배경 음악 또는 효과음
 }
 
 // SceneType 별칭 추가 및 export
-export type SceneType = Scene['type'];
+export type SceneType = Scene["type"];
 
 export interface Script {
   [key: string]: Scene;
@@ -126,6 +134,7 @@ export interface ScriptLine {
   altText?: string;
   expression?: string;
   nextScene?: SceneType; // 다음 씬 타입 추가
+  background?: string; // 배경 이미지 파일명 (옵셔널)
   // 필요한 다른 속성 추가 가능
 }
 

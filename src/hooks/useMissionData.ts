@@ -41,8 +41,8 @@ const useMissionData = (
       setIsLoading(true);
       setError(null);
       try {
-        // 상대 경로 사용
-        const response = await fetch("missions.json");
+        // Electron 환경 호환성을 위해 상대 경로 사용
+        const response = await fetch("./missions.json");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

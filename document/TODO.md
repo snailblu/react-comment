@@ -31,28 +31,32 @@
 
 ### Phase 2: 핵심 게임 플레이 구현 - 인스타그램 활동
 
-- [ ] **2-1. 인스타그램 활동 씬 (`InstagramActivityScene.tsx` - 가칭) 기본 설정:**
-  - [ ] 컴포넌트 파일 생성 (`src/components/InstagramActivityScene.tsx`).
-  - [ ] `App.tsx`에 `/instagram/:missionId` 경로 라우팅 추가.
-  - [ ] `useParams` 훅 사용하여 `missionId` 추출.
-  - [ ] `missionStore` 연동하여 `missionId`에 해당하는 미션 데이터 로드.
-  - [ ] `MissionPanel.tsx` 컴포넌트 생성 및 미션 정보 표시 UI 구현.
-  - [ ] 인스타그램 피드/프로필 형태 기본 레이아웃 구성.
-  - [ ] `instagramStore` (가칭) 스토어 파일 생성 및 기본 상태/액션 정의.
-- [ ] **2-2. 콘텐츠 게시 시뮬레이션:**
-  - [ ] `InstagramPostInput.tsx` (가칭) 컴포넌트 생성.
-  - [ ] 텍스트 입력 필드 UI 구현 (픽셀 아트 스타일).
-  - [ ] 이미지 선택 UI 구현 (미리 정의된 목록 기반).
+- [x] **2-1. 인스타그램 활동 씬 (`InstagramActivityScene.tsx`) 기본 설정:**
+  - [x] 컴포넌트 파일 생성 (`src/components/InstagramActivityScene.tsx`) 및 기본 로직 복사.
+  - [x] `App.tsx`에 `/instagram/:missionId` 경로 라우팅 추가.
+  - [x] `useParams` 훅 사용하여 `missionId` 추출 확인.
+  - [x] `missionStore` 연동하여 `missionId`에 해당하는 미션 데이터 로드 확인.
+  - [ ] `MissionPanel.tsx` 컴포넌트 생성 및 미션 정보 표시 UI 구현 (인스타그램 스타일에 맞게).
+  - [ ] 인스타그램 피드/프로필 형태 기본 레이아웃 구성 (UI 구현 필요).
+  - [ ] `instagramStore` (가칭) 스토어 파일 생성 및 기본 상태/액션 정의 (필요시, 현재는 `commentStore`, `missionStore` 등 활용).
+- [ ] **2-2. 인스타그램 UI 구현:**
+  - [ ] `InstagramHeader.tsx` (가칭) 컴포넌트 생성 및 구현.
+  - [ ] `InstagramFeed.tsx` (가칭) 컴포넌트 생성 및 구현 (게시물 목록 표시).
+  - [ ] `InstagramPost.tsx` (가칭) 컴포넌트 생성 및 구현 (개별 게시물 UI).
+  - [ ] `InstagramPostInput.tsx` (가칭) 컴포넌트 생성 및 구현 (게시물 작성 UI).
+  - [ ] `InstagramCommentList.tsx` (가칭) 컴포넌트 생성 및 구현 (댓글 목록 UI).
+  - [ ] `ReactionStats.tsx` (가칭) 컴포넌트 생성 및 구현 (좋아요, 댓글 수 등 반응 표시).
+  - [ ] 위 컴포넌트들을 `InstagramActivityScene.tsx`에 통합하고 로직 연결.
+- [ ] **2-3. 콘텐츠 게시 시뮬레이션:**
+  - [ ] `InstagramPostInput.tsx`에서 텍스트 입력 및 이미지 선택 기능 구현.
   - [ ] '게시' 버튼 UI 구현 (픽셀 아트 스타일).
-  - [ ] '게시' 버튼 클릭 시 입력된 텍스트/선택된 이미지 정보를 `instagramStore`에 저장하는 액션 구현.
-- [ ] **2-3. 기본 반응 표시:**
-  - [ ] `ReactionStats.tsx` (가칭) 컴포넌트 생성.
-  - [ ] `instagramStore` 연동하여 좋아요, 댓글 수, 팔로워 수 표시 UI 구현 (아이콘 + 숫자).
-  - [ ] `InstagramCommentList.tsx` (가칭) 컴포넌트 생성.
-  - [ ] `missionStore`의 초기 댓글/DM 데이터를 가져와 리스트 형태로 표시하는 UI 구현.
-- [ ] **2-4. 기본 LLM 연동 (조건 판별):**
-  - [ ] 게시물 제출 시, 해당 게시물 내용과 `missionStore`의 미션 조건(키워드, 해시태그 등)을 비교하는 로직 구현.
-  - [ ] 조건 충족 여부에 따라 `instagramStore`의 반응 수치(좋아요 등)를 기본적으로 업데이트하는 액션 구현.
+  - [ ] '게시' 버튼 클릭 시 `handlePostSubmit` 핸들러 호출 및 로직 연결.
+- [ ] **2-4. 기본 반응 표시:**
+  - [ ] `ReactionStats.tsx`에서 좋아요, 댓글 수, 팔로워 수 표시 UI 구현 (`missionStore` 연동).
+  - [ ] `InstagramCommentList.tsx`에서 댓글 목록 표시 UI 구현 (`commentStore` 연동).
+- [ ] **2-5. 기본 LLM 연동 (조건 판별):**
+  - [ ] 게시물/댓글 제출 시, 해당 내용과 `missionStore`의 미션 조건(키워드, 해시태그 등)을 비교하는 로직 구현 (`handleSubmitAndGenerateAi` 내부 또는 별도 함수).
+  - [ ] 조건 충족 여부에 따라 반응 수치(좋아요 등)를 기본적으로 업데이트하는 로직 구현 (`missionStore` 또는 `useArticleState` 활용).
 
 ### Phase 3: 게임 루프 완성 및 MVP 마무리
 

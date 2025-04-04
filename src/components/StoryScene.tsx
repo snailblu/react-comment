@@ -211,7 +211,8 @@ const StoryScene: React.FC = () => {
           <div className={styles.notification}>{notificationMessage}</div>
         )}
 
-        <Background imageUrl={roomBackground} />
+        {/* 배경 표시 (currentLine.background 우선, 없으면 roomBackground 사용) */}
+        <Background imageUrl={currentLine.background || roomBackground} />
 
         {/* 캐릭터 표시 */}
         {currentLine.character &&

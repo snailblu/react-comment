@@ -4,27 +4,25 @@ import { Link } from "react-router-dom";
 
 function TitleScreen() {
   return (
-    // Playfair Display 폰트 적용
+    // Neo둥근모 Pro 폰트 적용
     // 배경 이미지 적용 및 중앙 정렬
     <div
-      className="relative flex flex-col items-center h-full w-full bg-cover bg-center bg-no-repeat text-gray-300 font-playfair"
-      style={{
-        backgroundImage: `url('title_background.png')`, // 상대 경로 사용
-      }}
+      className="relative flex flex-col items-center h-full w-full bg-background text-foreground font-neodgm" // 배경 관련 클래스 수정, style 제거
     >
-      {/* 제목 이미지 (상단 마진 유지) */}
-      <img
-        src="Title.png" // 상대 경로 및 대소문자 수정
-        alt="Project Comment Title"
-        className="mt-64 w-auto h-48" // 이미지 높이를 h-48로 늘림
-      />
+      {/* 배경 이미지 제거, 기본 배경색 적용 (Tailwind bg-background 등 활용 가능) */}
+      {/* 제목 텍스트 */}
+      <h1 className="mt-64 text-6xl font-bold text-foreground font-neodgm">
+        {" "}
+        {/* text-white -> text-foreground */}
+        PROJECT COMMENT
+      </h1>
       {/* 버튼 (absolute positioning 적용) */}
       <nav className="absolute bottom-[30%] left-1/2 -translate-x-1/2 space-x-4">
         {/* absolute, bottom-[30%], left-1/2, -translate-x-1/2 추가 */}
-        {/* 진한 회색 버튼 */}
+        {/* 픽셀 아트 스타일 버튼 */}
         <Link
           to="/game"
-          className="px-8 py-3 bg-gray-800 text-white rounded-lg shadow-lg hover:bg-gray-700 transition duration-300 ease-in-out transform hover:-translate-y-1 border border-gray-600"
+          className="px-8 py-3 bg-primary text-primary-foreground border border-border hover:bg-accent hover:text-accent-foreground active:translate-y-px transition duration-300 ease-in-out transform hover:-translate-y-1" // 픽셀 아트 스타일 적용: 배경, 텍스트, 테두리 색상 변경, 라운딩/그림자 제거, hover/active 효과 조정
         >
           게임 시작
         </Link>
