@@ -1,5 +1,6 @@
-import React from 'react';
-import styles from './StoryScene.module.css'; // StoryScene의 스타일 재사용 (필요시 분리)
+import React from "react";
+import { useTranslation } from "react-i18next"; // Import useTranslation
+import styles from "./StoryScene.module.css";
 
 interface StoryMenuBarProps {
   onSave: () => void;
@@ -7,7 +8,7 @@ interface StoryMenuBarProps {
   onSettings: () => void;
   onTogglePhoneChat: () => void;
   isPhoneChatVisible: boolean;
-  isLoading: boolean; // 로딩 상태 추가 (버튼 비활성화용)
+  isLoading: boolean;
 }
 
 const StoryMenuBar: React.FC<StoryMenuBarProps> = ({
@@ -18,19 +19,37 @@ const StoryMenuBar: React.FC<StoryMenuBarProps> = ({
   isPhoneChatVisible,
   isLoading,
 }) => {
+  const { t } = useTranslation("storyMenu"); // Initialize useTranslation
+
   return (
     <div className={styles.menuButtons}>
-      <button onClick={onSave} className={styles.menuButton} disabled={isLoading}>
-        저장
+      <button
+        onClick={onSave}
+        className={styles.menuButton}
+        disabled={isLoading}
+      >
+        {t("save")}
       </button>
-      <button onClick={onLoad} className={styles.menuButton} disabled={isLoading}>
-        불러오기
+      <button
+        onClick={onLoad}
+        className={styles.menuButton}
+        disabled={isLoading}
+      >
+        {t("load")}
       </button>
-      <button onClick={onSettings} className={styles.menuButton} disabled={isLoading}>
-        설정
+      <button
+        onClick={onSettings}
+        className={styles.menuButton}
+        disabled={isLoading}
+      >
+        {t("settings")}
       </button>
-      <button onClick={onTogglePhoneChat} className={styles.menuButton} disabled={isLoading}>
-        {isPhoneChatVisible ? '디티알톡 숨기기' : '디티알톡 보이기'}
+      <button
+        onClick={onTogglePhoneChat}
+        className={styles.menuButton}
+        disabled={isLoading}
+      >
+        {isPhoneChatVisible ? t("hideChat") : t("showChat")}
       </button>
     </div>
   );

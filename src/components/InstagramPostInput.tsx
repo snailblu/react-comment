@@ -1,8 +1,9 @@
-import React, { useState } from "react"; // 중복 import 제거 및 useState 추가
-// import styles from './InstagramPostInput.module.css'; // 필요시 CSS 모듈 생성
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next"; // Import useTranslation
+// import styles from './InstagramPostInput.module.css';
 
 interface InstagramPostInputProps {
-  onSubmitComment: (commentText: string) => void; // 댓글 제출 핸들러 prop 정의
+  onSubmitComment: (commentText: string) => void;
   disabled?: boolean;
 }
 
@@ -10,7 +11,8 @@ const InstagramPostInput: React.FC<InstagramPostInputProps> = ({
   onSubmitComment,
   disabled,
 }) => {
-  const [commentText, setCommentText] = useState(""); // 댓글 입력 상태
+  const { t } = useTranslation("instagramPostInput"); // Initialize useTranslation
+  const [commentText, setCommentText] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCommentText(e.target.value);
@@ -33,7 +35,7 @@ const InstagramPostInput: React.FC<InstagramPostInputProps> = ({
       <div className="w-6 h-6 rounded-full bg-muted flex-shrink-0"></div>
       <input
         type="text"
-        placeholder="댓글 달기..."
+        placeholder={t("placeholder")} // Use translation key
         value={commentText}
         onChange={handleInputChange}
         className="flex-1 p-2 border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-sm" // text-sm 추가
@@ -44,7 +46,7 @@ const InstagramPostInput: React.FC<InstagramPostInputProps> = ({
         className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50" // 크기 및 스타일 조정
         disabled={!commentText.trim() || disabled}
       >
-        게시
+        {t("submitButton")} {/* Use translation key */}
       </button>
     </form>
   );

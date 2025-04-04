@@ -1,0 +1,12 @@
+{
+  "goalPositive": "긍정 여론",
+  "goalNegative": "부정 여론",
+  "errorTitle": "오류",
+  "errorMessage": "미션 정보를 불러오는데 실패했거나 해당 미션을 찾을 수 없습니다.",
+  "goalLabel": "목표:",
+  "noGoalDefined": "정의된 목표 없음",
+  "keywordsLabel": "키워드:",
+  "conditionsLabel": "조건:",
+  "turnLabel": "턴:",
+  "turnsLeft": "{{count}} 남음"
+}

@@ -1,0 +1,14 @@
+{
+  "title": "Settings",
+  "bgmVolumeLabel": "BGM Volume:",
+  "sfxVolumeLabel": "SFX Volume:",
+  "languageLabel": "Language:",
+  "langKo": "한국어",
+  "langEn": "English",
+  "langZh": "中文",
+  "saveButton": "Save",
+  "loadButton": "Load",
+  "titleButton": "To Title",
+  "exitButton": "Exit",
+  "closeButton": "Close"
+}

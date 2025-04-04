@@ -20,14 +20,16 @@ import useMissionData from "../hooks/useMissionData";
 import useArticleState from "../hooks/useArticleState";
 import { useCommentStore } from "../stores/commentStore";
 import { useMissionStore } from "../stores/missionStore";
+import { useTranslation } from "react-i18next"; // Import useTranslation
 import useGeminiComments from "../hooks/useGeminiComments";
-import useMonologueManager from "../hooks/useMonologueManager"; // 새로 만든 훅 import
+import useMonologueManager from "../hooks/useMonologueManager";
 
 interface CommentSceneProps {
   onMissionComplete?: (success: boolean) => void;
 }
 
 const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
+  const { t } = useTranslation("commentScene"); // Initialize useTranslation
   const { missionId } = useParams<{ missionId: string }>();
   const navigate = useNavigate();
 
@@ -313,19 +315,23 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   if (isMissionLoading) {
     return (
       <div className={gameStyles.storySceneContainer}>
-        미션 데이터를 불러오는 중...
+        {t("loadingMission")}
       </div>
     );
   }
   if (missionError) {
+    // Assuming missionError might already be translated by useMissionData
     return (
-      <div className={gameStyles.storySceneContainer}>오류: {missionError}</div>
+      <div className={gameStyles.storySceneContainer}>
+        {t("errorPrefix")}
+        {missionError}
+      </div>
     );
   }
   if (!missionData) {
     return (
       <div className={gameStyles.storySceneContainer}>
-        미션 데이터를 찾을 수 없습니다.
+        {t("errorMissionNotFound")}
       </div>
     );
   }
@@ -341,8 +347,10 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         style={{ pointerEvents: isGeneratingComments ? "none" : "auto" }}
       >
         <div className={styles.leftSidePanel} style={{ pointerEvents: "auto" }}>
+          {/* Pass mission data and loading state to MissionPanel */}
           <MissionPanel
-            missionId={missionId || null}
+            mission={missionData}
+            isLoading={isMissionLoading}
             attemptsLeft={attemptsLeft}
             totalAttempts={totalAttempts}
           />
@@ -356,13 +364,15 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
               zIndex: 10,
             }}
           >
-            {isMonologueVisible ? "독백 숨기기" : "독백 보이기"}
+            {isMonologueVisible ? t("hideMonologue") : t("showMonologue")}
           </button>
         </div>
         <div ref={mainContentAreaRef} className={styles.mainContentArea}>
           {/* 로딩 오버레이 추가 (CommentOverlay와 유사하게) */}
           {isGeneratingComments && (
-            <div className={styles.loadingOverlay}>AI 댓글 생성 중...</div>
+            <div className={styles.loadingOverlay}>
+              {t("generatingComments")}
+            </div>
           )}
           {/* 기존 헤더 제거 또는 수정 */}
           {/* <div className={styles.siteHeader}>acoutside.com 갤러리</div> */}
@@ -403,8 +413,9 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
           <div className={styles.commentListSection}>
             <div className={styles.commentListHeader}>
               <div className={styles.commentCount}>
-                전체 댓글{" "}
-                <span className={styles.countNumber}>{comments.length}</span>개
+                {t("totalCommentsPrefix")} {/* Translate */}
+                <span className={styles.countNumber}>{comments.length}</span>
+                {t("totalCommentsSuffix")} {/* Translate */}
               </div>
               <div className={styles.headerControls}>
                 <select
@@ -412,29 +423,34 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
                   value={sortOrder}
                   onChange={handleSortChange}
                 >
-                  <option value="등록순">등록순</option>
-                  <option value="최신순">최신순</option>
+                  <option value="등록순">{t("sortRegistered")}</option>{" "}
+                  {/* Translate */}
+                  <option value="최신순">{t("sortLatest")}</option>{" "}
+                  {/* Translate */}
                 </select>
                 <span className={styles.listControls}>
                   <button
                     onClick={scrollToTop}
                     className={styles.controlButton}
                   >
-                    본문 보기
+                    {t("viewArticle")} {/* Translate */}
                   </button>{" "}
                   |
                   <button
                     onClick={toggleCommentList}
                     className={styles.controlButton}
                   >
-                    댓글{isCommentListVisible ? "닫기 ▼" : "열기 ▲"}
+                    {isCommentListVisible
+                      ? t("closeComments")
+                      : t("openComments")}{" "}
+                    {/* Translate */}
                   </button>{" "}
                   |
                   <button
                     onClick={refreshComments}
                     className={styles.controlButton}
                   >
-                    새로고침
+                    {t("refresh")} {/* Translate */}
                   </button>
                 </span>
               </div>
@@ -455,21 +471,24 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
                     onClick={scrollToTop}
                     className={styles.controlButton}
                   >
-                    본문 보기
+                    {t("viewArticle")} {/* Translate */}
                   </button>{" "}
                   |
                   <button
                     onClick={toggleCommentList}
                     className={styles.controlButton}
                   >
-                    댓글{isCommentListVisible ? "닫기 ▼" : "열기 ▲"}
+                    {isCommentListVisible
+                      ? t("closeComments")
+                      : t("openComments")}{" "}
+                    {/* Translate */}
                   </button>{" "}
                   |
                   <button
                     onClick={refreshComments}
                     className={styles.controlButton}
                   >
-                    새로고침
+                    {t("refresh")} {/* Translate */}
                   </button>
                 </span>
               </div>

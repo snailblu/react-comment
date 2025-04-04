@@ -8,86 +8,55 @@ import {
   ThumbsDown,
   HelpCircle,
 } from "lucide-react"; // Import icons including ThumbsUp/Down
+import { useTranslation } from "react-i18next"; // Import useTranslation
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
-import { Badge } from "./ui/badge"; // Import Badge
-import { Separator } from "./ui/separator"; // Import Separator
-import { Mission } from "../types"; // Import Mission from types (MissionData -> Mission)
+import { Badge } from "./ui/badge";
+import { Separator } from "./ui/separator";
+import { Mission } from "../types";
 
 interface MissionPanelProps {
-  missionId: string | null; // Allow null missionId
-  attemptsLeft?: number; // 남은 시도 횟수 (옵셔널)
-  totalAttempts?: number; // 총 시도 횟수 (옵셔널)
+  // Receive mission data and loading state as props
+  mission: Mission | null;
+  isLoading: boolean;
+  attemptsLeft?: number;
+  totalAttempts?: number;
 }
-
-// MissionData interface moved to src/types/index.ts
 
 // props를 함수 인자에서 직접 구조 분해
 const MissionPanel: React.FC<MissionPanelProps> = ({
-  missionId,
+  mission, // Use mission prop
+  isLoading, // Use isLoading prop
   attemptsLeft,
   totalAttempts,
 }) => {
-  const [mission, setMission] = useState<Mission | null>(null); // missionData -> mission, MissionData -> Mission
-  const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation("missionPanel"); // Initialize useTranslation
 
-  // Props 구조 분해는 위에서 처리했으므로 이 라인 제거
-
-  useEffect(() => {
-    const fetchMissionData = async () => {
-      setIsLoading(true);
-      setMission(null); // Reset mission data on new missionId (missionData -> mission)
-
-      if (!missionId) {
-        console.error("MissionPanel: missionId is null.");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // 상대 경로 사용
-        const response = await fetch("missions.json"); // Fetch from the new file
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const allMissions: { [key: string]: Mission } = await response.json(); // MissionData -> Mission
-
-        if (allMissions[missionId]) {
-          console.log(
-            `MissionPanel: Loaded data for mission ${missionId} from missions.json`
-          );
-          setMission(allMissions[missionId]); // missionData -> mission
-        } else {
-          console.error(
-            `MissionPanel: Mission data for ${missionId} not found in missions.json.`
-          );
-        }
-      } catch (error) {
-        console.error(
-          "MissionPanel: Failed to fetch or parse missions.json:",
-          error
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchMissionData();
-  }, [missionId]);
-
-  // // goal 객체를 문자열로 표시하는 함수는 더 이상 사용하지 않음
-  // const formatGoal = (goal: any): string => { ... };
+  // Remove internal state and useEffect for data fetching
 
   // 목표 키에 따른 아이콘과 텍스트 매핑
   const getGoalDisplay = (key: string) => {
     switch (key.toLowerCase()) {
       case "positive":
-        return { icon: ThumbsUp, text: "", color: "text-green-600" };
+        // Translate goal text if needed, currently empty
+        return {
+          icon: ThumbsUp,
+          text: t("goalPositive"),
+          color: "text-green-600",
+        };
       case "negative":
-        return { icon: ThumbsDown, text: "", color: "text-red-600" };
+        return {
+          icon: ThumbsDown,
+          text: t("goalNegative"),
+          color: "text-red-600",
+        };
       // 다른 목표 유형 추가 가능
       default:
-        return { icon: HelpCircle, text: key, color: "text-muted-foreground" };
+        return {
+          icon: HelpCircle,
+          text: t(key, { defaultValue: key }),
+          color: "text-muted-foreground",
+        }; // Translate key with fallback
     }
   };
 
@@ -110,13 +79,14 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
   if (!mission) {
     // missionData -> mission
     // Display error within a Card for consistency
+    // Display error within a Card for consistency
     return (
       <Card className="w-full border-destructive">
         <CardHeader>
-          <CardTitle className="text-destructive">오류</CardTitle>
+          <CardTitle className="text-destructive">{t("errorTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>미션 정보를 불러오는데 실패했거나 해당 미션을 찾을 수 없습니다.</p>
+          <p>{t("errorMessage")}</p>
         </CardContent>
       </Card>
     );
@@ -151,7 +121,7 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
             {/* font-medium -> font-normal */}
             <Target className="inline-block mr-1 h-4 w-4" />{" "}
             {/* 아이콘 간격 줄임 */}
-            목표: {/* 레이블 변경 */}
+            {t("goalLabel")} {/* Use translation key */}
           </strong>
           {/* 목표 항목들을 리스트로 표시 */}
           <div className="mt-1 pl-4 space-y-0.5">
@@ -174,7 +144,7 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
                 );
               })}
             {(!mission.goal || Object.keys(mission.goal).length === 0) && (
-              <p className="text-muted-foreground">정의된 목표 없음</p>
+              <p className="text-muted-foreground">{t("noGoalDefined")}</p>
             )}
           </div>
         </div>
@@ -188,7 +158,7 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
                 {/* font-medium -> font-normal */}
                 <Tags className="inline-block mr-1 h-4 w-4" />{" "}
                 {/* 아이콘 간격 줄임 */}
-                키워드:
+                {t("keywordsLabel")} {/* Use translation key */}
               </strong>
               <div className="mt-1 flex flex-wrap justify-start gap-1 pl-4">
                 {" "}
@@ -219,7 +189,7 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
                 {/* font-medium -> font-normal */}
                 <ListChecks className="inline-block mr-1 h-4 w-4" />{" "}
                 {/* 아이콘 간격 줄임 */}
-                조건:
+                {t("conditionsLabel")} {/* Use translation key */}
               </strong>
               <ul className="list-none pl-4 mt-1 space-y-0.5 text-foreground">
                 {" "}
@@ -250,14 +220,15 @@ const MissionPanel: React.FC<MissionPanelProps> = ({
                 {/* font-medium -> font-normal */}
                 <Repeat className="inline-block mr-1 h-4 w-4" />{" "}
                 {/* 아이콘 간격 줄임 */}
-                턴:
+                {t("turnLabel")} {/* Use translation key */}
               </strong>
               <p className="mt-1 pl-4 text-foreground">
                 {" "}
                 {/* Padding, margin 줄임 */}
                 {/* 현재 턴 계산: 총 턴 - 남은 턴 + 1 */}
                 {totalAttempts - attemptsLeft + 1} / {totalAttempts} (
-                {attemptsLeft} 남음) {/* 남은 턴 정보 추가 */}
+                {t("turnsLeft", { count: attemptsLeft })}){" "}
+                {/* Use translation key with count */}
               </p>
             </div>
           )}

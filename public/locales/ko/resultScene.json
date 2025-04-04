@@ -1,0 +1,17 @@
+{
+  "unknownMission": "알 수 없는 미션",
+  "errorNoMissionData": "현재 미션 정보를 찾을 수 없어 피드백을 생성할 수 없습니다.",
+  "errorFeedbackGeneration": "피드백 생성 중 오류 발생: {{message}}",
+  "errorNoMissionId": "미션 ID를 찾을 수 없습니다.",
+  "errorCheckingEnding": "최종 엔딩 확인 중 오류 발생 (임시): {{message}}",
+  "successTitle": "미션 성공",
+  "successDescription": "축하합니다! 당신은 여론 조작에 성공했습니다.",
+  "feedbackTitle": "{{name}}의 메시지:",
+  "feedbackUnavailable": "피드백을 가져오지 못했습니다.",
+  "checkingEnding": "엔딩 확인 중...",
+  "viewFinalResult": "최종 결과 보기",
+  "nextEpisode": "다음 에피소드로",
+  "failTitle": "미션 실패",
+  "failDescription": "여론 조작에 실패했습니다. 다음 기회를 노려보세요.",
+  "failMessage": "결과가 좋지 않습니다..."
+}

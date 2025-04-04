@@ -1,0 +1,5 @@
+{
+  "likesCount_one": "Liked by {{user}}",
+  "likesCount_other": "Liked by {{user}} and {{count}} others",
+  "seeMore": "See more"
+}

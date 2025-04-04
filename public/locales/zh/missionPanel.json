@@ -1,0 +1,12 @@
+{
+  "goalPositive": "正面舆论",
+  "goalNegative": "负面舆论",
+  "errorTitle": "错误",
+  "errorMessage": "加载任务信息失败或找不到该任务。",
+  "goalLabel": "目标:",
+  "noGoalDefined": "未定义目标",
+  "keywordsLabel": "关键词:",
+  "conditionsLabel": "条件:",
+  "turnLabel": "回合:",
+  "turnsLeft": "剩余 {{count}}"
+}

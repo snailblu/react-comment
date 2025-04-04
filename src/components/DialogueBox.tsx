@@ -1,5 +1,6 @@
-import React from 'react';
-import styles from './DialogueBox.module.css';
+import React from "react";
+import { useTranslation } from "react-i18next"; // Import useTranslation
+import styles from "./DialogueBox.module.css";
 
 // Props 타입 정의
 interface DialogueBoxProps {
@@ -8,17 +9,22 @@ interface DialogueBoxProps {
   onNext: () => void; // 클릭 이벤트 핸들러 함수 타입
 }
 
-const DialogueBox: React.FC<DialogueBoxProps> = ({ characterName, dialogueText, onNext }) => {
+const DialogueBox: React.FC<DialogueBoxProps> = ({
+  characterName,
+  dialogueText,
+  onNext,
+}) => {
+  const { t } = useTranslation("characters"); // Initialize useTranslation
+
   return (
     <div className={styles.dialogueBox} onClick={onNext}>
       {characterName && (
         <div className={styles.dialogueBox__characterName}>
-          {characterName}
+          {/* Translate character name if it exists */}
+          {t(characterName)}
         </div>
       )}
-      <div className={styles.dialogueBox__text}>
-        {dialogueText}
-      </div>
+      <div className={styles.dialogueBox__text}>{dialogueText}</div>
     </div>
   );
 };

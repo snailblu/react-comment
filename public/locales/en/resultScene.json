@@ -1,0 +1,17 @@
+{
+  "unknownMission": "Unknown Mission",
+  "errorNoMissionData": "Cannot generate feedback because current mission information could not be found.",
+  "errorFeedbackGeneration": "Error generating feedback: {{message}}",
+  "errorNoMissionId": "Mission ID not found.",
+  "errorCheckingEnding": "Error checking final ending (temp): {{message}}",
+  "successTitle": "Mission Success",
+  "successDescription": "Congratulations! You succeeded in manipulating public opinion.",
+  "feedbackTitle": "{{name}}'s message:",
+  "feedbackUnavailable": "Could not retrieve feedback.",
+  "checkingEnding": "Checking ending...",
+  "viewFinalResult": "View Final Result",
+  "nextEpisode": "Next Episode",
+  "failTitle": "Mission Failed",
+  "failDescription": "Failed to manipulate public opinion. Try again next time.",
+  "failMessage": "The result is not good..."
+}

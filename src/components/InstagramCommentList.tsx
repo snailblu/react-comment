@@ -1,6 +1,7 @@
-import React, { useState } from "react"; // useState import 추가
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next"; // Import useTranslation
 import { Comment } from "../types";
-// import styles from './InstagramCommentList.module.css'; // 필요시 CSS 모듈 생성
+// import styles from './InstagramCommentList.module.css';
 
 interface InstagramCommentListProps {
   comments: Comment[];
@@ -19,6 +20,7 @@ const CommentItem: React.FC<{
   onReplySubmit: InstagramCommentListProps["onReplySubmit"];
   level: number;
 }> = ({ comment, allComments, onReplySubmit, level }) => {
+  const { t } = useTranslation("instagramCommentList"); // Initialize useTranslation
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
 
@@ -26,11 +28,11 @@ const CommentItem: React.FC<{
 
   const handleReplySubmitInternal = () => {
     if (!replyText.trim()) return;
-    // TODO: 실제 닉네임 처리 필요
+    // TODO: 실제 닉네임 처리 필요, 일단 번역된 'anonymous' 사용
     onReplySubmit(
       replyText,
       comment.id,
-      `익명${Math.floor(Math.random() * 100)}`
+      t("anonymous") // Use translated anonymous
     );
     setReplyText("");
     setShowReplyInput(false);
@@ -44,9 +46,9 @@ const CommentItem: React.FC<{
         {/* 이미지와 내용을 묶는 flex 컨테이너 추가 */}
         {/* 프로필 이미지 */}
         <img
-          src={comment.profileImageUrl || "/default_profile_icon.png"} // 기본 이미지를 default_profile_icon.png로 변경
-          alt={comment.nickname || "익명"}
-          className="w-6 h-6 rounded-full flex-shrink-0 mt-0.5" // 크기 및 마진 조정
+          src={comment.profileImageUrl || "/default_profile_icon.png"}
+          alt={comment.nickname || t("anonymous")} // Use translated anonymous for alt
+          className="w-6 h-6 rounded-full flex-shrink-0 mt-0.5"
         />
         {/* 댓글 내용 */}
         <div className="text-sm flex-1">
@@ -56,7 +58,8 @@ const CommentItem: React.FC<{
             {" "}
             {/* 닉네임과 내용 묶기 */}
             <span className="font-semibold mr-1">
-              {comment.nickname || "익명"}
+              {comment.nickname || t("anonymous")}{" "}
+              {/* Use translated anonymous for nickname */}
             </span>
             <span>{comment.content}</span>
           </div>
@@ -72,7 +75,8 @@ const CommentItem: React.FC<{
               onClick={() => setShowReplyInput(!showReplyInput)}
               className="hover:text-foreground"
             >
-              {showReplyInput ? "취소" : "답글 달기"}
+              {showReplyInput ? t("cancelReply") : t("addReply")}{" "}
+              {/* Translate button text */}
             </button>
           </div>
         </div>
@@ -87,7 +91,7 @@ const CommentItem: React.FC<{
             type="text"
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            placeholder="답글 입력..."
+            placeholder={t("replyPlaceholder")} // Translate placeholder
             className="flex-1 p-1 border border-input rounded bg-background text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
           />
           <button
@@ -95,7 +99,7 @@ const CommentItem: React.FC<{
             className="px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80"
             disabled={!replyText.trim()}
           >
-            등록
+            {t("submitReply")} {/* Translate button text */}
           </button>
         </div>
       )}
@@ -123,6 +127,7 @@ const InstagramCommentList: React.FC<InstagramCommentListProps> = ({
   comments,
   onReplySubmit,
 }) => {
+  const { t } = useTranslation("instagramCommentList"); // Initialize useTranslation here as well
   // 최상위 댓글만 필터링
   const topLevelComments = comments.filter((comment) => !comment.parentId);
 
@@ -141,7 +146,7 @@ const InstagramCommentList: React.FC<InstagramCommentListProps> = ({
       ))}
       {comments.length === 0 && (
         <p className="text-sm text-muted-foreground text-center">
-          아직 댓글이 없습니다.
+          {t("noCommentsYet")} {/* Translate message */}
         </p>
       )}
     </div>

@@ -56,7 +56,10 @@
 /* 시스템 메뉴 버튼 컨테이너 */
 .systemButtons {
   display: grid; /* 그리드 레이아웃 사용 */
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* 반응형 그리드 */
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(100px, 1fr)
+  ); /* 반응형 그리드 */
   gap: 10px; /* 버튼 간 간격 */
   margin-top: 20px; /* 위쪽 여백 */
   padding-top: 15px; /* 구분선 위 여백 */
@@ -72,7 +75,7 @@
   border-radius: 4px;
   cursor: pointer;
   text-align: center;
-  font-size: 0.9em; /* 폰트 크기 조정 */
+  font-size: 1em; /* 폰트 크기 조정 */
   transition: background-color 0.2s ease;
 }
 

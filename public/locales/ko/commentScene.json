@@ -1,0 +1,16 @@
+{
+  "loadingMission": "미션 데이터를 불러오는 중...",
+  "errorPrefix": "오류: ",
+  "errorMissionNotFound": "미션 데이터를 찾을 수 없습니다.",
+  "hideMonologue": "독백 숨기기",
+  "showMonologue": "독백 보이기",
+  "generatingComments": "AI 댓글 생성 중...",
+  "totalCommentsPrefix": "전체 댓글 ",
+  "totalCommentsSuffix": "개",
+  "sortRegistered": "등록순",
+  "sortLatest": "최신순",
+  "viewArticle": "본문 보기",
+  "closeComments": "댓글닫기 ▼",
+  "openComments": "댓글열기 ▲",
+  "refresh": "새로고침"
+}

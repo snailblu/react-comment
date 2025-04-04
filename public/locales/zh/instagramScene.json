@@ -1,0 +1,6 @@
+{
+  "loadingMission": "正在加载任务数据...",
+  "errorPrefix": "错误：",
+  "errorMissionNotFound": "找不到任务数据。",
+  "generatingComments": "正在生成 AI 评论..."
+}

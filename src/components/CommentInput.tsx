@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Add useEffect import
+import { useTranslation } from "react-i18next";
+// import { TFunction } from "i18next"; // Remove unused import
 import styles from "./CommentInput.module.css";
 
 interface CommentInputProps {
@@ -9,7 +11,7 @@ interface CommentInputProps {
   isReplyMode?: boolean; // 대댓글 모드 여부 추가 (선택적)
 }
 
-const DEFAULT_NICKNAME = "연갤러";
+// const DEFAULT_NICKNAME = "연갤러"; // Remove constant, get from translation
 
 const CommentInput: React.FC<CommentInputProps> = ({
   onSubmit,
@@ -17,13 +19,28 @@ const CommentInput: React.FC<CommentInputProps> = ({
   onCancel,
   isReplyMode = false,
 }) => {
-  const [useDefaultNickname, setUseDefaultNickname] = useState(true); // 갤닉 사용 여부 상태
-  const [nickname, setNickname] = useState(DEFAULT_NICKNAME);
+  // Specify namespace in useTranslation hook
+  const { t } = useTranslation("commentInput");
+  // Remove i18n instance if not needed elsewhere
+
+  const [useDefaultNickname, setUseDefaultNickname] = useState(true);
+  // Initialize nickname state as empty string
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [commentText, setCommentText] = useState("");
   const maxLength = 100;
 
+  // Effect to update nickname when language changes or default is selected
+  useEffect(() => {
+    if (useDefaultNickname) {
+      // Use t function directly, assuming TS issue is resolved
+      setNickname(t("defaultNickname"));
+    }
+    // Add t as dependency
+  }, [t, useDefaultNickname]);
+
   const handleNicknameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUseDefaultNickname(false); // User is typing, disable default nickname mode
     setNickname(event.target.value);
   };
 
@@ -47,9 +64,8 @@ const CommentInput: React.FC<CommentInputProps> = ({
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (commentText.trim() && !disabled) {
-      // onSubmit에 실제 사용할 닉네임 전달
-      const finalNickname = useDefaultNickname ? DEFAULT_NICKNAME : nickname;
-      onSubmit(commentText.trim(), finalNickname, password);
+      // Use the current nickname state (which should be updated by useEffect)
+      onSubmit(commentText.trim(), nickname, password);
       setCommentText("");
       // 비밀번호 필드 초기화는 유지하지 않음 (보통 유지됨)
     }
@@ -58,12 +74,14 @@ const CommentInput: React.FC<CommentInputProps> = ({
   // 등록+추천 버튼 핸들러 (임시)
   const handleSubmitWithRecommend = () => {
     if (commentText.trim() && !disabled) {
-      console.log("Submit with recommendation (placeholder)");
-      const finalNickname = useDefaultNickname ? DEFAULT_NICKNAME : nickname;
-      onSubmit(commentText.trim(), finalNickname, password);
+      console.log("Submit with recommendation (placeholder)"); // Keep console log for now
+      // Use the current nickname state (which should be updated by useEffect)
+      onSubmit(commentText.trim(), nickname, password);
       setCommentText("");
     }
   };
+
+  // Remove pre-translated variables
 
   return (
     <form onSubmit={handleSubmit} className={styles.commentInputForm}>
@@ -76,7 +94,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
             <>
               <input
                 type="text"
-                value={DEFAULT_NICKNAME}
+                value={nickname} // Use nickname state for value
                 readOnly
                 className={`${styles.nicknameInput} ${styles.defaultNickname}`}
                 disabled={disabled}
@@ -98,7 +116,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
                 type="text"
                 value={nickname}
                 onChange={handleNicknameChange}
-                placeholder="닉네임"
+                placeholder={t("nicknamePlaceholder")} // Use t() directly
                 className={styles.nicknameInput}
                 disabled={disabled}
               />
@@ -110,7 +128,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="비밀번호"
+          placeholder={t("passwordPlaceholder")} // Use t() directly
           className={styles.passwordInput}
           disabled={disabled}
         />
@@ -126,7 +144,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
         <textarea
           value={commentText}
           onChange={handleTextChange}
-          placeholder="타인의 권리를 침해하거나 명예를 훼손하는 댓글은 운영원칙 및 관련 법률에 제재를 받을 수 있습니다. Shift+Enter 키를 동시에 누르면 줄바꿈이 됩니다."
+          placeholder={t("textareaPlaceholder")} // Use t() directly
           maxLength={maxLength}
           disabled={disabled}
           className={styles.commentTextarea}
@@ -148,7 +166,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
                 onClick={onCancel}
                 className={`${styles.submitButton} ${styles.cancelButton}`}
               >
-                취소
+                {t("cancelButton")} {/* Use t() directly */}
               </button>
             )}
             <button
@@ -156,7 +174,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
               disabled={disabled || !commentText.trim()}
               className={styles.submitButton}
             >
-              등록
+              {t("submitButton")} {/* Use t() directly */}
             </button>
             {/* 대댓글 모드에서는 등록+추천 버튼 숨김 */}
             {!isReplyMode && (
@@ -166,7 +184,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
                 disabled={disabled || !commentText.trim()}
                 className={`${styles.submitButton} ${styles.recommendButton}`}
               >
-                등록+추천
+                {t("submitRecommendButton")} {/* Use t() directly */}
               </button>
             )}
           </div>

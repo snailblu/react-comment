@@ -1,0 +1,14 @@
+{
+  "title": "설정",
+  "bgmVolumeLabel": "배경음악 볼륨:",
+  "sfxVolumeLabel": "효과음 볼륨:",
+  "languageLabel": "언어:",
+  "langKo": "한국어",
+  "langEn": "English",
+  "langZh": "中文",
+  "saveButton": "저장",
+  "loadButton": "로드",
+  "titleButton": "타이틀로",
+  "exitButton": "종료",
+  "closeButton": "닫기"
+}

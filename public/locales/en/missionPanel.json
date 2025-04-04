@@ -1,0 +1,12 @@
+{
+  "goalPositive": "Positive Opinion",
+  "goalNegative": "Negative Opinion",
+  "errorTitle": "Error",
+  "errorMessage": "Failed to load mission information or the mission could not be found.",
+  "goalLabel": "Goal:",
+  "noGoalDefined": "No goal defined",
+  "keywordsLabel": "Keywords:",
+  "conditionsLabel": "Conditions:",
+  "turnLabel": "Turn:",
+  "turnsLeft": "{{count}} left"
+}

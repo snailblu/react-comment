@@ -1,0 +1,8 @@
+{
+  "missionSuccess": "Mission Success!",
+  "missionFail": "Mission Failed...",
+  "loadingMission": "Loading mission data...",
+  "errorPrefix": "Error: {{error}}",
+  "commentCount": "{{count}} comments posted. Let's read them...",
+  "waitingForAI": "Let's watch the public opinion for a moment...?"
+}

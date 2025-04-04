@@ -3,10 +3,9 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-// BrowserRouter 대신 HashRouter 임포트
 import { HashRouter } from "react-router-dom";
-// SettingsProvider import should be completely removed
 import { Container } from "react-dom/client"; // Import Container type
+import "./i18n"; // Import i18n configuration
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Failed to find the root element"); // 루트 요소 확인 추가
@@ -14,11 +13,13 @@ if (!rootElement) throw new Error("Failed to find the root element"); // 루트 
 const root = ReactDOM.createRoot(rootElement as Container); // 타입 단언(as Container) 또는 non-null assertion(!) 사용
 root.render(
   <React.StrictMode>
-    {/* BrowserRouter 대신 HashRouter 사용 */}
-    <HashRouter>
-      {/* SettingsProvider wrapper should be completely removed */}
-      <App />
-    </HashRouter>
+    <React.Suspense fallback="loading...">
+      {" "}
+      {/* Add Suspense for translation loading */}
+      <HashRouter>
+        <App />
+      </HashRouter>
+    </React.Suspense>
   </React.StrictMode>
 );
 

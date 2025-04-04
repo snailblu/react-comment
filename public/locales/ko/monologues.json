@@ -1,0 +1,8 @@
+{
+  "missionSuccess": "미션 성공!",
+  "missionFail": "미션 실패...",
+  "loadingMission": "미션 데이터를 불러오는 중...",
+  "errorPrefix": "오류: {{error}}",
+  "commentCount": "댓글이 {{count}}개 달렸군. 어디 읽어볼까... ",
+  "waitingForAI": "잠시 여론을 지켜볼까...?"
+}

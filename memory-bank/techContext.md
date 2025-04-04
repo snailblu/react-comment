@@ -5,11 +5,11 @@ _이 문서는 사용된 기술, 개발 설정, 기술적 제약 조건, 종속�
 ## 기술 스택
 
 - **프로그래밍 언어:** TypeScript
-- **프레임워크/라이브러리 (프론트엔드):** React, React Router, Howler.js (오디오)
+- **프레임워크/라이브러리 (프론트엔드):** React, React Router, Howler.js (오디오), i18next, react-i18next (국제화)
 - **UI 라이브러리/프레임워크:** Tailwind CSS, Radix UI (shadcn/ui 기반으로 추정), CSS Modules, Lucide Icons
-- **상태 관리:** React Context API, Custom Hooks
+- **상태 관리:** React Context API, Custom Hooks, Zustand (`settingsStore`)
 - **백엔드/API:** Vercel Serverless Functions (Node.js), Google Gemini API
-- **데이터베이스:** 해당 없음 (데이터는 `public/` 내 JSON 파일로 관리되는 것으로 보임)
+- **데이터베이스:** 해당 없음 (데이터는 `public/` 내 JSON 파일로 관리)
 - **인프라/호스팅:** Vercel (Serverless Functions 및 프론트엔드 호스팅 가능성 높음)
 - **기타 주요 도구:** uuid
 
@@ -33,7 +33,9 @@ _이 문서는 사용된 기술, 개발 설정, 기술적 제약 조건, 종속�
 - **React Ecosystem:** `react`, `react-dom`, `react-router-dom`, `react-scripts`
 - **UI & Styling:** `tailwindcss`, `@radix-ui/*`, `lucide-react`, `clsx`, `tailwind-merge`
 - **AI:** `@google/generative-ai`
+- **Internationalization (i18n):** `i18next`, `react-i18next`, `i18next-browser-languagedetector`, `i18next-http-backend`
 - **Audio:** `howler`
+- **State Management:** `zustand`
 - **Serverless:** `@vercel/node` (개발 의존성)
 - **Utilities:** `uuid`
 - 버전 관리는 `package.json` 및 `package-lock.json`을 통해 npm으로 관리됩니다.

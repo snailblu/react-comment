@@ -1,0 +1,16 @@
+{
+  "loadingMission": "正在加载任务数据...",
+  "errorPrefix": "错误：",
+  "errorMissionNotFound": "找不到任务数据。",
+  "hideMonologue": "隐藏独白",
+  "showMonologue": "显示独白",
+  "generatingComments": "正在生成 AI 评论...",
+  "totalCommentsPrefix": "共 ",
+  "totalCommentsSuffix": " 条评论",
+  "sortRegistered": "最早",
+  "sortLatest": "最新",
+  "viewArticle": "查看正文",
+  "closeComments": "收起评论 ▼",
+  "openComments": "展开评论 ▲",
+  "refresh": "刷新"
+}

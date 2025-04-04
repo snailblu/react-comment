@@ -1,0 +1,9 @@
+{
+  "defaultNickname": "画廊用户",
+  "nicknamePlaceholder": "昵称",
+  "passwordPlaceholder": "密码",
+  "textareaPlaceholder": "侵犯他人权利或诽谤他人的评论可能会根据运营原则和相关法律受到制裁。同时按 Shift+Enter 键可换行。",
+  "cancelButton": "取消",
+  "submitButton": "提交",
+  "submitRecommendButton": "提交+推荐"
+}

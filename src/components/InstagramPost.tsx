@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from "react"; // useState 다시 추가
-import { Comment, Mission } from "../types"; // Mission 타입 추가 (게시물 ID 사용 위해)
-// import InstagramCommentList from "./InstagramCommentList"; // 댓글 목록은 오버레이에서 표시
-// import InstagramPostInput from "./InstagramPostInput"; // 댓글 입력은 오버레이에서 표시
+import { useTranslation } from "react-i18next"; // Import useTranslation
+import { Comment, Mission } from "../types";
+// import InstagramCommentList from "./InstagramCommentList";
+// import InstagramPostInput from "./InstagramPostInput";
 import { useCommentStore } from "../stores/commentStore"; // 댓글 상태 가져오기 (필요시)
 import { useMissionStore } from "../stores/missionStore"; // 좋아요/싫어요 상태 가져오기
 import { useGameState } from "../stores/gameStateStore"; // 댓글 오버레이 액션 가져오기
@@ -22,7 +23,7 @@ interface InstagramPostProps {
   caption: string;
   // likes prop 제거 (missionStore에서 가져옴)
   createdAt: string;
-  missionId: string; // 게시물 ID 역할을 할 미션 ID 추가
+  missionId: string;
   // comments prop 제거
 }
 
@@ -32,11 +33,12 @@ const InstagramPost: React.FC<InstagramPostProps> = ({
   imageUrl,
   caption,
   createdAt,
-  missionId, // missionId prop 받기
+  missionId,
 }) => {
-  // const { comments, addReply } = useCommentStore(); // 댓글 관련 로직은 오버레이에서 처리
-  const { articleLikes, articleDislikes } = useMissionStore(); // 좋아요/싫어요 상태 가져오기
-  const { openCommentOverlay } = useGameState(); // 댓글 오버레이 열기 액션 가져오기
+  const { t } = useTranslation("instagramPost"); // Initialize useTranslation
+  // const { comments, addReply } = useCommentStore();
+  const { articleLikes, articleDislikes } = useMissionStore();
+  const { openCommentOverlay } = useGameState();
   // TODO: 좋아요/싫어요 핸들러를 missionStore 또는 별도 훅에서 가져오도록 수정 필요
   // 임시로 useArticleState 사용
   const { handleLikeArticle, handleDislikeArticle } = useArticleState();
@@ -125,11 +127,11 @@ const InstagramPost: React.FC<InstagramPostProps> = ({
                 alt="User 2"
               />
             </div>
-            {/* text-outline-black -> text-stroke-black */}
-            <span className="text-stroke-black">Grace</span>님 외{" "}
-            {/* text-outline-black -> text-stroke-black */}
-            <span className="text-stroke-black">{articleLikes - 1}명</span>이
-            좋아합니다
+            {/* Use translation key with interpolation and pluralization */}
+            {t("likesCount", {
+              user: "Grace", // TODO: Replace with actual liker name if available
+              count: articleLikes - 1,
+            })}
           </div>
         )}
 
@@ -146,7 +148,7 @@ const InstagramPost: React.FC<InstagramPostProps> = ({
                 onClick={() => setShowFullCaption(true)}
                 className="text-muted-foreground hover:text-foreground ml-1"
               >
-                더 보기
+                {t("seeMore")} {/* Use translation key */}
               </button>
             </>
           ) : (

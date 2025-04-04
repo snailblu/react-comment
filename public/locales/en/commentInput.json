@@ -1,0 +1,9 @@
+{
+  "defaultNickname": "Gallery User",
+  "nicknamePlaceholder": "Nickname",
+  "passwordPlaceholder": "Password",
+  "textareaPlaceholder": "Comments that infringe on the rights of others or defame them may be subject to sanctions under operating principles and related laws. Press Shift+Enter to insert a line break.",
+  "cancelButton": "Cancel",
+  "submitButton": "Submit",
+  "submitRecommendButton": "Submit+Recommend"
+}

@@ -24,8 +24,9 @@ import MissionPanel from "./MissionPanel"; // 미션 패널은 재사용 가능
 import OpinionStats from "./OpinionStats"; // 여론 패널 import 추가
 import BottomNavBar from "./BottomNavBar"; // 하단 네비게이션 바 import 추가
 import StoriesBar from "./StoriesBar"; // 스토리 바 import 추가
-import CommentOverlay from "./CommentOverlay"; // 댓글 오버레이 import 추가
-import MonologueBox from "./MonologueBox"; // MonologueBox 컴포넌트 import 추가
+import { useTranslation } from "react-i18next"; // Import useTranslation
+import CommentOverlay from "./CommentOverlay";
+import MonologueBox from "./MonologueBox";
 
 interface InstagramActivitySceneProps {
   onMissionComplete?: (success: boolean) => void;
@@ -34,6 +35,7 @@ interface InstagramActivitySceneProps {
 const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
   onMissionComplete,
 }) => {
+  const { t } = useTranslation("instagramScene"); // Initialize useTranslation
   const { missionId } = useParams<{ missionId: string }>();
   const navigate = useNavigate();
 
@@ -141,19 +143,23 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
   if (isMissionLoading) {
     return (
       <div className={gameStyles.storySceneContainer}>
-        미션 데이터를 불러오는 중...
+        {t("loadingMission")}
       </div>
     );
   }
   if (missionError) {
+    // Assuming missionError might already be translated by useMissionData
     return (
-      <div className={gameStyles.storySceneContainer}>오류: {missionError}</div>
+      <div className={gameStyles.storySceneContainer}>
+        {t("errorPrefix")}
+        {missionError}
+      </div>
     );
   }
   if (!missionData) {
     return (
       <div className={gameStyles.storySceneContainer}>
-        미션 데이터를 찾을 수 없습니다.
+        {t("errorMissionNotFound")}
       </div>
     );
   }
@@ -166,8 +172,10 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
       <aside className="w-1/4 border-r border-border p-4 overflow-y-auto">
         {" "}
         {/* 너비 조정 가능 */}
+        {/* Pass mission data and loading state instead of missionId */}
         <MissionPanel
-          missionId={missionId || null}
+          mission={missionData} // Pass translated mission data
+          isLoading={isMissionLoading} // Pass loading state
           attemptsLeft={attemptsLeft}
           totalAttempts={totalAttempts}
         />
@@ -202,9 +210,9 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
           <ReactionStats likes={articleLikes} commentsCount={comments.length} />
           {/* 댓글 목록 및 입력창은 InstagramPost 내부에서 조건부 렌더링되므로 제거 */}
           {/* 로딩 또는 종료 상태 표시 */}
-          {isGeneratingComments && ( // 추정된 값 사용
+          {isGeneratingComments && (
             <div className="p-3 text-center text-muted-foreground">
-              AI 댓글 생성 중...
+              {t("generatingComments")}
             </div>
           )}
           {isMissionOver && (

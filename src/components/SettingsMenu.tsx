@@ -1,17 +1,19 @@
-import React, { ChangeEvent } from "react"; // useContext 제거, ChangeEvent 유지
+import React, { ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSettingsStore } from "../stores/settingsStore"; // Zustand 스토어 import
+import { useTranslation } from "react-i18next";
+import { TFunction } from "i18next"; // Import TFunction type
+import { useSettingsStore } from "../stores/settingsStore";
 import styles from "./SettingsMenu.module.css";
-// import { useGameState } from '../stores/gameStateStore'; // Zustand 스토어로 변경 고려
 // import { saveGame, loadGame } from '../utils/saveLoad'; // 저장/로드 유틸리티 함수 import 고려
 
 // Props 타입 정의
 interface SettingsMenuProps {
-  onClose: () => void; // onClose 함수 타입 정의
+  onClose: () => void;
 }
 
 const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => {
-  // Zustand 스토어에서 상태와 액션 가져오기
+  // Specify namespace in useTranslation hook
+  const { t, i18n } = useTranslation("settings");
   const { bgmVolume, setBgmVolume, sfxVolume, setSfxVolume } =
     useSettingsStore();
   const navigate = useNavigate();
@@ -29,12 +31,21 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => {
     setSfxVolume(Number(event.target.value));
   };
 
+  // 언어 변경 핸들러
+  const handleLanguageChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const langCode = event.target.value;
+    i18n.changeLanguage(langCode);
+    // Optionally, save to Zustand store as well if needed elsewhere
+    // useSettingsStore.getState().setLanguage(langCode);
+  };
+
   return (
     <div className={styles.settingsOverlay}>
       <div className={styles.settingsMenu}>
-        <h2>설정</h2>
+        <h2>{t("title")}</h2> {/* Remove namespace prefix */}
         <div className={styles.settingItem}>
-          <label htmlFor="bgmVolume">배경음악 볼륨:</label>
+          <label htmlFor="bgmVolume">{t("bgmVolumeLabel")}</label>{" "}
+          {/* Remove namespace prefix */}
           <input
             type="range"
             id="bgmVolume"
@@ -48,7 +59,8 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => {
           <span>{Math.round(bgmVolume * 100)}%</span>
         </div>
         <div className={styles.settingItem}>
-          <label htmlFor="sfxVolume">효과음 볼륨:</label>
+          <label htmlFor="sfxVolume">{t("sfxVolumeLabel")}</label>{" "}
+          {/* Remove namespace prefix */}
           <input
             type="range"
             id="sfxVolume"
@@ -61,7 +73,24 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => {
           />
           <span>{Math.round(sfxVolume * 100)}%</span>
         </div>
-
+        {/* 언어 선택 */}
+        <div className={styles.settingItem}>
+          <label htmlFor="languageSelect">{t("languageLabel")}</label>{" "}
+          {/* Remove namespace prefix */}
+          <select
+            id="languageSelect"
+            value={i18n.language}
+            onChange={handleLanguageChange}
+            className={styles.languageSelect} // Add specific styles if needed
+          >
+            <option value="ko">{t("langKo")}</option>{" "}
+            {/* Remove namespace prefix */}
+            <option value="en">{t("langEn")}</option>{" "}
+            {/* Remove namespace prefix */}
+            <option value="zh">{t("langZh")}</option>{" "}
+            {/* Remove namespace prefix */}
+          </select>
+        </div>
         {/* 시스템 메뉴 버튼들 */}
         <div className={styles.systemButtons}>
           {/* TODO: 저장/로드 기능 연결 */}
@@ -71,7 +100,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => {
             }
             className={styles.systemButton}
           >
-            저장
+            {t("saveButton")} {/* Remove namespace prefix */}
           </button>
           <button
             onClick={() =>
@@ -79,17 +108,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => {
             }
             className={styles.systemButton}
           >
-            로드
+            {t("loadButton")} {/* Remove namespace prefix */}
           </button>
-          {/* TODO: 언어 변경 기능 연결 */}
-          <button
-            onClick={() =>
-              console.log("Language clicked - Implement language change")
-            }
-            className={styles.systemButton}
-          >
-            언어 변경
-          </button>
+          {/* 언어 변경 버튼 제거됨 */}
           <button
             onClick={() => {
               console.log("Go to Title clicked");
@@ -98,22 +119,20 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onClose }) => {
             }}
             className={styles.systemButton}
           >
-            타이틀로
+            {t("titleButton")} {/* Remove namespace prefix */}
           </button>
           <button
             onClick={() => {
               console.log("Exit clicked");
-              window.close();
+              window.close(); // Note: This might not work in all browser contexts
             }}
             className={styles.systemButton}
           >
-            종료
-          </button>{" "}
-          {/* 웹페이지에서는 종료 기능 제한적 */}
+            {t("exitButton")} {/* Remove namespace prefix */}
+          </button>
         </div>
-
         <button onClick={onClose} className={styles.closeButton}>
-          닫기
+          {t("closeButton")} {/* Remove namespace prefix */}
         </button>
       </div>
     </div>

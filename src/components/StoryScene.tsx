@@ -12,7 +12,8 @@ import DialogueBox from "./DialogueBox";
 import Choices from "./Choices";
 import SettingsMenu from "./SettingsMenu";
 import PhoneChat from "./PhoneChat";
-import useEpisodeLoader from "../hooks/useEpisodeLoader";
+// import useEpisodeLoader from "../hooks/useEpisodeLoader"; // Remove episode loader
+import useScriptLoader from "../hooks/useScriptLoader"; // Import script loader
 // import useGameState from '../hooks/useGameState'; // 제거
 // import useStoryProgression from '../hooks/useStoryProgression'; // 제거
 import { useGameState } from "../stores/gameStateStore"; // Zustand 스토어 import
@@ -27,24 +28,40 @@ import roomBackground from "../assets/oneroom.png";
 
 const StoryScene: React.FC = () => {
   // --- 커스텀 Hook 사용 ---
-  // TODO: 현재는 테스트용 ID 사용. 라우팅 또는 상태 관리 통해 동적으로 받아와야 함.
-  // 스크립트 시작 ID로 되돌림 (script.json의 키)
-  const episodeIdToLoad = "123e4567-e89b-12d3-a456-426614174000"; // 유효 ID -> 스크립트 시작 ID로 변경
-  const { episodeData, isLoadingEpisode } = useEpisodeLoader(episodeIdToLoad);
-  const navigate = useNavigate(); // useNavigate 훅 사용
+  const { scriptData: allScriptData, isLoadingScript } = useScriptLoader(); // Use script loader
+  const navigate = useNavigate();
 
   // Zustand 스토어 사용
   const { gameFlags, setCurrentScene } = useGameState(); // setGameFlag 추가, setCurrentScene 추가
-  const { scriptData, currentDialogueIndex, setScriptData, advanceDialogue } =
-    useStoryStore(); // setScriptData 추가
+  const {
+    scriptData: currentEpisodeScript, // Rename state variable for clarity
+    currentDialogueIndex,
+    setScriptData,
+    advanceDialogue,
+  } = useStoryStore();
 
-  // Load script data into store when episodeData is loaded
+  // TODO: Get current episode ID dynamically (e.g., from route params or game state)
+  const currentEpisodeId = "123e4567-e89b-12d3-a456-426614174000"; // Hardcoded for now
+
+  // Load current episode script into store when allScriptData is loaded/updated
   useEffect(() => {
-    if (episodeData?.intro_dialogues) {
-      setScriptData(episodeData.intro_dialogues);
+    console.log(
+      "StoryScene: allScriptData updated:",
+      JSON.stringify(allScriptData).substring(0, 300) + "..."
+    ); // Log received script data
+    if (allScriptData && allScriptData[currentEpisodeId]?.intro_dialogues) {
+      console.log(
+        `StoryScene: Setting script data for episode ${currentEpisodeId}`
+      );
+      setScriptData(allScriptData[currentEpisodeId].intro_dialogues);
+    } else if (!isLoadingScript) {
+      console.warn(
+        `StoryScene: Could not find intro_dialogues for episode ${currentEpisodeId} in loaded script data.`
+      );
+      // Optionally handle error state here, e.g., navigate back or show error message
     }
     // TODO: Handle loading other script parts (e.g., ending_dialogues) if necessary
-  }, [episodeData, setScriptData]);
+  }, [allScriptData, currentEpisodeId, setScriptData, isLoadingScript]);
 
   // UI 상태 훅 호출 (기존 유지)
   const {
@@ -62,22 +79,27 @@ const StoryScene: React.FC = () => {
     // playSfx("click"); // 클릭 효과음 제거
 
     const nextSceneType = advanceDialogue(); // Call store action
+    const missionId = allScriptData?.[currentEpisodeId]?.mission_id; // Get missionId from loaded data
 
-    if (nextSceneType === "comment" && episodeData?.mission_id) {
+    if (nextSceneType === "comment" && missionId) {
       // Keep "comment" check if advanceDialogue returns this string
       console.log(
         "Transitioning to Instagram Scene for mission:", // Log message updated
-        episodeData.mission_id
+        missionId
       );
       setCurrentScene("instagram"); // Update global scene state to "instagram"
-      navigate(`/instagram/${episodeData.mission_id}`); // Navigate to Instagram scene
+      navigate(`/instagram/${missionId}`); // Navigate to Instagram scene
     } else if (nextSceneType) {
       console.warn(
         `Unhandled next scene type: ${nextSceneType}. Navigating to title.`
       );
       setCurrentScene("title");
       navigate("/");
-    } else if (scriptData && currentDialogueIndex >= scriptData.length - 1) {
+    } else if (
+      currentEpisodeScript &&
+      currentDialogueIndex >= currentEpisodeScript.length - 1
+    ) {
+      // Use currentEpisodeScript
       // End of script and no scene transition defined
       console.log("End of script reached. Navigating to title.");
       setCurrentScene("title");
@@ -87,9 +109,10 @@ const StoryScene: React.FC = () => {
   }, [
     advanceDialogue,
     navigate,
-    episodeData,
+    allScriptData, // Use allScriptData to get missionId
+    currentEpisodeId,
     setCurrentScene,
-    scriptData,
+    currentEpisodeScript, // Use currentEpisodeScript
     currentDialogueIndex,
   ]);
 
@@ -100,7 +123,7 @@ const StoryScene: React.FC = () => {
       // playSfx("click"); // 클릭 효과음 제거
 
       // Find the selected choice object from the current line's choices
-      const currentLine = scriptData?.[currentDialogueIndex];
+      const currentLine = currentEpisodeScript?.[currentDialogueIndex]; // Use currentEpisodeScript
       const selectedChoice = currentLine?.choices?.find(
         (c) => c.id === choiceId
       ); // Use optional chaining and find
@@ -112,22 +135,27 @@ const StoryScene: React.FC = () => {
 
       // Pass the found choice object to the store action
       const nextSceneType = advanceDialogue(selectedChoice); // Pass the found object
+      const missionId = allScriptData?.[currentEpisodeId]?.mission_id; // Get missionId
 
-      if (nextSceneType === "comment" && episodeData?.mission_id) {
+      if (nextSceneType === "comment" && missionId) {
         // Keep "comment" check if advanceDialogue returns this string
         console.log(
           "Transitioning to Instagram Scene after choice for mission:", // Log message updated
-          episodeData.mission_id
+          missionId
         );
         setCurrentScene("instagram"); // Update global scene state to "instagram"
-        navigate(`/instagram/${episodeData.mission_id}`); // Navigate to Instagram scene
+        navigate(`/instagram/${missionId}`); // Navigate to Instagram scene
       } else if (nextSceneType) {
         console.warn(
           `Unhandled next scene type after choice: ${nextSceneType}. Navigating to title.`
         );
         setCurrentScene("title");
         navigate("/");
-      } else if (scriptData && currentDialogueIndex >= scriptData.length - 1) {
+      } else if (
+        currentEpisodeScript &&
+        currentDialogueIndex >= currentEpisodeScript.length - 1
+      ) {
+        // Use currentEpisodeScript
         // End of script and no scene transition defined after choice processing
         console.log("End of script reached after choice. Navigating to title.");
         setCurrentScene("title");
@@ -138,9 +166,10 @@ const StoryScene: React.FC = () => {
     [
       advanceDialogue,
       navigate,
-      episodeData,
+      allScriptData, // Use allScriptData to get missionId
+      currentEpisodeId,
       setCurrentScene,
-      scriptData,
+      currentEpisodeScript, // Use currentEpisodeScript
       currentDialogueIndex,
     ]
   );
@@ -157,22 +186,31 @@ const StoryScene: React.FC = () => {
   }, []);
 
   // --- 로딩 상태 처리 ---
-  if (isLoadingEpisode) {
-    return <div>Loading episode...</div>;
+  if (isLoadingScript) {
+    // Use isLoadingScript from useScriptLoader
+    return <div>Loading script...</div>; // Update loading message
   }
 
   // --- 현재 스크립트 라인 결정 (Zustand 스토어 사용) ---
   const currentLine: ScriptLine | null =
-    scriptData && scriptData.length > currentDialogueIndex
-      ? scriptData[currentDialogueIndex]
+    currentEpisodeScript && currentEpisodeScript.length > currentDialogueIndex // Use currentEpisodeScript
+      ? currentEpisodeScript[currentDialogueIndex]
       : null;
 
   // --- 스크립트 종료 또는 오류 처리 ---
   if (!currentLine) {
-    // Handle cases where scriptData is null, empty, or index is out of bounds
-    if (!isLoadingEpisode && (!scriptData || scriptData.length === 0)) {
-      // Changed condition to check scriptData from store
-      return <div>Error: Failed to load script data or script is empty.</div>;
+    // Handle cases where currentEpisodeScript is null, empty, or index is out of bounds
+    if (
+      !isLoadingScript &&
+      (!currentEpisodeScript || currentEpisodeScript.length === 0)
+    ) {
+      // Use currentEpisodeScript
+      // Changed condition to check currentEpisodeScript from store
+      return (
+        <div>
+          Error: Failed to load script data for this episode or script is empty.
+        </div>
+      ); // Update error message
     }
     // If loading or script ended (handled by advanceDialogue), show nothing or loading indicator
     return null;
@@ -193,6 +231,11 @@ const StoryScene: React.FC = () => {
     dialogueTextToShow = currentLine.altText || currentLine.text || "";
     // console.log(`조건 만족 (${currentLine.condition.flag} === ${currentLine.condition.value}), 대체 텍스트 표시: ${dialogueTextToShow}`); // 로그 레벨 조정 가능
   }
+  // Log the text being passed to DialogueBox
+  console.log(
+    "StoryScene: Passing dialogue text to DialogueBox:",
+    dialogueTextToShow
+  );
 
   // --- 렌더링 ---
   return (
@@ -205,7 +248,7 @@ const StoryScene: React.FC = () => {
           onSettings={() => setShowSettings(true)}
           onTogglePhoneChat={togglePhoneChat}
           isPhoneChatVisible={showPhoneChat}
-          isLoading={isLoadingEpisode} // 로딩 상태 전달
+          isLoading={isLoadingScript} // Pass isLoadingScript
         />
 
         {/* 상단 알림 메시지 */}

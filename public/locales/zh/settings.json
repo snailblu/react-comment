@@ -1,0 +1,14 @@
+{
+  "title": "设置",
+  "bgmVolumeLabel": "背景音乐音量:",
+  "sfxVolumeLabel": "音效音量:",
+  "languageLabel": "语言:",
+  "langKo": "한국어",
+  "langEn": "English",
+  "langZh": "中文",
+  "saveButton": "保存",
+  "loadButton": "加载",
+  "titleButton": "返回标题",
+  "exitButton": "退出",
+  "closeButton": "关闭"
+}

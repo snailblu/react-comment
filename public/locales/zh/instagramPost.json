@@ -1,0 +1,5 @@
+{
+  "likesCount_one": "{{user}} 点赞了",
+  "likesCount_other": "{{user}} 和其他 {{count}} 人点赞了",
+  "seeMore": "查看更多"
+}

@@ -1,0 +1,16 @@
+{
+  "loadingMission": "Loading mission data...",
+  "errorPrefix": "Error: ",
+  "errorMissionNotFound": "Mission data not found.",
+  "hideMonologue": "Hide Monologue",
+  "showMonologue": "Show Monologue",
+  "generatingComments": "Generating AI comments...",
+  "totalCommentsPrefix": "Total ",
+  "totalCommentsSuffix": " Comments",
+  "sortRegistered": "Oldest",
+  "sortLatest": "Newest",
+  "viewArticle": "View Article",
+  "closeComments": "Close Comments ▼",
+  "openComments": "Open Comments ▲",
+  "refresh": "Refresh"
+}

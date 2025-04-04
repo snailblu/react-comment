@@ -1,9 +1,14 @@
-import React, { useEffect } from "react"; // useEffect 추가
+import React, { useState, useEffect } from "react"; // Import useState
 import { Link } from "react-router-dom";
-import { playBgm, stopBgm } from "../utils/audioManager"; // audioManager 함수 import
-// import styles from './TitleScreen.module.css'; // CSS 모듈 사용 중지
+import { useTranslation } from "react-i18next";
+import { playBgm, stopBgm } from "../utils/audioManager";
+import SettingsMenu from "./SettingsMenu"; // Import SettingsMenu
 
 function TitleScreen() {
+  // Specify namespace
+  const { t } = useTranslation("titleScreen");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false); // State for settings menu
+
   // BGM 재생/정지 로직 추가
   useEffect(() => {
     playBgm("mainTheme"); // 컴포넌트 마운트 시 mainTheme 재생
@@ -31,11 +36,11 @@ function TitleScreen() {
         {/* 픽셀 아트 스타일 버튼 */}
         <Link
           to="/game"
-          className="px-8 py-3 bg-primary text-primary-foreground border border-border hover:bg-accent hover:text-accent-foreground active:translate-y-px transition duration-300 ease-in-out transform hover:-translate-y-1" // 픽셀 아트 스타일 적용: 배경, 텍스트, 테두리 색상 변경, 라운딩/그림자 제거, hover/active 효과 조정
+          className="px-8 py-3 bg-primary text-primary-foreground border border-border hover:bg-accent hover:text-accent-foreground active:translate-y-px transition duration-300 ease-in-out transform hover:-translate-y-1"
         >
-          게임 시작
+          {t("startGame")} {/* Use key without namespace */}
         </Link>
-        {/* 선택 사항: 불러오기, 설정 버튼 (Tailwind 스타일 적용) */}
+        {/* 선택 사항: 불러오기 버튼 (주석 처리 유지) */}
         {/*
         <button
           className="px-6 py-3 bg-gray-400 text-white rounded-lg shadow-md cursor-not-allowed"
@@ -43,14 +48,19 @@ function TitleScreen() {
         >
           불러오기
         </button>
-        <button
-          className="px-6 py-3 bg-gray-400 text-white rounded-lg shadow-md cursor-not-allowed"
-          disabled
-        >
-          설정
-        </button>
         */}
+        {/* 설정 버튼 활성화 */}
+        <button
+          onClick={() => setIsSettingsOpen(true)} // Open settings menu
+          className="px-8 py-3 bg-secondary text-secondary-foreground border border-border hover:bg-accent hover:text-accent-foreground active:translate-y-px transition duration-300 ease-in-out transform hover:-translate-y-1" // Apply similar styling
+        >
+          {t("settingsButton")} {/* Use translation key */}
+        </button>
       </nav>
+      {/* 설정 메뉴 조건부 렌더링 */}
+      {isSettingsOpen && (
+        <SettingsMenu onClose={() => setIsSettingsOpen(false)} />
+      )}
     </div>
   );
 }

@@ -1,0 +1,8 @@
+{
+  "missionSuccess": "任务成功！",
+  "missionFail": "任务失败...",
+  "loadingMission": "正在加载任务数据...",
+  "errorPrefix": "错误：{{error}}",
+  "commentCount": "发布了 {{count}} 条评论。来看看吧...",
+  "waitingForAI": "暂时观察一下舆论吧...?"
+}

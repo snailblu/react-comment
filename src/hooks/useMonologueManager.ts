@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useMissionStore } from "../stores/missionStore"; // For mission success check
+import { useTranslation } from "react-i18next"; // Import useTranslation
+import { useMissionStore } from "../stores/missionStore";
 
 interface UseMonologueManagerProps {
   isMissionLoading: boolean;
@@ -22,6 +23,7 @@ const useMonologueManager = ({
   commentsLength,
 }: // missionSuccess,
 UseMonologueManagerProps) => {
+  const { t } = useTranslation("monologues"); // Initialize useTranslation
   const [currentMonologue, setCurrentMonologue] = useState<string>("");
   const [isMonologueVisible, setIsMonologueVisible] = useState(true);
   const [missionResultMonologue, setMissionResultMonologue] = useState("");
@@ -34,7 +36,10 @@ UseMonologueManagerProps) => {
   useEffect(() => {
     if (isMissionOver) {
       const success = checkMissionCompletion(); // Check completion status
-      setMissionResultMonologue(success ? "미션 성공!" : "미션 실패...");
+      // Use translation keys for mission result
+      setMissionResultMonologue(
+        success ? t("missionSuccess") : t("missionFail")
+      );
       // Optionally hide monologue after a delay?
       // const timer = setTimeout(() => setIsMonologueVisible(false), 3000);
       // return () => clearTimeout(timer);
@@ -51,15 +56,16 @@ UseMonologueManagerProps) => {
     let nextMonologue = "";
 
     if (isMissionLoading) {
-      nextMonologue = "미션 데이터를 불러오는 중...";
+      nextMonologue = t("loadingMission"); // Use translation key
     } else if (missionError) {
-      nextMonologue = `오류: ${missionError}`;
+      // Assuming missionError might be translated already, or use a generic error key
+      nextMonologue = t("errorPrefix", { error: missionError }); // Use translation key with interpolation
     } else if (missionResultMonologue) {
       // Show mission result first if available
       nextMonologue = missionResultMonologue;
     } else if (wasGenerating && !isGeneratingComments) {
-      // Show comment count after generation finishes
-      nextMonologue = `댓글이 ${commentsLength}개 달렸군. 어디 읽어볼까... `;
+      // Show comment count after generation finishes using translation key with count
+      nextMonologue = t("commentCount", { count: commentsLength });
       // Auto-hide after a delay?
       // setTimeout(() => {
       //   // Check if it hasn't been overridden by another state change
@@ -69,9 +75,13 @@ UseMonologueManagerProps) => {
       // }, 4000);
     } else if (isGeneratingComments) {
       // Show AI thinking monologue or a generic waiting message
-      nextMonologue = aiMonologue || "잠시 여론을 지켜볼까...?";
+      // Use translation key for default waiting message
+      nextMonologue = aiMonologue || t("waitingForAI");
     } else if (aiMonologue) {
       // Show specific AI monologue if provided and not generating
+      // Assuming aiMonologue might be a key or already translated text
+      // If it's a key, wrap with t(), otherwise use directly.
+      // For now, assume it might be direct text or already handled.
       nextMonologue = aiMonologue;
     } else {
       // Default to initial monologue

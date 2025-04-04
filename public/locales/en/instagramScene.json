@@ -1,0 +1,6 @@
+{
+  "loadingMission": "Loading mission data...",
+  "errorPrefix": "Error: ",
+  "errorMissionNotFound": "Mission data not found.",
+  "generatingComments": "Generating AI comments..."
+}

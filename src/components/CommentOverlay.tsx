@@ -4,18 +4,19 @@ import InstagramCommentList from "./InstagramCommentList";
 import InstagramPostInput from "./InstagramPostInput";
 import { useGameState } from "../stores/gameStateStore";
 import { useCommentStore } from "../stores/commentStore";
-import { useMissionStore } from "../stores/missionStore"; // missionStore 추가
-import useGeminiComments from "../hooks/useGeminiComments"; // useGeminiComments 추가
-import useArticleState from "../hooks/useArticleState"; // setPredictedReactions 가져오기 위해 추가
-import { Comment, ArticleReactions as ArticleReactionsType } from "../types"; // 타입 추가
+import { useTranslation } from "react-i18next"; // Import useTranslation
+import { useMissionStore } from "../stores/missionStore";
+import useGeminiComments from "../hooks/useGeminiComments";
+import useArticleState from "../hooks/useArticleState";
+import { Comment, ArticleReactions as ArticleReactionsType } from "../types";
 // import MonologueBox from "./MonologueBox"; // MonologueBox 컴포넌트 import 제거
 // import useMonologueManager from "../hooks/useMonologueManager"; // 독백 관리 훅 import 제거
 import styles from "./CommentOverlay.module.css"; // CSS 모듈 import
 
 const CommentOverlay: React.FC = () => {
+  const { t } = useTranslation("commentOverlay"); // Initialize useTranslation
   const { isCommentOverlayOpen, activePostIdForComments, closeCommentOverlay } =
     useGameState();
-  // activePostIdForComments를 missionId로 사용 (이름 변경 고려)
   const missionId = activePostIdForComments;
 
   const { comments, addComment, addReply, setComments } = useCommentStore(); // addComment, setComments 추가
@@ -30,10 +31,7 @@ const CommentOverlay: React.FC = () => {
     // missionStore에서 초기 독백 가져오기 (CommentScene과 동일하게)
     currentMission,
   } = useMissionStore();
-  const {
-    isGeneratingComments,
-    triggerGenerateComments,
-  } = useGeminiComments(); // aiMonologue 제거
+  const { isGeneratingComments, triggerGenerateComments } = useGeminiComments(); // aiMonologue 제거
   const { setPredictedReactions } = useArticleState(); // 예측 반응 설정 함수
 
   // --- 독백 관리 훅 호출 제거 ---
@@ -225,7 +223,8 @@ const CommentOverlay: React.FC = () => {
       >
         {/* 오버레이 헤더 */}
         <div className={styles.header}>
-          <h3 className={styles.title}>댓글</h3>
+          <h3 className={styles.title}>{t("title")}</h3>{" "}
+          {/* Use translation key */}
           <button onClick={closeCommentOverlay} className={styles.closeButton}>
             <X size={20} />
           </button>

@@ -1,0 +1,17 @@
+{
+  "unknownMission": "未知任务",
+  "errorNoMissionData": "无法生成反馈，因为找不到当前任务信息。",
+  "errorFeedbackGeneration": "生成反馈时出错：{{message}}",
+  "errorNoMissionId": "找不到任务ID。",
+  "errorCheckingEnding": "检查最终结局时出错（临时）：{{message}}",
+  "successTitle": "任务成功",
+  "successDescription": "恭喜！您成功操纵了舆论。",
+  "feedbackTitle": "{{name}}的消息：",
+  "feedbackUnavailable": "未能获取反馈。",
+  "checkingEnding": "正在检查结局...",
+  "viewFinalResult": "查看最终结果",
+  "nextEpisode": "下一集",
+  "failTitle": "任务失败",
+  "failDescription": "未能操纵舆论。下次再试吧。",
+  "failMessage": "结果不太好..."
+}
