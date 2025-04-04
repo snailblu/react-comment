@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pixel Art Style Guide Preview (InstaLife)</title>
+    <style>
+      body {
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      svg {
+        max-width: 90%;
+        max-height: 90%;
+      }
+      @font-face {
+        font-family: "NeoDunggeunmoPro";
+        /* Relative path from Sample/ to assets/ */
+        src: url("../assets/NeoDunggeunmoPro-Regular.ttf") format("truetype");
+      }
+    </style>
+  </head>
+  <body>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+      <!-- 배경 -->
+      <rect width="800" height="600" fill="#1A1A1A" />
+
+      <!-- 제목 영역 -->
+      <rect
+        x="20"
+        y="20"
+        width="760"
+        height="50"
+        fill="#3C6E71"
+        stroke="#444444"
+        stroke-width="2"
+      />
+      <text
+        x="400"
+        y="52"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="24"
+        fill="#E0E0E0"
+        text-anchor="middle"
+      >
+        픽셀 아트 시각 디자인 가이드 (InstaLife)
+      </text>
+
+      <!-- 색상 팔레트 섹션 -->
+      <rect
+        x="20"
+        y="90"
+        width="370"
+        height="220"
+        fill="#2A2A2A"
+        stroke="#444444"
+        stroke-width="2"
+      />
+      <text
+        x="30"
+        y="115"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="18"
+        fill="#E0E0E0"
+      >
+        색상 팔레트
+      </text>
+      <line
+        x1="30"
+        y1="125"
+        x2="360"
+        y2="125"
+        stroke="#444444"
+        stroke-width="1"
+      />
+
+      <!-- 색상 샘플들 -->
+      <rect
+        x="30"
+        y="140"
+        width="40"
+        height="20"
+        fill="#1A1A1A"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="80"
+        y="155"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        배경/어두운 UI: #1A1A1A
+      </text>
+
+      <rect
+        x="30"
+        y="170"
+        width="40"
+        height="20"
+        fill="#E0E0E0"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="80"
+        y="185"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        기본 텍스트: #E0E0E0
+      </text>
+
+      <rect
+        x="30"
+        y="200"
+        width="40"
+        height="20"
+        fill="#3C6E71"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="80"
+        y="215"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        주요 UI/강조: #3C6E71
+      </text>
+
+      <rect
+        x="30"
+        y="230"
+        width="40"
+        height="20"
+        fill="#58A6FF"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="80"
+        y="245"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        긍정/성공/링크: #58A6FF
+      </text>
+
+      <rect
+        x="30"
+        y="260"
+        width="40"
+        height="20"
+        fill="#F85149"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="80"
+        y="275"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        부정/오류/좋아요: #F85149
+      </text>
+
+      <rect
+        x="200"
+        y="140"
+        width="40"
+        height="20"
+        fill="#DDBB00"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="250"
+        y="155"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        알림/주의: #DDBB00
+      </text>
+
+      <rect
+        x="200"
+        y="170"
+        width="40"
+        height="20"
+        fill="#79C0FF"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="250"
+        y="185"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        선택/호버: #79C0FF
+      </text>
+
+      <rect
+        x="200"
+        y="200"
+        width="40"
+        height="20"
+        fill="#666666"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="250"
+        y="215"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        보조 UI/비활성: #666666
+      </text>
+
+      <rect
+        x="200"
+        y="230"
+        width="40"
+        height="20"
+        fill="#444444"
+        stroke="#AAAAAA"
+        stroke-width="1"
+      />
+      <text
+        x="250"
+        y="245"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        테두리: #444444
+      </text>
+
+      <rect
+        x="200"
+        y="260"
+        width="40"
+        height="20"
+        fill="#2A2A2A"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="250"
+        y="275"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        입력필드 배경: #2A2A2A
+      </text>
+
+      <!-- 타이포그래피 섹션 -->
+      <rect
+        x="410"
+        y="90"
+        width="370"
+        height="220"
+        fill="#2A2A2A"
+        stroke="#444444"
+        stroke-width="2"
+      />
+      <text
+        x="420"
+        y="115"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="18"
+        fill="#E0E0E0"
+      >
+        타이포그래피
+      </text>
+      <line
+        x1="420"
+        y1="125"
+        x2="750"
+        y2="125"
+        stroke="#444444"
+        stroke-width="1"
+      />
+
+      <text
+        x="420"
+        y="150"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        Neo둥근모 Pro (픽셀 폰트)
+      </text>
+      <text
+        x="420"
+        y="180"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="20"
+        fill="#E0E0E0"
+      >
+        제목/강조 텍스트 20px
+      </text>
+      <text
+        x="420"
+        y="210"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        본문/댓글/캡션 텍스트 14px
+      </text>
+      <text
+        x="420"
+        y="240"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#58A6FF"
+      >
+        사용자 이름/링크 (색상 활용)
+      </text>
+      <text
+        x="420"
+        y="270"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#AAAAAA"
+      >
+        보조 텍스트 (시간, 위치 등) 12px
+      </text>
+
+      <!-- UI 컴포넌트 섹션 -->
+      <rect
+        x="20"
+        y="330"
+        width="760"
+        height="250"
+        fill="#2A2A2A"
+        stroke="#444444"
+        stroke-width="2"
+      />
+      <text
+        x="30"
+        y="355"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="18"
+        fill="#E0E0E0"
+      >
+        UI 컴포넌트
+      </text>
+      <line
+        x1="30"
+        y1="365"
+        x2="750"
+        y2="365"
+        stroke="#444444"
+        stroke-width="1"
+      />
+
+      <!-- 버튼 예시 -->
+      <rect
+        x="40"
+        y="385"
+        width="120"
+        height="40"
+        fill="#3C6E71"
+        stroke="#444444"
+        stroke-width="2"
+        rx="5"
+        ry="5"
+      />
+      <text
+        x="100"
+        y="410"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+        text-anchor="middle"
+      >
+        기본 버튼
+      </text>
+
+      <rect
+        x="40"
+        y="435"
+        width="120"
+        height="40"
+        fill="#79C0FF"
+        stroke="#58A6FF"
+        stroke-width="2"
+        rx="5"
+        ry="5"
+      />
+      <text
+        x="100"
+        y="460"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#1A1A1A"
+        text-anchor="middle"
+      >
+        호버 상태
+      </text>
+
+      <rect
+        x="40"
+        y="485"
+        width="120"
+        height="40"
+        fill="#666666"
+        stroke="#444444"
+        stroke-width="2"
+        rx="5"
+        ry="5"
+      />
+      <text
+        x="100"
+        y="510"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#AAAAAA"
+        text-anchor="middle"
+      >
+        비활성화
+      </text>
+
+      <!-- 입력 필드 예시 -->
+      <rect
+        x="180"
+        y="385"
+        width="180"
+        height="40"
+        fill="#1A1A1A"
+        stroke="#444444"
+        stroke-width="2"
+        rx="5"
+        ry="5"
+      />
+      <text
+        x="190"
+        y="410"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#888888"
+      >
+        입력 필드...
+      </text>
+
+      <rect
+        x="180"
+        y="435"
+        width="180"
+        height="40"
+        fill="#1A1A1A"
+        stroke="#79C0FF"
+        stroke-width="2"
+        rx="5"
+        ry="5"
+      />
+      <text
+        x="190"
+        y="460"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        focused 상태
+      </text>
+
+      <!-- 인스타그램 댓글/캡션 요소 예시 -->
+      <rect
+        x="380"
+        y="385"
+        width="360"
+        height="100"
+        fill="#1A1A1A"
+        stroke="#444444"
+        stroke-width="2"
+        rx="5"
+        ry="5"
+      />
+      <text
+        x="395"
+        y="405"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#58A6FF"
+        font-weight="bold"
+      >
+        유저이름
+      </text>
+      <text
+        x="460"
+        y="405"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#AAAAAA"
+      >
+        1시간 전
+      </text>
+      <text
+        x="395"
+        y="430"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        이것은 픽셀 아트 스타일의 인스타그램 댓글/캡션
+      </text>
+      <text
+        x="395"
+        y="450"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        예시입니다. #해시태그 @사용자태그
+      </text>
+
+      <!-- 좋아요 버튼 -->
+      <text
+        x="395"
+        y="475"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="16"
+        fill="#F85149"
+      >
+        ♥
+      </text>
+      <text
+        x="420"
+        y="475"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        1.2k
+      </text>
+
+      <!-- 아이콘 예시 -->
+      <rect
+        x="380"
+        y="495"
+        width="360"
+        height="65"
+        fill="#1A1A1A"
+        stroke="#444444"
+        stroke-width="2"
+        rx="5"
+        ry="5"
+      />
+      <text
+        x="390"
+        y="515"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        픽셀 아이콘:
+      </text>
+
+      <!-- 픽셀 아트 아이콘 예시들 (인스타그램 스타일 고려) -->
+      <!-- 홈 아이콘 -->
+      <rect
+        x="490"
+        y="502"
+        width="24"
+        height="24"
+        fill="#1A1A1A"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <path
+        d="M495 514 L502 507 L509 514 M497 512 L497 520 L507 520 L507 512"
+        fill="none"
+        stroke="#E0E0E0"
+        stroke-width="2"
+      />
+
+      <!-- 검색 아이콘 -->
+      <rect
+        x="525"
+        y="502"
+        width="24"
+        height="24"
+        fill="#1A1A1A"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <circle
+        cx="535"
+        cy="512"
+        r="6"
+        fill="none"
+        stroke="#E0E0E0"
+        stroke-width="2"
+      />
+      <line
+        x1="540"
+        y1="517"
+        x2="545"
+        y2="522"
+        stroke="#E0E0E0"
+        stroke-width="2"
+      />
+
+      <!-- 게시물 추가 아이콘 -->
+      <rect
+        x="560"
+        y="502"
+        width="24"
+        height="24"
+        fill="#1A1A1A"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <rect
+        x="565"
+        y="507"
+        width="14"
+        height="14"
+        fill="none"
+        stroke="#E0E0E0"
+        stroke-width="2"
+      />
+      <line
+        x1="572"
+        y1="510"
+        x2="572"
+        y2="518"
+        stroke="#E0E0E0"
+        stroke-width="2"
+      />
+      <line
+        x1="568"
+        y1="514"
+        x2="576"
+        y2="514"
+        stroke="#E0E0E0"
+        stroke-width="2"
+      />
+
+      <!-- 릴스 아이콘 (간략화) -->
+      <rect
+        x="595"
+        y="502"
+        width="24"
+        height="24"
+        fill="#1A1A1A"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <path
+        d="M601 508 L613 514 L601 520 Z"
+        fill="none"
+        stroke="#E0E0E0"
+        stroke-width="2"
+      />
+
+      <!-- 프로필 아이콘 -->
+      <rect
+        x="630"
+        y="502"
+        width="24"
+        height="24"
+        fill="#1A1A1A"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <circle
+        cx="642"
+        cy="510"
+        r="4"
+        fill="none"
+        stroke="#E0E0E0"
+        stroke-width="2"
+      />
+      <path
+        d="M635 522 Q 642 516 649 522"
+        fill="none"
+        stroke="#E0E0E0"
+        stroke-width="2"
+      />
+    </svg>
+  </body>
+</html>

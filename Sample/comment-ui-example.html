@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Instagram UI Example Preview</title>
+    <style>
+      body {
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      svg {
+        max-width: 90%;
+        max-height: 90%;
+      }
+      @font-face {
+        font-family: "NeoDunggeunmoPro";
+        /* Relative path from Sample/ to assets/ */
+        src: url("../assets/NeoDunggeunmoPro-Regular.ttf") format("truetype");
+      }
+    </style>
+  </head>
+  <body>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 800">
+      <!-- 인스타그램 앱 배경 (모바일 형태) -->
+      <rect width="450" height="800" fill="#FFFFFF" />
+      <rect
+        x="10"
+        y="10"
+        width="430"
+        height="780"
+        fill="#000000"
+        rx="20"
+        ry="20"
+      />
+
+      <!-- 상단 바 -->
+      <rect x="10" y="10" width="430" height="50" fill="#121212" />
+      <text
+        x="40"
+        y="40"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="18"
+        fill="#E0E0E0"
+        font-weight="bold"
+      >
+        InstaLife
+      </text>
+      <!-- 아이콘 영역 (간략화) -->
+      <rect x="340" y="25" width="20" height="20" fill="#E0E0E0" />
+      <rect x="380" y="25" width="20" height="20" fill="#E0E0E0" />
+
+      <!-- 게시물 영역 -->
+      <!-- 사용자 정보 -->
+      <rect
+        x="20"
+        y="70"
+        width="40"
+        height="40"
+        fill="#C4C4C4"
+        rx="20"
+        ry="20"
+      />
+      <text
+        x="70"
+        y="95"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+        font-weight="bold"
+      >
+        influencer_wannabe
+      </text>
+
+      <!-- 게시물 이미지 -->
+      <rect
+        x="10"
+        y="120"
+        width="430"
+        height="430"
+        fill="#555555"
+        stroke="#444444"
+        stroke-width="1"
+      />
+      <text
+        x="225"
+        y="335"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="20"
+        fill="#AAAAAA"
+        text-anchor="middle"
+      >
+        (게시물 이미지 영역)
+      </text>
+
+      <!-- 아이콘 버튼 (좋아요, 댓글, 공유) -->
+      <text
+        x="30"
+        y="580"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="24"
+        fill="#E0E0E0"
+      >
+        ♥
+      </text>
+      <text
+        x="70"
+        y="580"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="24"
+        fill="#E0E0E0"
+      >
+        💬
+      </text>
+      <text
+        x="110"
+        y="580"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="24"
+        fill="#E0E0E0"
+      >
+        ➤
+      </text>
+      <!-- 북마크 아이콘 -->
+      <text
+        x="390"
+        y="580"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="24"
+        fill="#E0E0E0"
+      >
+        🔖
+      </text>
+
+      <!-- 좋아요 수 -->
+      <text
+        x="30"
+        y="605"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+        font-weight="bold"
+      >
+        좋아요 1,082개
+      </text>
+
+      <!-- 게시물 내용 (캡션) -->
+      <text
+        x="30"
+        y="630"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        <tspan font-weight="bold">influencer_wannabe</tspan>
+        오늘 새로 산 #신상뷰티 💄✨
+      </text>
+      <text
+        x="30"
+        y="650"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        발색 완전 미쳤다... #인생템 등극! @브랜드계정
+      </text>
+
+      <!-- 댓글 보기 -->
+      <text
+        x="30"
+        y="675"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#888888"
+      >
+        댓글 52개 모두 보기
+      </text>
+
+      <!-- 댓글 예시 -->
+      <text
+        x="30"
+        y="695"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        <tspan font-weight="bold">코덕</tspan>
+        와 색깔 진짜 예뻐요! 어디서 사셨어요? 😍
+      </text>
+      <text
+        x="30"
+        y="715"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#E0E0E0"
+      >
+        <tspan font-weight="bold">뷰티스타</tspan>
+        저도 이거 써봤는데 지속력 짱👍
+      </text>
+
+      <!-- 댓글 입력창 (간략화) -->
+      <rect
+        x="20"
+        y="730"
+        width="40"
+        height="40"
+        fill="#C4C4C4"
+        rx="20"
+        ry="20"
+      />
+      <text
+        x="70"
+        y="755"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="14"
+        fill="#888888"
+      >
+        댓글 달기...
+      </text>
+
+      <!-- 게임 UI 오버레이 (미션 정보) -->
+      <rect
+        x="250"
+        y="70"
+        width="180"
+        height="70"
+        fill="rgba(60, 110, 113, 0.8)"
+        stroke="#444444"
+        stroke-width="1"
+        rx="5"
+        ry="5"
+      />
+      <text
+        x="260"
+        y="90"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        미션: 신상 뷰티템 홍보
+      </text>
+      <text
+        x="260"
+        y="110"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        목표 좋아요: 1000 / 1082
+      </text>
+      <text
+        x="260"
+        y="130"
+        font-family="'NeoDunggeunmoPro', monospace"
+        font-size="12"
+        fill="#E0E0E0"
+      >
+        남은 시간: 04:12
+      </text>
+    </svg>
+  </body>
+</html>

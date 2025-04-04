@@ -1,10 +1,10 @@
-# 기술 설계 문서 (TDD): [가제] 댓글알바
+# 기술 설계 문서 (TDD): [가제] 인스타라이프 (InstaLife)
 
 ---
 
 ## 1. 개요
 
-본 문서는 게임 기획서(GDD)에 명시된 "[가제] 댓글알바" 게임의 기술적인 구현 방안을 상세히 기술하는 것을 목표로 합니다. 프로젝트의 아키텍처, 기술 스택, 주요 모듈 설계, 데이터 관리 방식 등을 정의하여 개발의 청사진을 제공합니다.
+본 문서는 게임 기획서(GDD)에 명시된 "[가제] 인스타라이프 (InstaLife)" 게임의 기술적인 구현 방안을 상세히 기술하는 것을 목표로 합니다. 프로젝트의 아키텍처, 기술 스택, 주요 모듈 설계, 데이터 관리 방식 등을 정의하여 개발의 청사진을 제공합니다.
 
 ---
 
@@ -16,14 +16,14 @@
 - **라우팅:** `react-router-dom`을 사용하여 클라이언트 사이드 라우팅을 구현합니다. 주요 경로는 다음과 같습니다:
   - `/`: 타이틀 화면 (`TitleScreen.tsx`)
   - `/game`: 메인 스토리 진행 화면 (`StoryScene.tsx`)
-  - `/comment/:missionId`: 댓글 인터페이스 화면 (`CommentScene.tsx`)
+  - `/instagram/:missionId`: 인스타그램 활동 화면 (`InstagramActivityScene.tsx` - 이름 변경 제안)
   - `/result`: 결과 표시 화면 (`ResultScene.tsx`)
-- **백엔드:** 핵심 AI 로직 처리를 위해 Vercel Serverless Functions (Node.js)를 사용합니다 (`api/generate-comments.ts`). 이는 Google Gemini API와의 통신을 위한 프록시 역할을 수행합니다.
+- **백엔드:** 핵심 AI 로직 처리를 위해 Vercel Serverless Functions (Node.js)를 사용합니다 (`api/generate-instagram-reactions.ts` - 이름 변경 제안). 이는 Google Gemini API와의 통신을 위한 프록시 역할을 수행합니다.
 - **주요 컴포넌트:**
   - `App.tsx`: 애플리케이션 진입점, 라우터 설정.
   - `GameViewport.tsx`: 전체 게임 화면 레이아웃 컨테이너.
-  - 각 씬 컴포넌트 (`TitleScreen`, `StoryScene`, `CommentScene`, `ResultScene`): 특정 게임 상태의 UI 및 로직 담당.
-  - UI 요소 컴포넌트 (`DialogueBox`, `Character`, `Choices`, `CommentInput`, `CommentList`, `MissionPanel` 등): 재사용 가능한 UI 조각.
+  - 각 씬 컴포넌트 (`TitleScreen`, `StoryScene`, `InstagramActivityScene`, `ResultScene`): 특정 게임 상태의 UI 및 로직 담당.
+  - UI 요소 컴포넌트 (`DialogueBox`, `Character`, `Choices`, `InstagramFeed`, `InstagramPostInput`, `InstagramCommentList`, `MissionPanel` 등 - 인스타그램 컨셉에 맞춘 컴포넌트 이름 제안): 재사용 가능한 UI 조각.
 
 ---
 
@@ -63,36 +63,36 @@
   - `useScriptLoader` 등으로 스크립트 데이터 로드.
   - `DialogueBox`, `Character`, `Choices`, `MonologueBox` 등 하위 컴포넌트를 사용하여 스토리 콘텐츠(대사, 캐릭터 이미지, 선택지 등) 표시.
   - 선택지 선택 시 다음 스토리 ID 업데이트 및 상태 전이 처리.
-  - 특정 조건 충족 시 `/comment/:missionId` 또는 `/result` 경로로 이동.
-- **`CommentScene.tsx`:**
+  - 특정 조건 충족 시 `/instagram/:missionId` 또는 `/result` 경로로 이동.
+- **`InstagramActivityScene.tsx` (가칭):**
   - `useParams` 훅으로 `missionId` 추출.
   - `useMissionData` 훅으로 해당 미션 정보 로드 및 `MissionPanel`에 표시.
-  - `useCommentState` 훅으로 댓글 목록, 여론 상태 등 관리.
-  - `CommentList` 컴포넌트로 AI 생성 댓글 및 사용자 작성 댓글 표시.
-  - `CommentInput` 컴포넌트로 사용자 댓글 입력 처리.
-  - `useGeminiComments` 훅 또는 `geminiService`를 직접 사용하여 `api/generate-comments.ts` 호출, AI 댓글 생성 및 상태 업데이트.
-  - `OpinionStats` 컴포넌트로 현재 여론 상태 시각화.
+  - `useInstagramState` 훅 (가칭)으로 게시물 목록, 반응(좋아요, 댓글 수, 팔로워), DM 등 관리.
+  - `InstagramFeed`, `InstagramCommentList` 컴포넌트로 콘텐츠 및 AI 생성/사용자 작성 댓글/DM 표시.
+  - `InstagramPostInput` 컴포넌트로 사용자 콘텐츠 게시(텍스트/이미지 선택) 처리.
+  - `useGeminiReactions` 훅 (가칭) 또는 `geminiService`를 직접 사용하여 `api/generate-instagram-reactions.ts` (가칭) 호출, AI 반응(댓글, DM, 좋아요 예측 등) 생성 및 상태 업데이트.
+  - `ReactionStats` 컴포넌트 (가칭)로 현재 반응 상태 시각화.
   - 미션 완료 또는 기회 소진 시 `/result` 또는 다음 스토리 씬으로 이동.
-- **ResultScene.tsx:** 미션 성공/실패 결과, 클라이언트 피드백(LLM 생성 가능, GDD 참고) 등을 표시. 다음 에피소드나 엔딩으로 이동하는 버튼 제공.
+- **ResultScene.tsx:** 미션 성공/실패 결과, 클라이언트/팔로워 피드백(LLM 생성 가능, GDD 참고) 등을 표시. 다음 에피소드나 엔딩으로 이동하는 버튼 제공.
 - **Custom Hooks & Zustand Stores:**
-  - **Zustand Stores:** 게임 상태(`gameStateStore`), 스토리 진행(`storyStore`), 댓글 상태(`commentStore`), 미션 상태(`missionStore`), 설정(`settingsStore` - Context 대신 사용 가능) 등 도메인별 스토어를 생성하여 상태와 액션을 관리합니다.
-  - **Custom Hooks:** 여전히 유효하며, 주로 비동기 로직(데이터 로딩, API 호출 등)을 캡슐화하거나, 특정 UI 로직을 분리하는 데 사용될 수 있습니다. 필요에 따라 Zustand 스토어와 상호작용합니다. (예: `useGeminiComments` 훅이 `commentStore`의 상태를 업데이트).
+  - **Zustand Stores:** 게임 상태(`gameStateStore`), 스토리 진행(`storyStore`), 인스타그램 활동 상태(`instagramStore` - 가칭), 미션 상태(`missionStore`), 설정(`settingsStore`) 등 도메인별 스토어를 생성하여 상태와 액션을 관리합니다.
+  - **Custom Hooks:** 여전히 유효하며, 주로 비동기 로직(데이터 로딩, API 호출 등)을 캡슐화하거나, 특정 UI 로직을 분리하는 데 사용될 수 있습니다. 필요에 따라 Zustand 스토어와 상호작용합니다. (예: `useGeminiReactions` 훅이 `instagramStore`의 상태를 업데이트).
     - `useScriptLoader`, `useEpisodeLoader`: JSON 데이터 로딩 로직 캡슐화.
 - **Services:**
-  - `geminiService.ts`: Google Gemini API와의 직접적인 통신 로직 담당. API 키 관리 포함 (`dotenv` 사용).
+  - `geminiService.ts`: Google Gemini API와의 직접적인 통신 로직 담당. API 키 관리 포함 (`dotenv` 사용). 인스타그램 컨텍스트에 맞는 프롬프트 생성 로직 추가 필요.
   - `audioManager.ts`: Howler.js를 사용하여 오디오 재생/정지/볼륨 조절 등 관리. (필요시 `settingsStore`와 연동)
 
 ---
 
 ## 6. AI 통합 (Google Gemini)
 
-- **목적:** 게임 내 동적인 AI 댓글 생성, 미션 결과에 따른 클라이언트 피드백 생성 등 (GDD MoSCoW 분류 참고).
+- **목적:** 게임 내 동적인 AI 반응(댓글, DM) 생성, 콘텐츠 매력도/영향력 평가, 미션 결과에 따른 클라이언트/팔로워 피드백 생성 등 (GDD MoSCoW 분류 참고).
 - **구현:**
-  - 프론트엔드 (`useGeminiComments` 또는 `CommentScene`)에서 필요한 컨텍스트(현재 스토리 상황, 미션 정보, 사용자 입력 등)를 포함하여 Vercel 서버리스 함수(`api/generate-comments.ts`)에 요청을 보냅니다.
+  - 프론트엔드 (`useGeminiReactions` 또는 `InstagramActivityScene`)에서 필요한 컨텍스트(현재 스토리 상황, 미션 정보, 사용자 게시물 내용 등)를 포함하여 Vercel 서버리스 함수(`api/generate-instagram-reactions.ts` - 가칭)에 요청을 보냅니다.
   - 서버리스 함수는 보안상의 이유로 API 키를 직접 노출하지 않고, 백엔드에서 Google Gemini API (`@google/generative-ai` SDK)를 호출합니다.
-  - Gemini API는 주어진 프롬프트를 기반으로 댓글 텍스트, 영향력 점수 등을 생성하여 응답합니다. (프롬프트 엔지니어링 필요, `activeContext.md` 참고)
+  - Gemini API는 주어진 프롬프트를 기반으로 반응 텍스트(댓글, DM), 매력도 점수, 반응 예측 등을 생성하여 응답합니다. (인스타그램 컨텍스트에 맞는 프롬프트 엔지니어링 필요)
   - 서버리스 함수는 Gemini API의 응답을 가공하여 프론트엔드에 전달합니다.
-  - 프론트엔드는 응답받은 데이터를 사용하여 `CommentList` 업데이트, 여론 점수 반영 등의 처리를 수행합니다.
+  - 프론트엔드는 응답받은 데이터를 사용하여 댓글/DM 목록 업데이트, 반응 점수 반영 등의 처리를 수행합니다.
 - **API 키 관리:** Google Gemini API 키는 환경 변수(`.env` 파일)를 통해 관리하며, 서버리스 함수 환경에 안전하게 주입됩니다.
 
 ---
@@ -102,9 +102,9 @@
 - **주요 상태 관리:** Zustand 라이브러리를 사용하여 애플리케이션의 주요 상태를 관리합니다. 도메인별로 스토어(slice)를 분리하여 관리의 용이성과 확장성을 확보합니다.
   - **`gameStateStore`:** 현재 게임 씬, 로딩 상태 등 전반적인 게임 상태 관리.
   - **`storyStore`:** 현재 스토리 ID, 로드된 스크립트 데이터, 진행 관련 상태 관리.
-  - **`commentStore`:** 댓글 목록, 사용자 입력, 여론 점수, AI 댓글 관련 상태 관리.
+  - **`instagramStore` (가칭):** 게시물 목록, 댓글/DM, 좋아요 수, 팔로워 수, AI 반응 관련 상태 관리.
   - **`missionStore`:** 현재 미션 데이터, 진행 상태, 목표 달성 여부 등 관리.
-  - **`settingsStore`:** 오디오 볼륨, 언어 등 사용자 설정 관리 (기존 `SettingsContext` 대체 가능).
+  - **`settingsStore`:** 오디오 볼륨, 언어 등 사용자 설정 관리.
 - **상태 접근 및 업데이트:** 컴포넌트에서는 각 스토어에서 제공하는 훅(예: `useGameState()`)을 사용하여 필요한 상태를 구독(subscribe)하고, 스토어에 정의된 액션(action) 함수를 호출하여 상태를 업데이트합니다.
 - **비동기 처리:** Zustand 미들웨어(예: `zustand/middleware`)를 활용하거나, Custom Hook 내에서 비동기 로직(API 호출, 데이터 로딩)을 처리하고 그 결과를 스토어 액션을 통해 업데이트합니다.
 - **컴포넌트 로컬 상태:** 여전히 개별 컴포넌트 내에서만 필요한 간단한 UI 상태 등은 `useState` 훅을 사용하여 관리합니다.
