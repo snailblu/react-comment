@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // useNavigate 추가
+import React, { useState, useEffect, useRef, useCallback } from "react"; // useCallback 추가
+import { useParams, useNavigate } from "react-router-dom";
 import styles from "./CommentScene.module.css";
 import gameStyles from "./StoryScene.module.css";
 
 // 필요한 타입 import
-import { Comment, ArticleReactions as ArticleReactionsType } from "../types"; // Opinion 추가
+import { Comment, ArticleReactions as ArticleReactionsType } from "../types";
 
 // 필요한 컴포넌트 import
 import MissionPanel from "./MissionPanel";
@@ -21,7 +21,6 @@ import useArticleState from "../hooks/useArticleState";
 import { useCommentStore } from "../stores/commentStore";
 import { useMissionStore } from "../stores/missionStore";
 import useGeminiComments from "../hooks/useGeminiComments";
-// useMissionStatus import 제거됨
 
 interface CommentSceneProps {
   onMissionComplete?: (success: boolean) => void;
@@ -29,39 +28,34 @@ interface CommentSceneProps {
 
 const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   const { missionId } = useParams<{ missionId: string }>();
-  const navigate = useNavigate(); // useNavigate 사용
+  const navigate = useNavigate();
 
   // --- Custom Hooks 사용 ---
   const {
     missionData,
-    initialComments, // useMissionData에서 가져온 초기 댓글
-    initialOpinion,
-    // initialLikes, // Removed unused variable
-    // initialDislikes, // Removed unused variable
+    initialComments,
+    initialOpinion, // 초기 opinion 값은 missionStore 초기화에 사용될 수 있음
     initialMonologue,
     totalAttempts,
     isLoading: isMissionLoading,
     error: missionError,
   } = useMissionData(missionId);
 
-  // Get likes/dislikes directly from missionStore
+  // Get state and actions from missionStore
   const {
     articleLikes,
     articleDislikes,
-    remainingAttempts: attemptsLeft, // 스토어 상태 사용 및 이름 변경
-    isCompleted: isMissionOver, // 스토어 상태 사용 및 이름 변경
-    decreaseAttempt: decrementAttempts, // 스토어 액션 사용
-    checkMissionCompletion, // 스토어 액션 사용
-    setMission, // 스토어 액션 추가 (초기화용)
+    remainingAttempts: attemptsLeft,
+    isCompleted: isMissionOver,
+    decreaseAttempt: decrementAttempts,
+    checkMissionCompletion,
+    setMission,
+    opinion, // opinion 상태 직접 가져오기
   } = useMissionStore();
 
-  // useArticleState now only needs initialOpinion
-  const {
-    opinion,
-    handleLikeArticle,
-    handleDislikeArticle,
-    setPredictedReactions,
-  } = useArticleState(initialOpinion);
+  // useArticleState 호출 시 인자 제거 및 opinion 제거
+  const { handleLikeArticle, handleDislikeArticle, setPredictedReactions } =
+    useArticleState();
 
   const { comments, setComments, addComment, addReply } = useCommentStore();
 
@@ -75,7 +69,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   // Initialize mission store when missionData loads
   useEffect(() => {
     if (missionData) {
-      setMission(missionData); // 스토어 상태 초기화
+      setMission(missionData); // 스토어 상태 초기화 (opinion 포함)
     }
   }, [missionData, setMission]);
 
@@ -94,10 +88,8 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   const [missionResultMonologue, setMissionResultMonologue] = useState("");
   useEffect(() => {
     if (isMissionOver) {
-      // 미션 완료 시 결과 확인 및 처리
-      const success = useMissionStore
-        .getState()
-        .checkMissionCompletion(opinion); // 상태 확인
+      // checkMissionCompletion 호출 시 인자 제거
+      const success = useMissionStore.getState().checkMissionCompletion();
       setMissionResultMonologue(success ? "미션 성공!" : "미션 실패...");
 
       const navigateToResult = () => {
@@ -105,7 +97,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
         navigate("/result", {
           state: {
             missionId,
-            success: success ?? false, // null일 경우 false 처리
+            success: success ?? false,
             missionTitle: missionData?.title,
           },
         });
@@ -116,16 +108,16 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       const timer = setTimeout(navigateToResult, 2000);
       return () => clearTimeout(timer);
     } else {
-      setMissionResultMonologue(""); // 미션 진행 중일 때 초기화
+      setMissionResultMonologue("");
     }
   }, [
     isMissionOver,
     missionId,
     missionData?.title,
     onMissionComplete,
-    opinion,
+    // opinion, // 의존성 제거
     navigate,
-  ]); // navigate 추가
+  ]);
 
   // --- UI 상태 ---
   const [currentMonologue, setCurrentMonologue] = useState("");
@@ -144,7 +136,6 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     } else if (missionError) {
       setCurrentMonologue(`오류: ${missionError}`);
     } else if (missionResultMonologue) {
-      // isMissionOver 대신 missionResultMonologue 사용
       setCurrentMonologue(missionResultMonologue);
     } else if (wasGenerating && !isGeneratingComments) {
       setCurrentMonologue(
@@ -153,13 +144,12 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     } else if (aiMonologue) {
       setCurrentMonologue(aiMonologue);
     } else {
-      // initialMonologue이 null/undefined일 경우 빈 문자열로 처리
       setCurrentMonologue(initialMonologue ?? "");
     }
   }, [
     isMissionLoading,
     missionError,
-    missionResultMonologue, // 의존성 추가
+    missionResultMonologue,
     aiMonologue,
     initialMonologue,
     isGeneratingComments,
@@ -177,129 +167,156 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
     console.log("Refreshing comments (placeholder)...");
 
   // --- 댓글/대댓글 제출 및 AI 연동 핸들러 ---
-  const handleSubmitAndGenerateAi = async (submittedComments: Comment[]) => {
-    if (!submittedComments || submittedComments.length === 0 || !missionData) {
-      console.error("handleSubmitAndGenerateAi: Invalid arguments.");
-      return;
-    }
+  const handleSubmitAndGenerateAi = useCallback(
+    async (submittedComments: Comment[]) => {
+      if (
+        !submittedComments ||
+        submittedComments.length === 0 ||
+        !missionData
+      ) {
+        console.error("handleSubmitAndGenerateAi: Invalid arguments.");
+        return;
+      }
 
-    // 스토어 액션 호출하여 시도 횟수 감소
-    decrementAttempts(); // This action updates the store state
-    // Get the updated attempts count *after* the action has potentially updated the store
-    const currentAttempts = useMissionStore.getState().remainingAttempts;
+      decrementAttempts();
+      const currentAttempts = useMissionStore.getState().remainingAttempts;
 
-    const currentReactions: ArticleReactionsType = {
-      likes: articleLikes,
-      dislikes: articleDislikes,
-    };
+      const currentReactions: ArticleReactionsType = {
+        likes: articleLikes,
+        dislikes: articleDislikes,
+      };
 
-    const aiResult = await triggerGenerateComments(
-      missionData,
-      submittedComments, // 제출 직후의 댓글 목록 전달
-      currentReactions
-    );
+      const aiResult = await triggerGenerateComments(
+        missionData,
+        submittedComments,
+        currentReactions
+      );
 
-    if (!aiResult.error) {
-      if (aiResult.generatedComments.length > 0) {
-        const currentCommentsInStore = useCommentStore.getState().comments;
-        let baseComments = [...currentCommentsInStore];
-        let newCommentsList = [...baseComments];
-        const tempGeneratedComments: Comment[] = [];
+      if (!aiResult.error) {
+        if (aiResult.generatedComments.length > 0) {
+          const currentCommentsInStore = useCommentStore.getState().comments;
+          let baseComments = [...currentCommentsInStore];
+          let newCommentsList = [...baseComments];
+          const tempGeneratedComments: Comment[] = [];
 
-        aiResult.generatedComments.forEach((newComment) => {
-          if (newComment.isReply && newComment.parentId) {
-            const targetIdentifier = newComment.parentId;
-            let actualParentId: string | undefined = undefined;
-            let parentComment: Comment | undefined = undefined;
+          aiResult.generatedComments.forEach((newComment) => {
+            if (newComment.isReply && newComment.parentId) {
+              const targetIdentifier = newComment.parentId;
+              let actualParentId: string | undefined = undefined;
+              let parentComment: Comment | undefined = undefined;
 
-            parentComment = [...newCommentsList, ...tempGeneratedComments].find(
-              (c) => c.id === targetIdentifier
-            );
-            if (!parentComment) {
               parentComment = [
                 ...newCommentsList,
                 ...tempGeneratedComments,
-              ].find((c) => c.nickname === targetIdentifier);
-            }
+              ].find((c) => c.id === targetIdentifier);
+              if (!parentComment) {
+                parentComment = [
+                  ...newCommentsList,
+                  ...tempGeneratedComments,
+                ].find((c) => c.nickname === targetIdentifier);
+              }
 
-            if (parentComment) {
-              actualParentId = parentComment.id;
-              newComment.parentId = actualParentId;
-              const parentIndex = newCommentsList.findIndex(
-                (comment) => comment.id === actualParentId
-              );
-              if (parentIndex !== -1) {
-                let insertionIndex = parentIndex + 1;
-                while (
-                  insertionIndex < newCommentsList.length &&
-                  newCommentsList[insertionIndex].isReply &&
-                  newCommentsList[insertionIndex].parentId === actualParentId
-                ) {
-                  insertionIndex++;
+              if (parentComment) {
+                actualParentId = parentComment.id;
+                newComment.parentId = actualParentId;
+                const parentIndex = newCommentsList.findIndex(
+                  (comment) => comment.id === actualParentId
+                );
+                if (parentIndex !== -1) {
+                  let insertionIndex = parentIndex + 1;
+                  while (
+                    insertionIndex < newCommentsList.length &&
+                    newCommentsList[insertionIndex].isReply &&
+                    newCommentsList[insertionIndex].parentId === actualParentId
+                  ) {
+                    insertionIndex++;
+                  }
+                  newCommentsList.splice(insertionIndex, 0, newComment);
+                } else {
+                  tempGeneratedComments.push(newComment);
                 }
-                newCommentsList.splice(insertionIndex, 0, newComment);
               } else {
+                console.warn(
+                  `Parent comment target "${targetIdentifier}" provided by AI does not match any existing ID or Nickname. Appending reply as a regular comment.`
+                );
+                newComment.parentId = undefined;
                 tempGeneratedComments.push(newComment);
               }
             } else {
-              console.warn(
-                `Parent comment target "${targetIdentifier}" provided by AI does not match any existing ID or Nickname. Appending reply as a regular comment.`
-              );
-              newComment.parentId = undefined;
               tempGeneratedComments.push(newComment);
             }
-          } else {
-            tempGeneratedComments.push(newComment);
-          }
-        });
-        newCommentsList.push(
-          ...tempGeneratedComments.filter(
-            (tc) => !newCommentsList.some((nc) => nc.id === tc.id)
-          )
-        );
-        setComments(newCommentsList); // 최종 목록으로 스토어 업데이트
+          });
+          newCommentsList.push(
+            ...tempGeneratedComments.filter(
+              (tc) => !newCommentsList.some((nc) => nc.id === tc.id)
+            )
+          );
+          setComments(newCommentsList);
+        }
+
+        if (aiResult.predictedAddedReactions) {
+          setPredictedReactions(
+            aiResult.predictedAddedReactions.added_likes,
+            aiResult.predictedAddedReactions.added_dislikes
+          );
+        }
       }
 
-      if (aiResult.predictedAddedReactions) {
-        setPredictedReactions(
-          aiResult.predictedAddedReactions.added_likes,
-          aiResult.predictedAddedReactions.added_dislikes
+      if (typeof currentAttempts === "number" && currentAttempts <= 0) {
+        console.log(
+          "Attempts depleted. Checking mission completion via store action."
         );
+        checkMissionCompletion(); // 인자 없이 호출
       }
-    }
+    },
+    [
+      decrementAttempts,
+      missionData,
+      articleLikes,
+      articleDislikes,
+      triggerGenerateComments,
+      setComments,
+      setPredictedReactions,
+      checkMissionCompletion,
+    ]
+  ); // opinion 의존성 제거
 
-    // 시도 횟수가 0 이하이면 미션 완료 상태 체크 (스토어 액션 호출)
-    // Ensure currentAttempts is treated as a number here
-    if (typeof currentAttempts === "number" && currentAttempts <= 0) {
-      console.log(
-        "Attempts depleted. Checking mission completion via store action."
-      );
-      checkMissionCompletion(opinion); // 스토어 액션 호출 (결과는 useEffect에서 처리)
-    }
-  };
+  const handleCommentSubmit = useCallback(
+    async (commentText: string, nickname?: string, password?: string) => {
+      if (isMissionOver || attemptsLeft <= 0 || !missionData) return;
+      addComment(commentText, nickname);
+      const updatedComments = useCommentStore.getState().comments;
+      await handleSubmitAndGenerateAi(updatedComments);
+    },
+    [
+      isMissionOver,
+      attemptsLeft,
+      missionData,
+      addComment,
+      handleSubmitAndGenerateAi,
+    ]
+  );
 
-  const handleCommentSubmit = async (
-    commentText: string,
-    nickname?: string,
-    password?: string
-  ) => {
-    if (isMissionOver || attemptsLeft <= 0 || !missionData) return;
-    addComment(commentText, nickname);
-    const updatedComments = useCommentStore.getState().comments;
-    await handleSubmitAndGenerateAi(updatedComments);
-  };
-
-  const handleReplySubmit = async (
-    replyContent: string,
-    parentId: string,
-    nickname?: string,
-    password?: string
-  ) => {
-    if (isMissionOver || attemptsLeft <= 0 || !missionData) return;
-    addReply(replyContent, parentId, nickname);
-    const updatedComments = useCommentStore.getState().comments;
-    await handleSubmitAndGenerateAi(updatedComments);
-  };
+  const handleReplySubmit = useCallback(
+    async (
+      replyContent: string,
+      parentId: string,
+      nickname?: string,
+      password?: string
+    ) => {
+      if (isMissionOver || attemptsLeft <= 0 || !missionData) return;
+      addReply(replyContent, parentId, nickname);
+      const updatedComments = useCommentStore.getState().comments;
+      await handleSubmitAndGenerateAi(updatedComments);
+    },
+    [
+      isMissionOver,
+      attemptsLeft,
+      missionData,
+      addReply,
+      handleSubmitAndGenerateAi,
+    ]
+  );
 
   // --- 로딩 및 오류 상태 표시 ---
   if (isMissionLoading) {

@@ -4,23 +4,35 @@ import React from "react";
 interface ReactionStatsProps {
   likes: number;
   commentsCount: number;
-  // TODO: 팔로워 수 등 필요한 props 추가
+  followers?: number; // 팔로워 수 prop 추가 (옵셔널)
 }
 
 const ReactionStats: React.FC<ReactionStatsProps> = ({
   likes,
   commentsCount,
+  followers,
 }) => {
   return (
-    <div className="p-3 flex items-center gap-4 text-sm">
-      {/* TODO: 아이콘 추가 및 스타일링 */}
-      <div>
-        <span className="font-semibold">{likes}</span> Likes
+    <div className="px-3 pt-2 pb-1 flex items-center gap-4 text-sm border-t border-border">
+      {" "}
+      {/* 스타일 조정 */}
+      {/* 좋아요 */}
+      <div className="flex items-center gap-1">
+        <span className="font-semibold">{likes}</span>
+        <span className="text-muted-foreground">Likes</span>
       </div>
-      <div>
-        <span className="font-semibold">{commentsCount}</span> Comments
+      {/* 댓글 수 */}
+      <div className="flex items-center gap-1">
+        <span className="font-semibold">{commentsCount}</span>
+        <span className="text-muted-foreground">Comments</span>
       </div>
-      {/* TODO: 팔로워 수 표시 */}
+      {/* 팔로워 수 (있을 경우) */}
+      {followers !== undefined && (
+        <div className="flex items-center gap-1">
+          <span className="font-semibold">{followers}</span>
+          <span className="text-muted-foreground">Followers</span>
+        </div>
+      )}
     </div>
   );
 };

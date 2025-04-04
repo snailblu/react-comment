@@ -1,0 +1,66 @@
+.overlayBackdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end; /* 기본 오른쪽 정렬 유지 */
+  align-items: flex-end; /* 아래에서 위로 올라오도록 */
+  opacity: 0; /* 초기 투명 */
+  visibility: hidden; /* 초기 숨김 */
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; /* 전환 효과 */
+}
+
+.overlayBackdropVisible {
+  opacity: 1; /* 보이게 */
+  visibility: visible; /* 보이게 */
+}
+
+.commentContent {
+  width: 100%;
+  max-width: 28rem; /* max-w-md */
+  height: 90%; /* 화면 높이의 90% */
+  /* background-color: var(--background); */ /* CSS 변수 대신 명시적 색상 사용 */
+  background-color: white; /* 라이트 모드 배경색 (다크 모드 고려 필요) */
+  /* TODO: 다크 모드 지원 시 테마에 맞는 색상 적용 필요 */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1), 0 -2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-lg */
+  border-top-left-radius: 0.75rem; /* rounded-t-xl */
+  border-top-right-radius: 0.75rem; /* rounded-t-xl */
+  transform: translateY(100%); /* 초기 위치: 화면 아래 */
+  transition: transform 0.3s ease-in-out; /* 슬라이드 애니메이션 */
+}
+
+.commentContentVisible {
+  transform: translateY(0); /* 최종 위치: 화면에 보임 */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem; /* p-3 */
+  border-bottom: 1px solid hsl(var(--border)); /* border-b border-border */
+  flex-shrink: 0; /* 헤더 크기 고정 */
+}
+
+.title {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+}
+
+.closeButton {
+  padding: 0.25rem; /* p-1 */
+  border-radius: 0.25rem; /* rounded */
+}
+.closeButton:hover {
+  background-color: hsl(var(--accent)); /* hover:bg-accent */
+}
+
+.commentListContainer {
+  flex: 1 1 0%; /* flex-1 */
+  overflow-y: auto; /* 댓글 목록 스크롤 */
+}
+
+/* Tailwind 클래스를 직접 사용하는 대신 CSS 모듈로 스타일 관리 */

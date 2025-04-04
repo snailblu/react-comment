@@ -6,57 +6,62 @@
 
 ## 개발 계획 기반 TODO 리스트 (MVP 범위: Phase 1-3)
 
-### Phase 1: 기반 구축 및 핵심 씬 설정
+### Phase 1: 기반 구축 및 핵심 씬 설정 (완료)
 
-- [ ] **1-1. 프로젝트 설정 확인:**
-  - [ ] Zustand 스토어 (`gameStateStore`, `storyStore`, `missionStore`) 기본 구조 정의 완료 확인.
-  - [ ] `App.tsx`에서 `HashRouter` 및 핵심 씬 라우팅 (`/`, `/game`, `/instagram/:missionId`, `/result`) 설정 확인.
-  - [ ] `GameViewport.tsx` 기본 레이아웃 구현 확인.
-  - [ ] 전역 CSS (`index.css`) 및 `tailwind.config.js`에 Neo둥근모 Pro 폰트 적용 및 앤티앨리어싱 비활성화 설정 확인.
-- [ ] **1-2. 데이터 로딩 시스템 구현:**
-  - [ ] `useScriptLoader` 훅 구현 (script.json 로딩).
-  - [ ] `useEpisodeLoader` 훅 구현 (episode 관련 데이터 로딩 - 필요시).
-  - [ ] `useMissionData` 훅 구현 (missions.json 로딩).
-  - [ ] Electron 환경 고려한 경로 처리 확인.
-- [ ] **1-3. 타이틀 화면 (`TitleScreen.tsx`) 구현:**
-  - [ ] 게임 로고 이미지 표시.
-  - [ ] '시작하기' 버튼 UI 구현 (픽셀 아트 스타일).
-  - [ ] '시작하기' 버튼 클릭 시 `/game` 경로 이동 기능 구현.
-- [ ] **1-4. 스토리 씬 (`StoryScene.tsx`) 기본 표시 기능 구현:**
-  - [ ] `storyStore` 연동하여 현재 스크립트 데이터 표시.
-  - [ ] `DialogueBox.tsx` 컴포넌트 구현 및 대사 표시.
-  - [ ] `Background.tsx` 컴포넌트 구현 및 배경 이미지 표시.
-  - [ ] `Character.tsx` 컴포넌트 구현 및 캐릭터 실루엣 표시.
-  - [ ] 스크립트 데이터의 `next` ID를 따라 다음 스토리로 진행하는 기본 로직 구현 (`storyStore` 액션 호출).
+- [x] **1-1. 프로젝트 설정 확인:**
+  - [x] Zustand 스토어 (`gameStateStore`, `storyStore`, `missionStore`) 기본 구조 정의 완료 확인.
+  - [x] `App.tsx`에서 `HashRouter` 및 핵심 씬 라우팅 (`/`, `/game`, `/instagram/:missionId`, `/result`) 설정 확인.
+  - [x] `GameViewport.tsx` 기본 레이아웃 구현 확인 및 해상도 수정 (800x600).
+  - [x] 전역 CSS (`index.css`) 및 `tailwind.config.js`에 Neo둥근모 Pro 폰트 적용 및 앤티앨리어싱 비활성화 설정 완료.
+- [x] **1-2. 데이터 로딩 시스템 구현:**
+  - [x] `useScriptLoader` 훅 구현 확인.
+  - [x] `useEpisodeLoader` 훅 구현 확인.
+  - [x] `useMissionData` 훅 구현 확인.
+  - [x] Electron 환경 고려한 경로 처리 확인.
+- [x] **1-3. 타이틀 화면 (`TitleScreen.tsx`) 구현:**
+  - [x] 게임 제목 텍스트 표시.
+  - [x] '시작하기' 버튼 UI 구현 (픽셀 아트 스타일).
+  - [x] '시작하기' 버튼 클릭 시 `/game` 경로 이동 기능 구현.
+- [x] **1-4. 스토리 씬 (`StoryScene.tsx`) 기본 표시 기능 구현:**
+  - [x] `storyStore` 연동하여 현재 스크립트 데이터 표시.
+  - [x] `DialogueBox.tsx` 컴포넌트 구현 및 대사 표시.
+  - [x] `Background.tsx` 컴포넌트 구현 및 배경 이미지 동적 로딩 적용.
+  - [x] `Character.tsx` 컴포넌트 구현 및 캐릭터 실루엣 표시.
+  - [x] 스크립트 데이터의 `next` ID를 따라 다음 스토리로 진행하는 기본 로직 구현.
 
-### Phase 2: 핵심 게임 플레이 구현 - 인스타그램 활동
+### Phase 2: 핵심 게임 플레이 구현 - 인스타그램 활동 (댓글 집중)
 
 - [x] **2-1. 인스타그램 활동 씬 (`InstagramActivityScene.tsx`) 기본 설정:**
-  - [x] 컴포넌트 파일 생성 (`src/components/InstagramActivityScene.tsx`) 및 기본 로직 복사.
+  - [x] 컴포넌트 파일 생성 및 기본 로직 복사.
   - [x] `App.tsx`에 `/instagram/:missionId` 경로 라우팅 추가.
-  - [x] `useParams` 훅 사용하여 `missionId` 추출 확인.
-  - [x] `missionStore` 연동하여 `missionId`에 해당하는 미션 데이터 로드 확인.
-  - [ ] `MissionPanel.tsx` 컴포넌트 생성 및 미션 정보 표시 UI 구현 (인스타그램 스타일에 맞게).
-  - [ ] 인스타그램 피드/프로필 형태 기본 레이아웃 구성 (UI 구현 필요).
-  - [ ] `instagramStore` (가칭) 스토어 파일 생성 및 기본 상태/액션 정의 (필요시, 현재는 `commentStore`, `missionStore` 등 활용).
-- [ ] **2-2. 인스타그램 UI 구현:**
-  - [ ] `InstagramHeader.tsx` (가칭) 컴포넌트 생성 및 구현.
-  - [ ] `InstagramFeed.tsx` (가칭) 컴포넌트 생성 및 구현 (게시물 목록 표시).
-  - [ ] `InstagramPost.tsx` (가칭) 컴포넌트 생성 및 구현 (개별 게시물 UI).
-  - [ ] `InstagramPostInput.tsx` (가칭) 컴포넌트 생성 및 구현 (게시물 작성 UI).
-  - [ ] `InstagramCommentList.tsx` (가칭) 컴포넌트 생성 및 구현 (댓글 목록 UI).
-  - [ ] `ReactionStats.tsx` (가칭) 컴포넌트 생성 및 구현 (좋아요, 댓글 수 등 반응 표시).
-  - [ ] 위 컴포넌트들을 `InstagramActivityScene.tsx`에 통합하고 로직 연결.
-- [ ] **2-3. 콘텐츠 게시 시뮬레이션:**
-  - [ ] `InstagramPostInput.tsx`에서 텍스트 입력 및 이미지 선택 기능 구현.
-  - [ ] '게시' 버튼 UI 구현 (픽셀 아트 스타일).
-  - [ ] '게시' 버튼 클릭 시 `handlePostSubmit` 핸들러 호출 및 로직 연결.
-- [ ] **2-4. 기본 반응 표시:**
-  - [ ] `ReactionStats.tsx`에서 좋아요, 댓글 수, 팔로워 수 표시 UI 구현 (`missionStore` 연동).
-  - [ ] `InstagramCommentList.tsx`에서 댓글 목록 표시 UI 구현 (`commentStore` 연동).
+  - [x] `useParams` 훅 사용 확인.
+  - [x] `missionStore` 연동 확인.
+  - [x] `MissionPanel.tsx` 컴포넌트 생성 및 UI 구현 확인 (폰트/크기).
+  - [x] 2단 컬럼 레이아웃 적용 (`InstagramActivityScene.tsx`).
+  - [ ] `instagramStore` (가칭) 스토어 파일 생성 및 기본 상태/액션 정의 (필요시).
+- [x] **2-2. 인스타그램 UI 컴포넌트 생성 및 기본 통합:**
+  - [x] `InstagramHeader.tsx` 생성 및 기본 구조 작성 (오류 수정 완료).
+  - [x] `InstagramFeed.tsx` 생성 및 기본 구조 작성.
+  - [x] `InstagramPost.tsx` 생성 및 기본 구조 작성.
+  - [x] `InstagramPostInput.tsx` 생성 및 댓글 입력용으로 수정.
+  - [x] `InstagramCommentList.tsx` 생성 및 기본 구조/UI 구현 (오류 수정 완료).
+  - [x] `ReactionStats.tsx` 생성 및 기본 구조/UI 구현.
+  - [x] 위 컴포넌트들을 `InstagramActivityScene.tsx`에 통합 및 기본 연결 완료.
+- [ ] **2-3. 댓글 기능 구현:**
+  - [ ] `InstagramPostInput.tsx`: 댓글 입력 및 제출 기능 완성.
+  - [ ] `InstagramCommentList.tsx`: 댓글 및 대댓글 표시, 답글 달기 UI/기능 완성.
+  - [ ] `InstagramActivityScene.tsx`: 댓글/답글 제출 시 `handleCommentSubmit`/`handleReplySubmit` 핸들러 로직 확인 및 `commentStore` 연동.
+- [x] **2-4. 기본 반응 표시:**
+  - [x] `ReactionStats.tsx` UI 구현 및 데이터 연동 (`missionStore`).
+  - [x] `InstagramCommentList.tsx` UI 구현 및 데이터 연동 (`commentStore`).
+  - [ ] `InstagramPost.tsx`: 좋아요/댓글 수 등 반응 표시 UI 구현.
+  - [ ] `InstagramFeed.tsx`: `InstagramPost` 컴포넌트 사용하여 실제 게시물(현재는 댓글 데이터) 렌더링.
 - [ ] **2-5. 기본 LLM 연동 (조건 판별):**
-  - [ ] 게시물/댓글 제출 시, 해당 내용과 `missionStore`의 미션 조건(키워드, 해시태그 등)을 비교하는 로직 구현 (`handleSubmitAndGenerateAi` 내부 또는 별도 함수).
+  - [ ] 댓글/답글 제출 시, 해당 내용과 `missionStore`의 미션 조건(키워드, 해시태그 등)을 비교하는 로직 구현 (`handleSubmitAndGenerateAi` 내부 또는 별도 함수).
   - [ ] 조건 충족 여부에 따라 반응 수치(좋아요 등)를 기본적으로 업데이트하는 로직 구현 (`missionStore` 또는 `useArticleState` 활용).
+- [ ] **2-X. 콘텐츠 게시 시뮬레이션 (MVP 이후):**
+  - [ ] `InstagramPostInput.tsx`에서 이미지 선택 기능 구현.
+  - [ ] '게시' 버튼 클릭 시 `handlePostSubmit` 핸들러 호출 및 실제 게시물 생성/저장 로직 구현.
 
 ### Phase 3: 게임 루프 완성 및 MVP 마무리
 

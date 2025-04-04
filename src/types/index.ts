@@ -79,6 +79,8 @@ export interface ArticleReactions {
 export interface Mission {
   id: string;
   title: string;
+  nickname?: string; // 게시물 작성자 닉네임 (옵셔널)
+  profileImageUrl?: string; // 게시물 작성자 프로필 이미지 URL (옵셔널)
   goal?: {
     positive?: number;
     negative?: number;
