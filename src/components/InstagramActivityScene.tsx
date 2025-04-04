@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"; // useCallback 추가
 import { useParams, useNavigate } from "react-router-dom";
-// import styles from "./InstagramActivityScene.module.css"; // 새 CSS 모듈 경로 (아직 없음)
+import styles from "./InstagramActivityScene.module.css"; // CSS 모듈 import 추가
 import gameStyles from "./StoryScene.module.css"; // 공통 스타일은 유지
 
 // 필요한 타입 import
@@ -11,7 +11,8 @@ import useMissionData from "../hooks/useMissionData";
 import useArticleState from "../hooks/useArticleState"; // 좋아요/싫어요 로직은 유지될 수 있음
 import { useCommentStore } from "../stores/commentStore"; // 댓글 관련 로직은 유지
 import { useMissionStore } from "../stores/missionStore";
-// import useGeminiComments from "../hooks/useGeminiComments"; // CommentOverlay에서 사용하므로 제거
+import useMonologueManager from "../hooks/useMonologueManager"; // 독백 관리 훅 import
+import { playBgm, stopBgm } from "../utils/audioManager"; // audioManager 함수 import 추가
 
 // 새로 생성한 인스타그램 UI 컴포넌트 import
 import InstagramHeader from "./InstagramHeader";
@@ -24,6 +25,7 @@ import OpinionStats from "./OpinionStats"; // 여론 패널 import 추가
 import BottomNavBar from "./BottomNavBar"; // 하단 네비게이션 바 import 추가
 import StoriesBar from "./StoriesBar"; // 스토리 바 import 추가
 import CommentOverlay from "./CommentOverlay"; // 댓글 오버레이 import 추가
+import MonologueBox from "./MonologueBox"; // MonologueBox 컴포넌트 import 추가
 
 interface InstagramActivitySceneProps {
   onMissionComplete?: (success: boolean) => void;
@@ -52,16 +54,13 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
     remainingAttempts: attemptsLeft,
     isCompleted: isMissionOver,
     decreaseAttempt: decrementAttempts,
-    checkMissionCompletion,
     setMission,
+    missionSuccess, // missionSuccess 상태 추가
+    opinion, // opinion 상태는 missionStore에서 직접 가져옴
   } = useMissionStore();
 
   // 좋아요/싫어요 관련 핸들러만 가져옴
-  const { handleLikeArticle, handleDislikeArticle, setPredictedReactions } =
-    useArticleState(); // initialOpinion 인자 제거
-
-  // opinion 상태는 missionStore에서 직접 가져옴
-  const { opinion } = useMissionStore(); // 주석 제거
+  const { handleLikeArticle, handleDislikeArticle } = useArticleState(); // setPredictedReactions 제거 (CommentOverlay에서 처리)
 
   const { comments, setComments } = useCommentStore(); // addComment, addReply 제거
 
@@ -77,85 +76,66 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
     }
   }, [missionData, setMission]);
 
-  // AI 댓글 생성 훅 제거 (CommentOverlay에서 사용)
-  // const { isGeneratingComments, aiMonologue, triggerGenerateComments } = useGeminiComments();
-  // isGeneratingComments 상태는 gameStateStore 등에서 관리하거나, CommentOverlay 내부에서 관리하도록 변경 필요
-  const isGeneratingComments = false; // 임시값
-  const aiMonologue = ""; // 임시값
+  // AI 댓글 생성 관련 상태는 CommentOverlay에서 관리하므로 제거
+  const isGeneratingComments = useMissionStore(
+    (state) =>
+      state.remainingAttempts < (missionData?.totalAttempts ?? 0) &&
+      !state.isCompleted // AI 생성 중 상태 추정 (개선 필요)
+  );
+  const aiMonologue = null; // CommentOverlay에서 관리
 
-  // 결과 처리 로직 유지
-  const [missionResultMonologue, setMissionResultMonologue] = useState("");
+  // --- 독백 관리 훅 사용 ---
+  const { currentMonologue, isMonologueVisible, toggleMonologueVisibility } =
+    useMonologueManager({
+      isMissionLoading,
+      missionError,
+      initialMonologue,
+      isGeneratingComments, // 추정된 값 사용
+      aiMonologue, // null 전달
+      isMissionOver,
+      commentsLength: comments.length,
+    });
+
+  // 결과 처리 로직 수정
   useEffect(() => {
-    if (isMissionOver) {
-      // checkMissionCompletion 호출 시 인자 제거
-      const success = useMissionStore.getState().checkMissionCompletion();
-      setMissionResultMonologue(success ? "미션 성공!" : "미션 실패...");
-
+    // isMissionOver가 true이고 missionSuccess가 결정되었을 때 (null이 아닐 때) 네비게이션 실행
+    if (isMissionOver && missionSuccess !== null) {
       const navigateToResult = () => {
-        console.log("Navigating to result scene... Success:", success);
+        console.log("Navigating to result scene... Success:", missionSuccess); // 스토어의 missionSuccess 사용
         navigate("/result", {
           state: {
             missionId,
-            success: success ?? false,
+            success: missionSuccess, // 스토어의 missionSuccess 사용
             missionTitle: missionData?.title,
+            allComments: comments, // 댓글 기록 추가
           },
         });
         if (onMissionComplete) {
-          onMissionComplete(success ?? false);
+          onMissionComplete(missionSuccess ?? false); // missionSuccess 사용
         }
       };
-      const timer = setTimeout(navigateToResult, 2000);
+      const timer = setTimeout(navigateToResult, 2000); // 독백 표시 후 이동
       return () => clearTimeout(timer);
-    } else {
-      setMissionResultMonologue("");
     }
   }, [
     isMissionOver,
+    missionSuccess, // 의존성 배열에 missionSuccess 추가
     missionId,
     missionData?.title,
     onMissionComplete,
-    // opinion, // opinion은 더 이상 이 useEffect의 의존성이 아님 (missionStore에서 관리)
     navigate,
+    comments, // comments 의존성 추가
   ]);
 
-  // 독백 상태 관리 유지 (UI에서 표시 여부 결정)
-  const [currentMonologue, setCurrentMonologue] = useState("");
-  const prevIsGeneratingCommentsRef = useRef<boolean>(isGeneratingComments);
-
+  // BGM 재생/정지 로직 추가
   useEffect(() => {
-    const wasGenerating = prevIsGeneratingCommentsRef.current;
-    prevIsGeneratingCommentsRef.current = isGeneratingComments;
-
-    if (isMissionLoading) {
-      setCurrentMonologue("미션 데이터를 불러오는 중...");
-    } else if (missionError) {
-      setCurrentMonologue(`오류: ${missionError}`);
-    } else if (missionResultMonologue) {
-      setCurrentMonologue(missionResultMonologue);
-    } else if (wasGenerating && !isGeneratingComments) {
-      // 인스타그램 씬에 맞는 독백으로 변경 가능
-      setCurrentMonologue(
-        `AI 반응 생성 완료. 피드를 확인해보자... (${comments.length}개의 댓글)`
-      );
-    } else if (aiMonologue) {
-      setCurrentMonologue(aiMonologue);
-    } else {
-      setCurrentMonologue(initialMonologue ?? "");
-    }
-  }, [
-    isMissionLoading,
-    missionError,
-    missionResultMonologue,
-    // aiMonologue, // 제거됨
-    initialMonologue,
-    isGeneratingComments, // 임시값 사용
-    comments.length,
-  ]);
+    playBgm("mainTheme"); // 컴포넌트 마운트 시 mainTheme 재생
+    return () => {
+      stopBgm(); // 컴포넌트 언마운트 시 BGM 정지
+    };
+  }, []); // 빈 의존성 배열로 마운트/언마운트 시 한 번만 실행
 
   // 댓글/답글 관련 핸들러 제거 (CommentOverlay에서 처리)
-  // const handleSubmitAndGenerateAi = useCallback( ... );
-  // const handleCommentSubmit = useCallback( ... );
-  // const handleReplySubmit = useCallback( ... );
 
   // --- 로딩 및 오류 상태 표시 (CommentScene과 동일) ---
   if (isMissionLoading) {
@@ -195,34 +175,42 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
         <div className="mt-4">
           <OpinionStats opinion={opinion} attemptsLeft={attemptsLeft} />
         </div>
-        {/* 독백은 왼쪽 패널 하단에 고정? */}
-        {currentMonologue && (
-          <div className="mt-4 p-2 bg-muted text-muted-foreground rounded text-sm">
-            {currentMonologue}
-          </div>
-        )}
+        {/* 왼쪽 패널 하단의 독백 관련 코드 완전 제거 */}
       </aside>
 
       {/* 오른쪽 컬럼: 인스타그램 UI */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        {" "}
+        {/* relative 추가 */}
         <InstagramHeader />
         <StoriesBar /> {/* 스토리 바 추가 */}
+        {/* 독백 상자를 오른쪽 컬럼 상단으로 이동 */}
+        {isMonologueVisible && currentMonologue && (
+          <div className={styles.fixedMonologueContainer}>
+            {" "}
+            {/* 새 CSS 클래스 적용 */}
+            <MonologueBox text={currentMonologue} />
+          </div>
+        )}
         {/* 메인 콘텐츠 영역 (스크롤 가능) */}
-        <main className="flex-1 overflow-y-auto">
+        {/* pt-16은 독백 상자 높이에 따라 조정 필요 */}
+        <main className="flex-1 overflow-y-auto pt-16">
           {/* 게시물 피드 */}
           <InstagramFeed missionData={missionData} />{" "}
           {/* posts={comments} -> missionData={missionData} */}
           {/* 반응 통계 */}
           <ReactionStats likes={articleLikes} commentsCount={comments.length} />
           {/* 댓글 목록 및 입력창은 InstagramPost 내부에서 조건부 렌더링되므로 제거 */}
-          {/* <InstagramCommentList ... /> */}
-          {/* <InstagramPostInput ... /> */}
           {/* 로딩 또는 종료 상태 표시 */}
-          {/* isGeneratingComments 상태 관리 방식 변경 필요 */}
-          {/* {isGeneratingComments && ( ... )} */}
+          {isGeneratingComments && ( // 추정된 값 사용
+            <div className="p-3 text-center text-muted-foreground">
+              AI 댓글 생성 중...
+            </div>
+          )}
           {isMissionOver && (
+            // useMonologueManager에서 반환된 currentMonologue 사용
             <div className="p-3 text-center font-semibold">
-              {missionResultMonologue}
+              {currentMonologue}
             </div>
           )}
         </main>

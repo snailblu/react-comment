@@ -1,3 +1,12 @@
+/* Neo둥근모 Pro 폰트 정의 */
+@font-face {
+  font-family: "NeoDunggeunmoPro";
+  src: url("../assets/NeoDunggeunmoPro-Regular.ttf") format("truetype");
+  /* 필요시 다른 폰트 포맷(woff, woff2 등) 추가 */
+  font-weight: normal;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

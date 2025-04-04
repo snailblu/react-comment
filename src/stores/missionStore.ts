@@ -9,6 +9,7 @@ interface MissionState {
   articleLikes: number; // 현재 기사 좋아요 수
   articleDislikes: number; // 현재 기사 싫어요 수
   opinion: Opinion; // 여론 상태 추가
+  missionSuccess: boolean | null; // 미션 성공/실패 여부 상태 추가
   // TODO: 미션 관련 추가 상태 정의 (예: 진행률 등)
 }
 
@@ -52,6 +53,7 @@ export const useMissionStore = create<MissionState & MissionActions>(
     articleLikes: 0, // 초기 좋아요 0
     articleDislikes: 0, // 초기 싫어요 0
     opinion: { positive: 50, negative: 50 }, // 초기 여론 상태 추가
+    missionSuccess: null, // 초기값 null
     // TODO: 추가 상태 초기값 설정
 
     setMission: (mission) => {
@@ -67,6 +69,7 @@ export const useMissionStore = create<MissionState & MissionActions>(
         remainingAttempts: mission?.totalAttempts ?? 0,
         articleLikes: initialLikes,
         articleDislikes: initialDislikes,
+        missionSuccess: null, // 미션 설정 시 성공 여부 초기화
         // 초기 여론 계산 및 설정
         opinion: calculateOpinion(
           initialLikes,
@@ -75,7 +78,7 @@ export const useMissionStore = create<MissionState & MissionActions>(
         ),
       });
     },
-    completeMission: () => set({ isCompleted: true }),
+    completeMission: () => set({ isCompleted: true }), // 이 액션은 checkMissionCompletion으로 대체될 수 있음
     decreaseAttempt: () =>
       set((state) => ({
         remainingAttempts: Math.max(0, state.remainingAttempts - 1), // 0 미만으로 내려가지 않도록
@@ -125,15 +128,13 @@ export const useMissionStore = create<MissionState & MissionActions>(
       // currentOpinion 인자 제거
       const { currentMission, remainingAttempts, isCompleted, opinion } = get(); // 스토어에서 opinion 가져오기
 
-      // Only check if attempts are 0 or less, mission exists, and not already completed
+      // Only check if attempts are 0 or less, mission exists, and not already marked as completed
       if (remainingAttempts > 0 || !currentMission || isCompleted) {
-        return null; // Not applicable to check status now
+        // If already completed, return the stored success status
+        return isCompleted ? get().missionSuccess : null;
       }
 
-      // Mark mission as completed (regardless of success/failure)
-      set({ isCompleted: true });
-
-      // Determine success based on goals
+      // Determine success based on goals (before setting isCompleted)
       // Example: Check positive opinion goal
       const positiveGoal = currentMission.goal?.positive;
       let isSuccess = false; // Default to failure
@@ -153,9 +154,13 @@ export const useMissionStore = create<MissionState & MissionActions>(
       // TODO: Implement checks for other goal types (negative opinion, etc.)
 
       console.log(
-        `Mission ${currentMission.id} Completed. Success: ${isSuccess}`
+        `Mission ${currentMission.id} Completion Check Result. Success: ${isSuccess}`
       );
-      return isSuccess; // Return success status
+
+      // Mark mission as completed and store the success status
+      set({ isCompleted: true, missionSuccess: isSuccess });
+
+      return isSuccess; // Return the calculated success status
     },
     // TODO: 추가 액션 구현
   })

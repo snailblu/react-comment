@@ -115,12 +115,12 @@ const InstagramPost: React.FC<InstagramPostProps> = ({
             <div className="flex -space-x-2">
               <img
                 className="w-5 h-5 rounded-full border-2 border-background"
-                src="/logo192.png"
+                src="/default_profile_icon.png"
                 alt="User 1"
               />
               <img
                 className="w-5 h-5 rounded-full border-2 border-background"
-                src="/logo192.png"
+                src="/default_profile_icon.png"
                 alt="User 2"
               />
             </div>

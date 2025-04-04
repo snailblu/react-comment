@@ -5,12 +5,12 @@
     "nickname": "집사_김씨",
     "profileImageUrl": "/assets/dorim_smile.png",
     "goal": { "positive": 75 },
-    "keywords": ["#고양이간식", "#골드표", "#냥스타그램", "#집사추천"],
+    "keywords": ["#고양이간식", "#골드표", "#냥스타", "#집사추천"],
     "conditions": ["장점 어필", "경쟁 제품 간접 비교"],
-    "totalAttempts": 4,
+    "totalAttempts": 3,
     "articleTitle": "🚨집사들 주목🚨 츄르 대체할 인생 간식 찾음!",
     "articleContent": "우리 냥이가 입맛이 까다로워서 츄르도 잘 안 먹었는데, 골드표 간식은 환장하고 먹네요! 성분도 좋고 기호성도 최고👍 츄르보다 나은 듯? #고양이간식 #골드표 #냥스타그램 #집사추천",
-    "articleImage": "social_media_cozy.png",
+    "articleImage": "cat_eating_snack.png",
     "articleCreatedAt": "2025-04-04T10:00:00Z",
     "initialOpinion": { "positive": 55, "negative": 45 },
     "initialLikes": 12,
@@ -18,58 +18,56 @@
     "initialMonologue": "이번엔 고양이 간식 바이럴이군.",
     "initialComments": [
       {
-        "id": "tut-1",
-        "nickname": "지나가던",
-        "profileImageUrl": "/logo192.png",
-        "ip": "118.235",
-        "content": "얘가 누군데 자꾸 글 올라옴?",
-        "likes": 2,
+        "id": "cat-snack-1",
+        "nickname": "냥냥펀치",
+        "profileImageUrl": "/default_profile_icon.png",
+        "ip": "121.170",
+        "content": "오 이거 좋아보이네요! 저희 냥이도 입 짧은데 한번 사봐야겠어요.",
+        "likes": 7,
         "is_player": false,
-        "created_at": "2025-03-28T18:08:45Z"
+        "created_at": "2025-04-04T10:05:10Z"
       },
       {
-        "id": "tut-1-reply",
-        "parentId": "tut-1",
-        "nickname": "정보봇",
-        "profileImageUrl": "/logo192.png",
-        "ip": "121.165",
-        "content": "ㄴ 도림이라고 새로 데뷔한 아이돌이래요!",
+        "id": "cat-snack-2",
+        "nickname": "의심많은집사",
+        "profileImageUrl": "/default_profile_icon.png",
+        "ip": "223.38",
+        "content": "광고 티 너무 나는거 아니냐? ㅋㅋㅋ 성분 진짜 좋음?",
         "likes": 3,
         "is_player": false,
-        "created_at": "2025-03-28T18:09:00Z",
-        "isReply": true
+        "created_at": "2025-04-04T10:05:45Z"
       },
       {
-        "id": "tut-2",
-        "nickname": "ㅇㅇ",
-        "profileImageUrl": "/logo192.png",
-        "ip": "211.176",
-        "content": "관심 없는데...",
-        "likes": 1,
-        "is_player": false,
-        "created_at": "2025-03-28T18:08:50Z"
-      },
-      {
-        "id": "tut-3",
-        "nickname": "도림팬",
-        "profileImageUrl": "/assets/dorim_smile.png",
-        "ip": "175.198",
-        "content": "도림이 힘내! 항상 응원하고 있어!",
+        "id": "cat-snack-2-reply",
+        "parentId": "cat-snack-2",
+        "nickname": "팩트체커",
+        "profileImageUrl": "/default_profile_icon.png",
+        "ip": "118.235",
+        "content": "ㄴ 상세 페이지 보니까 성분 괜찮던데요? 저도 속는셈치고 사봄",
         "likes": 5,
         "is_player": false,
-        "created_at": "2025-03-28T18:08:55Z"
+        "created_at": "2025-04-04T10:06:20Z",
+        "isReply": true
       },
       {
-        "id": "tut-3-reply",
-        "parentId": "tut-3",
-        "nickname": "나도팬",
-        "profileImageUrl": "/logo192.png",
-        "ip": "220.85",
-        "content": "ㄴ 맞아요! 우리 도림이 꽃길만 걷자🌸",
+        "id": "cat-snack-3",
+        "nickname": "궁금해요",
+        "profileImageUrl": "/default_profile_icon.png",
+        "ip": "175.223",
+        "content": "츄르보다 낫다고요? 가격은 어떤가요?",
         "likes": 4,
         "is_player": false,
-        "created_at": "2025-03-28T18:09:10Z",
-        "isReply": true
+        "created_at": "2025-04-04T10:07:00Z"
+      },
+      {
+        "id": "cat-snack-4",
+        "nickname": "지나가는냥덕",
+        "profileImageUrl": "/assets/dorim_smile.png",
+        "ip": "211.36",
+        "content": "사진 속 냥이 너무 귀엽다 ㅠㅠㅠ",
+        "likes": 9,
+        "is_player": false,
+        "created_at": "2025-04-04T10:07:30Z"
       }
     ]
   }

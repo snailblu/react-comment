@@ -8,6 +8,8 @@ import { useMissionStore } from "../stores/missionStore"; // missionStore 추가
 import useGeminiComments from "../hooks/useGeminiComments"; // useGeminiComments 추가
 import useArticleState from "../hooks/useArticleState"; // setPredictedReactions 가져오기 위해 추가
 import { Comment, ArticleReactions as ArticleReactionsType } from "../types"; // 타입 추가
+// import MonologueBox from "./MonologueBox"; // MonologueBox 컴포넌트 import 제거
+// import useMonologueManager from "../hooks/useMonologueManager"; // 독백 관리 훅 import 제거
 import styles from "./CommentOverlay.module.css"; // CSS 모듈 import
 
 const CommentOverlay: React.FC = () => {
@@ -25,9 +27,18 @@ const CommentOverlay: React.FC = () => {
     checkMissionCompletion,
     articleLikes, // AI 연동에 필요
     articleDislikes, // AI 연동에 필요
+    // missionStore에서 초기 독백 가져오기 (CommentScene과 동일하게)
+    currentMission,
   } = useMissionStore();
-  const { isGeneratingComments, triggerGenerateComments } = useGeminiComments();
+  const {
+    isGeneratingComments,
+    triggerGenerateComments,
+  } = useGeminiComments(); // aiMonologue 제거
   const { setPredictedReactions } = useArticleState(); // 예측 반응 설정 함수
+
+  // --- 독백 관리 훅 호출 제거 ---
+  // const { currentMonologue, isMonologueVisible, toggleMonologueVisibility } =
+  //   useMonologueManager({ ... });
 
   // TODO: activePostIdForComments(missionId)를 사용하여 해당 게시물의 댓글만 필터링
   const filteredComments = comments; // 임시로 모든 댓글 표시
@@ -61,48 +72,63 @@ const CommentOverlay: React.FC = () => {
           let newCommentsList = [...baseComments];
           const tempGeneratedComments: Comment[] = [];
           aiResult.generatedComments.forEach((newComment) => {
-            if (newComment.isReply && newComment.parentId) {
-              const targetIdentifier = newComment.parentId;
-              let actualParentId: string | undefined = undefined;
-              let parentComment: Comment | undefined = undefined;
-              parentComment = [
-                ...newCommentsList,
-                ...tempGeneratedComments,
-              ].find((c) => c.id === targetIdentifier);
-              if (!parentComment) {
+            // Check if newComment is a valid comment object (e.g., has a 'content' property)
+            // and not the reaction prediction object mistakenly included in the array.
+            if (
+              typeof newComment === "object" &&
+              newComment !== null &&
+              "content" in newComment
+            ) {
+              if (newComment.isReply && newComment.parentId) {
+                const targetIdentifier = newComment.parentId;
+                let actualParentId: string | undefined = undefined;
+                let parentComment: Comment | undefined = undefined;
                 parentComment = [
                   ...newCommentsList,
                   ...tempGeneratedComments,
-                ].find((c) => c.nickname === targetIdentifier);
-              }
-              if (parentComment) {
-                actualParentId = parentComment.id;
-                newComment.parentId = actualParentId;
-                const parentIndex = newCommentsList.findIndex(
-                  (comment) => comment.id === actualParentId
-                );
-                if (parentIndex !== -1) {
-                  let insertionIndex = parentIndex + 1;
-                  while (
-                    insertionIndex < newCommentsList.length &&
-                    newCommentsList[insertionIndex].isReply &&
-                    newCommentsList[insertionIndex].parentId === actualParentId
-                  ) {
-                    insertionIndex++;
+                ].find((c) => c.id === targetIdentifier);
+                if (!parentComment) {
+                  parentComment = [
+                    ...newCommentsList,
+                    ...tempGeneratedComments,
+                  ].find((c) => c.nickname === targetIdentifier);
+                }
+                if (parentComment) {
+                  actualParentId = parentComment.id;
+                  newComment.parentId = actualParentId;
+                  const parentIndex = newCommentsList.findIndex(
+                    (comment) => comment.id === actualParentId
+                  );
+                  if (parentIndex !== -1) {
+                    let insertionIndex = parentIndex + 1;
+                    while (
+                      insertionIndex < newCommentsList.length &&
+                      newCommentsList[insertionIndex].isReply &&
+                      newCommentsList[insertionIndex].parentId ===
+                        actualParentId
+                    ) {
+                      insertionIndex++;
+                    }
+                    newCommentsList.splice(insertionIndex, 0, newComment);
+                  } else {
+                    tempGeneratedComments.push(newComment);
                   }
-                  newCommentsList.splice(insertionIndex, 0, newComment);
                 } else {
+                  console.warn(
+                    `Parent comment target "${targetIdentifier}" provided by AI does not match any existing ID or Nickname. Appending reply as a regular comment.`
+                  );
+                  newComment.parentId = undefined;
                   tempGeneratedComments.push(newComment);
                 }
               } else {
-                console.warn(
-                  `Parent comment target "${targetIdentifier}" provided by AI does not match any existing ID or Nickname. Appending reply as a regular comment.`
-                );
-                newComment.parentId = undefined;
                 tempGeneratedComments.push(newComment);
               }
             } else {
-              tempGeneratedComments.push(newComment);
+              // If it's not a valid comment (likely the reaction object), skip it.
+              console.warn(
+                "Skipping invalid item in generatedComments:",
+                newComment
+              );
             }
           });
           newCommentsList.push(
@@ -188,6 +214,8 @@ const CommentOverlay: React.FC = () => {
       }`}
       onClick={closeCommentOverlay} // 배경 클릭 시 닫기
     >
+      {/* 독백 박스 렌더링 제거 */}
+      {/* {isMonologueVisible && currentMonologue && ( ... )} */}
       {/* 댓글 컨텐츠 영역 */}
       <div
         className={`${styles.commentContent} ${

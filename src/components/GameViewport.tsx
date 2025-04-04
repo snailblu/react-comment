@@ -50,18 +50,18 @@ const GameViewport: React.FC<GameViewportProps> = ({
       // setOffsetX(newOffsetX); // 제거
       // setOffsetY(newOffsetY); // 제거
 
-      // 디버깅 로그 수정: scale 값만 로깅
-      console.log(
-        `Window: ${windowWidth}x${windowHeight} (Ratio: ${windowRatio.toFixed(
-          2
-        )})`
-      );
-      console.log(
-        `Target: ${targetWidth}x${targetHeight} (Ratio: ${targetRatio.toFixed(
-          2
-        )})`
-      );
-      console.log(`Calculated Scale: ${newScale.toFixed(4)}`);
+      // 디버깅 로그 제거
+      // console.log(
+      //   `Window: ${windowWidth}x${windowHeight} (Ratio: ${windowRatio.toFixed(
+      //     2
+      //   )})`
+      // );
+      // console.log(
+      //   `Target: ${targetWidth}x${targetHeight} (Ratio: ${targetRatio.toFixed(
+      //     2
+      //   )})`
+      // );
+      // console.log(`Calculated Scale: ${newScale.toFixed(4)}`);
       // console.log(`Applying to container: top=${newOffsetY.toFixed(2)}px, left=${newOffsetX.toFixed(2)}px, scale=${newScale.toFixed(4)}`); // 제거
     };
 

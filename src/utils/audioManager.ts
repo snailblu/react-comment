@@ -36,7 +36,14 @@ const createHowlInstance = (options: HowlOptions): Howl | null => {
 
 const bgmTracks = {
   mainTheme: createHowlInstance({
-    src: [getAudioPath("Forest - Under The Great Tree (Extended).ogg")],
+    src: [getAudioPath("main_theme.ogg")], // 경로 수정
+    loop: true,
+    volume: 0,
+    autoplay: false,
+  }),
+  // tenseTheme 추가
+  tenseTheme: createHowlInstance({
+    src: [getAudioPath("tense_bgm.ogg")],
     loop: true,
     volume: 0,
     autoplay: false,

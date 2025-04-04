@@ -32,7 +32,7 @@ try {
     // Do not throw error here, let the handler manage it later if key is still missing
   } else {
     genAI = new GoogleGenerativeAI(API_KEY);
-    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     console.log("[API Init] Gemini API client initialized successfully.");
   }
 } catch (error) {

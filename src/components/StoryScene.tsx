@@ -59,17 +59,18 @@ const StoryScene: React.FC = () => {
   // --- New handlers using Zustand store ---
   const handleNextClick = useCallback(() => {
     signalInteraction();
-    playSfx("click");
+    // playSfx("click"); // 클릭 효과음 제거
 
     const nextSceneType = advanceDialogue(); // Call store action
 
     if (nextSceneType === "comment" && episodeData?.mission_id) {
+      // Keep "comment" check if advanceDialogue returns this string
       console.log(
-        "Transitioning to Comment Scene for mission:",
+        "Transitioning to Instagram Scene for mission:", // Log message updated
         episodeData.mission_id
       );
-      setCurrentScene("comment"); // Update global scene state if needed
-      navigate(`/comment/${episodeData.mission_id}`);
+      setCurrentScene("instagram"); // Update global scene state to "instagram"
+      navigate(`/instagram/${episodeData.mission_id}`); // Navigate to Instagram scene
     } else if (nextSceneType) {
       console.warn(
         `Unhandled next scene type: ${nextSceneType}. Navigating to title.`
@@ -96,7 +97,7 @@ const StoryScene: React.FC = () => {
   const handleChoiceClick = useCallback(
     (choiceId: string | number) => {
       signalInteraction();
-      playSfx("click");
+      // playSfx("click"); // 클릭 효과음 제거
 
       // Find the selected choice object from the current line's choices
       const currentLine = scriptData?.[currentDialogueIndex];
@@ -113,12 +114,13 @@ const StoryScene: React.FC = () => {
       const nextSceneType = advanceDialogue(selectedChoice); // Pass the found object
 
       if (nextSceneType === "comment" && episodeData?.mission_id) {
+        // Keep "comment" check if advanceDialogue returns this string
         console.log(
-          "Transitioning to Comment Scene after choice for mission:",
+          "Transitioning to Instagram Scene after choice for mission:", // Log message updated
           episodeData.mission_id
         );
-        setCurrentScene("comment");
-        navigate(`/comment/${episodeData.mission_id}`);
+        setCurrentScene("instagram"); // Update global scene state to "instagram"
+        navigate(`/instagram/${episodeData.mission_id}`); // Navigate to Instagram scene
       } else if (nextSceneType) {
         console.warn(
           `Unhandled next scene type after choice: ${nextSceneType}. Navigating to title.`
@@ -143,10 +145,10 @@ const StoryScene: React.FC = () => {
     ]
   );
 
-  // --- BGM 자동 재생 시도 및 정리 --- (기존 유지)
+  // --- BGM 자동 재생 시도 및 정리 ---
   useEffect(() => {
-    console.log("StoryScene 마운트 - BGM 재생 시도");
-    playBgm("mainTheme");
+    console.log("StoryScene 마운트 - tenseTheme BGM 재생 시도");
+    playBgm("tenseTheme"); // BGM 키를 "tenseTheme"으로 변경
 
     return () => {
       console.log("StoryScene 언마운트 - BGM 정지");
@@ -214,11 +216,12 @@ const StoryScene: React.FC = () => {
         {/* 배경 표시 (currentLine.background 우선, 없으면 roomBackground 사용) */}
         <Background imageUrl={currentLine.background || roomBackground} />
 
-        {/* 캐릭터 표시 */}
+        {/* 캐릭터 표시 (기본 아이콘 경로가 아닐 때만 렌더링) */}
         {currentLine.character &&
           currentLine.character !== "나" &&
           currentLine.type !== "narrator" &&
-          characterImageUrl && (
+          characterImageUrl &&
+          characterImageUrl !== "/default_profile_icon.png" && ( // 기본 아이콘 경로 체크 추가
             <Character
               imageUrl={characterImageUrl}
               name={currentLine.character} // non-null assertion 제거 (위에서 체크)

@@ -1,8 +1,10 @@
 .monologueBoxContainer {
   position: fixed; /* 화면 기준 고정 위치 */
-  bottom: 20px; /* 하단에서 20px */
+  top: 20px; /* 하단에서 20px */
   left: 50%; /* 가로 중앙 정렬을 위해 왼쪽에서 50% 이동 */
-  transform: translateX(-50%); /* 자신의 너비 절반만큼 왼쪽으로 이동하여 중앙 정렬 */
+  transform: translateX(
+    -50%
+  ); /* 자신의 너비 절반만큼 왼쪽으로 이동하여 중앙 정렬 */
   width: 80%; /* 화면 너비의 80% */
   max-width: 800px; /* 최대 너비 제한 */
   background-color: rgba(0, 0, 0, 0.8); /* 반투명 검은색 배경 */

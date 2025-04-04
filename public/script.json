@@ -3,26 +3,102 @@
     "id": "123e4567-e89b-12d3-a456-426614174000",
     "title": "튜토리얼: 도림과의 만남",
     "intro_dialogues": [
-      { "id": "t1", "type": "narrator", "text": "평범한 어느 날, 갑자기 낯선 사람이 내 앞에 나타났다." },
-      { "id": "t2", "type": "dialogue", "character": "도림", "expression": "sad", "text": "저기... 혹시 세영 씨 맞으신가요?" },
-      { "id": "t3", "type": "dialogue", "character": "세영", "text": "네? 맞는데요... 누구세요?" },
-      { "id": "t4", "type": "dialogue", "character": "도림", "expression": "normal", "text": "저는 도림이라고 해요. 당신의 도움이 절실히 필요해서 찾아왔어요." },
-      { "id": "t5", "type": "dialogue", "character": "세영", "text": "제 도움이요? 제가 뭘 할 수 있다고..." },
-      { "id": "t6", "type": "dialogue", "character": "도림", "expression": "smile", "text": "당신은... 특별한 힘을 가지고 있잖아요. 순식간에 여론을 움직일 수 있는 힘이요." },
-      { "id": "t7", "type": "dialogue", "character": "세영", "text": "네?! 그걸 어떻게...?" },
-      { "id": "t8", "type": "dialogue", "character": "도림", "expression": "sad", "text": "부탁이에요. 제발 저희를 도와주세요!" },
+      {
+        "id": "t1",
+        "type": "narrator",
+        "text": "평범한 어느 날, 갑자기 낯선 사람이 내 앞에 나타났다."
+      },
+      {
+        "id": "t2",
+        "type": "dialogue",
+        "character": "도림",
+        "expression": "sad",
+        "text": "저기... 혹시 세영 씨 맞으신가요?"
+      },
+      {
+        "id": "t3",
+        "type": "dialogue",
+        "character": "세영",
+        "text": "네? 맞는데요... 누구세요?"
+      },
+      {
+        "id": "t4",
+        "type": "dialogue",
+        "character": "도림",
+        "expression": "normal",
+        "text": "저는 도림이라고 해요. 당신의 도움이 절실히 필요해서 찾아왔어요."
+      },
+      {
+        "id": "t5",
+        "type": "dialogue",
+        "character": "세영",
+        "text": "제 도움이요? 제가 뭘 할 수 있다고..."
+      },
+      {
+        "id": "t6",
+        "type": "dialogue",
+        "character": "도림",
+        "expression": "smile",
+        "text": "당신은... 특별한 힘을 가지고 있잖아요. 순식간에 여론을 움직일 수 있는 힘이요."
+      },
+      {
+        "id": "t7",
+        "type": "dialogue",
+        "character": "세영",
+        "text": "네?! 그걸 어떻게...?"
+      },
+      {
+        "id": "t8",
+        "type": "dialogue",
+        "character": "도림",
+        "expression": "sad",
+        "text": "부탁이에요. 제발 저희를 도와주세요!"
+      },
       {
         "id": "t9_choice",
         "type": "choice",
         "choices": [
-          { "id": "tc1", "text": "무슨 일인지 자세히 설명해주세요.", "nextId": "t10_common" },
-          { "id": "tc2", "text": "제가 왜 당신을 도와야 하죠?", "nextId": "t10_common" }
+          {
+            "id": "tc1",
+            "text": "무슨 일인지 자세히 설명해주세요.",
+            "nextId": "t10_common"
+          },
+          {
+            "id": "tc2",
+            "text": "제가 왜 당신을 도와야 하죠?",
+            "nextId": "t10_common"
+          }
         ]
       },
-      { "id": "t10_common", "type": "dialogue", "character": "도림", "expression": "normal", "text": "시간이 없어요. 일단 제 이야기를 들어보세요.", "nextId": "t11" },
-      { "id": "t11", "type": "dialogue", "character": "세영", "text": "이야기라니... 갑자기 무슨..." },
-      { "id": "t12", "type": "dialogue", "character": "도림", "expression": "sad", "text": "지금 설명하기엔 너무 길어요. 하지만 정말 중요한 일이에요." },
-      { "id": "t13", "type": "dialogue", "character": "도림", "expression": "smile", "text": "자, 얼른 가요!", "nextScene": "comment" }
+      {
+        "id": "t10_common",
+        "type": "dialogue",
+        "character": "도림",
+        "expression": "normal",
+        "text": "시간이 없어요. 일단 제 이야기를 들어보세요.",
+        "nextId": "t11"
+      },
+      {
+        "id": "t11",
+        "type": "dialogue",
+        "character": "세영",
+        "text": "이야기라니... 갑자기 무슨..."
+      },
+      {
+        "id": "t12",
+        "type": "dialogue",
+        "character": "도림",
+        "expression": "sad",
+        "text": "지금 설명하기엔 너무 길어요. 하지만 정말 중요한 일이에요."
+      },
+      {
+        "id": "t13",
+        "type": "dialogue",
+        "character": "도림",
+        "expression": "smile",
+        "text": "자, 얼른 가요!",
+        "nextScene": "comment"
+      }
     ],
     "ending_dialogues": [],
     "mission_id": "initial_mission"

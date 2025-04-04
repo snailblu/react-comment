@@ -3,7 +3,7 @@
   padding: 15px 20px;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  font-family: 'Arial', sans-serif; /* 좀 더 깔끔한 폰트 (예시) */
+  /* font-family: 'Arial', sans-serif; 제거하여 전역 폰트 상속 */
 }
 
 .title {

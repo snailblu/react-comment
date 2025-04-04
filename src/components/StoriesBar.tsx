@@ -13,14 +13,34 @@ const dummyStories: StoryItem[] = [
   {
     id: "myStory",
     nickname: "Your story",
-    profileImageUrl: "/assets/dorim_smile.png",
+    profileImageUrl: "/default_profile_icon.png", // 기본 아이콘 경로로 변경
     isOwnStory: true,
   },
-  { id: "user1", nickname: "oliver", profileImageUrl: "/logo192.png" },
-  { id: "user2", nickname: "andrew", profileImageUrl: "/logo192.png" },
-  { id: "user3", nickname: "grace", profileImageUrl: "/logo192.png" },
-  { id: "user4", nickname: "samuel", profileImageUrl: "/logo192.png" },
-  { id: "user5", nickname: "maria", profileImageUrl: "/logo192.png" },
+  {
+    id: "user1",
+    nickname: "oliver",
+    profileImageUrl: "/default_profile_icon.png",
+  },
+  {
+    id: "user2",
+    nickname: "andrew",
+    profileImageUrl: "/default_profile_icon.png",
+  },
+  {
+    id: "user3",
+    nickname: "grace",
+    profileImageUrl: "/default_profile_icon.png",
+  },
+  {
+    id: "user4",
+    nickname: "samuel",
+    profileImageUrl: "/default_profile_icon.png",
+  },
+  {
+    id: "user5",
+    nickname: "maria",
+    profileImageUrl: "/default_profile_icon.png",
+  },
 ];
 
 const StoriesBar: React.FC = () => {

@@ -11,6 +11,16 @@
   transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; /* 전환 효과 */
 }
 
+/* 독백 박스 컨테이너 스타일 추가 */
+.monologueContainer {
+  position: absolute; /* 오버레이 내에서 절대 위치 */
+  top: 1rem; /* 상단 여백 */
+  left: 1rem; /* 왼쪽 여백 */
+  right: 1rem; /* 오른쪽 여백 */
+  z-index: 50; /* 댓글 컨텐츠보다 위에 표시 */
+  /* 필요에 따라 추가 스타일링 (예: max-width) */
+}
+
 .overlayBackdropVisible {
   opacity: 1; /* 보이게 */
   visibility: visible; /* 보이게 */

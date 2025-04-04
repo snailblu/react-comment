@@ -44,7 +44,7 @@ const CommentItem: React.FC<{
         {/* 이미지와 내용을 묶는 flex 컨테이너 추가 */}
         {/* 프로필 이미지 */}
         <img
-          src={comment.profileImageUrl || "/logo192.png"} // 기본 이미지 사용
+          src={comment.profileImageUrl || "/default_profile_icon.png"} // 기본 이미지를 default_profile_icon.png로 변경
           alt={comment.nickname || "익명"}
           className="w-6 h-6 rounded-full flex-shrink-0 mt-0.5" // 크기 및 마진 조정
         />

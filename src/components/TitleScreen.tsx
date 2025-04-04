@@ -1,8 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react"; // useEffect 추가
 import { Link } from "react-router-dom";
+import { playBgm, stopBgm } from "../utils/audioManager"; // audioManager 함수 import
 // import styles from './TitleScreen.module.css'; // CSS 모듈 사용 중지
 
 function TitleScreen() {
+  // BGM 재생/정지 로직 추가
+  useEffect(() => {
+    playBgm("mainTheme"); // 컴포넌트 마운트 시 mainTheme 재생
+    return () => {
+      stopBgm(); // 컴포넌트 언마운트 시 BGM 정지
+    };
+  }, []); // 빈 의존성 배열로 마운트/언마운트 시 한 번만 실행
+
   return (
     // Neo둥근모 Pro 폰트 적용
     // 배경 이미지 적용 및 중앙 정렬

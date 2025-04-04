@@ -1,0 +1,19 @@
+/* InstagramActivityScene.module.css */
+
+.fixedMonologueContainer {
+  position: absolute; /* 오른쪽 컬럼 내에서 절대 위치 */
+  top: 4rem; /* 위쪽으로 이동 (64px, 필요시 조정) */
+  left: 0;
+  right: 0;
+  z-index: 50; /* 댓글 오버레이(40)보다 높게 설정 */
+  padding: 0.75rem; /* p-3, 내부 MonologueBox와 겹치지 않도록 */
+  /* 배경색이나 다른 스타일은 MonologueBox 자체에서 처리 */
+  pointer-events: none; /* 아래 컨텐츠 클릭 가능하도록 */
+}
+
+/* MonologueBox 자체에 pointer-events: auto; 를 추가해야 할 수 있음 */
+.fixedMonologueContainer > * {
+  pointer-events: auto;
+}
+
+/* 주석 처리된 블록 제거 */

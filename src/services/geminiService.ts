@@ -123,3 +123,88 @@ export const generateAiComments = async (
     };
   }
 };
+
+// --- 피드백 생성 함수 추가 ---
+
+// 피드백 응답 타입 정의
+interface FeedbackResponse {
+  npc_name: string;
+  message: string;
+  error?: string; // 오류 메시지 필드 추가
+}
+
+/**
+ * Vercel Serverless Function을 호출하여 AI 피드백을 생성합니다.
+ * @param articleTitle 기사 제목
+ * @param articleContent 기사 본문
+ * @param allComments 전체 댓글 목록
+ * @param missionSuccess 미션 성공 여부
+ * @returns 서버로부터 받은 AI 피드백 또는 오류 메시지
+ */
+export const generateAiFeedback = async (
+  articleTitle: string,
+  articleContent: string,
+  allComments: Comment[],
+  missionSuccess: boolean
+): Promise<FeedbackResponse> => {
+  try {
+    console.log(
+      `Requesting AI feedback via serverless function for article: ${articleTitle}`
+    );
+
+    // Use relative path for API calls
+    const apiUrl = "/api/generate-feedback"; // 새 엔드포인트
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        articleTitle,
+        articleContent,
+        allComments,
+        missionSuccess,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: "Failed to parse error response." }));
+      console.error(
+        `Serverless feedback function error: ${response.status} ${response.statusText}`,
+        errorData
+      );
+      return {
+        npc_name: "Error",
+        message: `서버 오류 (${response.status}): ${
+          errorData?.error || response.statusText
+        }`,
+      };
+    }
+
+    const data: FeedbackResponse = await response.json();
+    console.log("Received feedback response from serverless function:", data);
+
+    if (data.error) {
+      console.error(
+        "Serverless feedback function returned an error:",
+        data.error
+      );
+      return { npc_name: "Error", message: data.error };
+    }
+
+    return data; // 성공 시 { npc_name: "X", message: "..." } 반환 예상
+  } catch (error) {
+    console.error("Failed to call serverless feedback function:", error);
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "클라이언트 측에서 피드백 함수 호출 중 알 수 없는 오류 발생.";
+    return {
+      npc_name: "Error",
+      message: `네트워크 또는 클라이언트 오류: ${errorMessage}`,
+    };
+  }
+};
