@@ -15,7 +15,7 @@ i18n
   // init i18next
   // for all options read: https://www.i18next.com/overview/configuration-options
   .init({
-    debug: process.env.NODE_ENV === "development", // Log i18n events in development
+    debug: false, // Disable i18n debug logging
     fallbackLng: "ko", // Use Korean as fallback language
     supportedLngs: ["ko", "en", "zh"], // Supported languages
     interpolation: {

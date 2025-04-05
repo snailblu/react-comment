@@ -109,11 +109,7 @@ const useMissionData = (
 
         // Translate the fetched data
         const translatedMissionData = translateMissionData(rawMissionData);
-        // Log translated data before setting state
-        console.log(
-          "useMissionData: Translated Data:",
-          JSON.stringify(translatedMissionData).substring(0, 500) + "..."
-        ); // Log first 500 chars
+        // console.log("useMissionData: Translated Data:", JSON.stringify(translatedMissionData).substring(0, 500) + "..."); // Remove log
 
         console.log(
           `useMissionData: Initializing with translated data for mission ${missionId}`,

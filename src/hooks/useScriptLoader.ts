@@ -79,11 +79,7 @@ const useScriptLoader = () => {
       .then((rawData) => {
         // Translate the fetched data
         const translatedData = translateScriptData(rawData);
-        // Log translated data before setting state
-        console.log(
-          "useScriptLoader: Translated Data:",
-          JSON.stringify(translatedData).substring(0, 500) + "..."
-        ); // Log first 500 chars
+        // console.log("useScriptLoader: Translated Data:", JSON.stringify(translatedData).substring(0, 500) + "..."); // Remove log
         setScriptData(translatedData);
         setIsLoadingScript(false);
         console.log(
