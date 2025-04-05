@@ -77,8 +77,8 @@ const useScriptLoader = () => {
       `useScriptLoader: 스크립트 로딩 시작... (언어: ${i18n.language})`
     );
     setIsLoadingScript(true); // Set loading true when language changes
-    // Electron 환경 호환성을 위해 상대 경로 사용
-    fetch("./script.json")
+    // Use absolute path from the public folder root
+    fetch("/script.json")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

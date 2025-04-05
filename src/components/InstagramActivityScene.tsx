@@ -42,7 +42,7 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
   // --- Custom Hooks 사용 (CommentScene과 동일) ---
   const {
     missionData,
-    initialComments,
+    // initialComments, // Removed, store initialized in useMissionData
     // initialOpinion, // 사용하지 않으므로 제거
     initialMonologue,
     totalAttempts,
@@ -65,19 +65,20 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
   // const { handleLikeArticle, handleDislikeArticle } = useArticleState(); // 사용하지 않으므로 제거
   useArticleState(); // Hook 호출은 유지 (내부 로직이 필요할 수 있음)
 
-  const { comments, setComments } = useCommentStore(); // addComment, addReply 제거
+  const { comments } = useCommentStore(); // setComments, addComment, addReply 제거
+
+  // useEffect(() => { // Removed, store initialized in useMissionData
+  //   if (initialComments) {
+  //     setComments(initialComments);
+  //   }
+  // }, [initialComments, setComments]);
 
   useEffect(() => {
-    if (initialComments) {
-      setComments(initialComments);
-    }
-  }, [initialComments, setComments]);
-
-  useEffect(() => {
+    // Removed, store initialized in useMissionData
     if (missionData) {
       setMission(missionData);
     }
-  }, [missionData, setMission]);
+  }, [missionData]); // setMission 제거
 
   // AI 댓글 생성 관련 상태는 CommentOverlay에서 관리하므로 제거
   const isGeneratingComments = useMissionStore(

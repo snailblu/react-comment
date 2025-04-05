@@ -36,7 +36,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   // --- Custom Hooks 사용 ---
   const {
     missionData,
-    initialComments,
+    // initialComments, // Removed, store initialized in useMissionData
     // initialOpinion, // 사용하지 않으므로 제거 (초기 opinion 값은 missionStore 초기화에 사용될 수 있음)
     initialMonologue,
     totalAttempts,
@@ -61,21 +61,21 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   const { handleLikeArticle, handleDislikeArticle, setPredictedReactions } =
     useArticleState();
 
-  const { comments, setComments, addComment, addReply } = useCommentStore();
+  const { comments, setComments, addComment, addReply } = useCommentStore(); // setComments 다시 추가
 
-  // Initialize comment store with initial comments from mission data
-  useEffect(() => {
-    if (initialComments) {
-      setComments(initialComments);
-    }
-  }, [initialComments, setComments]);
+  // Initialize comment store with initial comments from mission data - Removed, handled in useMissionData
+  // useEffect(() => {
+  //   if (initialComments) {
+  //     setComments(initialComments);
+  //   }
+  // }, [initialComments, setComments]);
 
-  // Initialize mission store when missionData loads
-  useEffect(() => {
-    if (missionData) {
-      setMission(missionData); // 스토어 상태 초기화 (opinion 포함)
-    }
-  }, [missionData, setMission]);
+  // Initialize mission store when missionData loads - Removed, handled in useMissionData
+  // useEffect(() => {
+  //   if (missionData) {
+  //     setMission(missionData); // 스토어 상태 초기화 (opinion 포함)
+  //   }
+  // }, [missionData, setMission]);
 
   // sortOrder와 handleSortChange는 로컬 상태로 관리
   const [sortOrder, setSortOrder] = useState("등록순");
@@ -244,7 +244,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
               (tc) => !newCommentsList.some((nc) => nc.id === tc.id)
             )
           );
-          setComments(newCommentsList);
+          setComments(newCommentsList); // setComments 호출 복원
         }
 
         if (aiResult.predictedAddedReactions) {
@@ -268,7 +268,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
       articleLikes,
       articleDislikes,
       triggerGenerateComments,
-      setComments,
+      setComments, // setComments 의존성 추가
       setPredictedReactions,
       checkMissionCompletion, // 의존성 배열에 추가
     ]

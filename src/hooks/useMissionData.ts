@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react"; // Import useCallback
 import { useTranslation } from "react-i18next"; // Import useTranslation
 import { Mission, Comment, Opinion } from "../types";
+import { useCommentStore } from "../stores/commentStore"; // Import comment store
+import { useMissionStore } from "../stores/missionStore"; // Import mission store
 
 interface UseMissionDataResult {
   missionData: Mission | null; // Keep original structure, translation happens before setting state
-  initialComments: Comment[];
+  // initialComments: Comment[]; // Removed, store initialized directly
   initialOpinion: Opinion;
   initialLikes: number;
   initialDislikes: number;
@@ -35,53 +37,56 @@ const useMissionData = (
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Function to translate mission data
-  const translateMissionData = (rawData: Mission): Mission => {
-    const translatedData = JSON.parse(JSON.stringify(rawData)); // Deep copy
-
-    // Translate top-level fields
-    if (translatedData.title) translatedData.title = t(translatedData.title);
-    if (translatedData.nickname)
-      translatedData.nickname = t(translatedData.nickname);
-    if (translatedData.articleTitle)
-      translatedData.articleTitle = t(translatedData.articleTitle);
-    if (translatedData.articleContent)
-      translatedData.articleContent = t(translatedData.articleContent);
-    if (translatedData.initialMonologue)
-      translatedData.initialMonologue = t(translatedData.initialMonologue);
-
-    // Translate conditions array
-    if (Array.isArray(translatedData.conditions)) {
-      translatedData.conditions = translatedData.conditions.map(
-        (cond: string) => t(cond)
-      );
-    }
-
-    // Translate keywords array
-    if (Array.isArray(translatedData.keywords)) {
-      translatedData.keywords = translatedData.keywords.map((keyword: string) =>
-        t(keyword)
-      );
-    }
-
-    // Translate initialComments
-    if (Array.isArray(translatedData.initialComments)) {
-      translatedData.initialComments = translatedData.initialComments.map(
-        (comment: any) => {
-          const translatedComment = { ...comment };
-          if (translatedComment.nickname)
-            translatedComment.nickname = t(translatedComment.nickname);
-          if (translatedComment.content)
-            translatedComment.content = t(translatedComment.content);
-          return translatedComment;
-        }
-      );
-    }
-
-    return translatedData;
-  };
+  // Function to translate mission data - Moved inside useEffect
+  // const translateMissionData = (rawData: Mission): Mission => { ... };
 
   useEffect(() => {
+    // Function to translate mission data - Defined inside useEffect
+    const translateMissionData = (rawData: Mission): Mission => {
+      const translatedData = JSON.parse(JSON.stringify(rawData)); // Deep copy
+
+      // Translate top-level fields
+      if (translatedData.title) translatedData.title = t(translatedData.title);
+      if (translatedData.nickname)
+        translatedData.nickname = t(translatedData.nickname);
+      if (translatedData.articleTitle)
+        translatedData.articleTitle = t(translatedData.articleTitle);
+      if (translatedData.articleContent)
+        translatedData.articleContent = t(translatedData.articleContent);
+      if (translatedData.initialMonologue)
+        translatedData.initialMonologue = t(translatedData.initialMonologue);
+
+      // Translate conditions array
+      if (Array.isArray(translatedData.conditions)) {
+        translatedData.conditions = translatedData.conditions.map(
+          (cond: string) => t(cond)
+        );
+      }
+
+      // Translate keywords array
+      if (Array.isArray(translatedData.keywords)) {
+        translatedData.keywords = translatedData.keywords.map(
+          (keyword: string) => t(keyword)
+        );
+      }
+
+      // Translate initialComments
+      if (Array.isArray(translatedData.initialComments)) {
+        translatedData.initialComments = translatedData.initialComments.map(
+          (comment: any) => {
+            const translatedComment = { ...comment };
+            if (translatedComment.nickname)
+              translatedComment.nickname = t(translatedComment.nickname);
+            if (translatedComment.content)
+              translatedComment.content = t(translatedComment.content);
+            return translatedComment;
+          }
+        );
+      }
+
+      return translatedData;
+    };
+
     if (!missionId) {
       setError(t("errorNoMissionId")); // Use translation key
       setIsLoading(false);
@@ -95,8 +100,8 @@ const useMissionData = (
       setIsLoading(true);
       setError(null);
       try {
-        // Electron 환경 호환성을 위해 상대 경로 사용
-        const response = await fetch("./missions.json");
+        // Use absolute path from the public folder root
+        const response = await fetch("/missions.json");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -148,9 +153,11 @@ const useMissionData = (
               created_at: c.created_at!,
             })
           );
-        setInitialComments(loadedComments);
+        // setInitialComments(loadedComments); // Removed, set store directly
+        useCommentStore.getState().setComments(loadedComments); // Initialize comment store
+        useMissionStore.getState().setMission(translatedMissionData); // Initialize mission store
         console.log(
-          `useMissionData: 미션 데이터 로딩 및 번역 완료 (ID: ${missionId}, 언어: ${i18n.language})`
+          `useMissionData: 미션 데이터 로딩, 번역 및 스토어 초기화 완료 (ID: ${missionId}, 언어: ${i18n.language})`
         );
       } catch (err) {
         console.error("미션 데이터 로딩/번역 실패:", err);
@@ -170,11 +177,11 @@ const useMissionData = (
     };
 
     fetchMissionData();
-  }, [missionId, i18n.language, t, translateMissionData]); // Add translateMissionData to dependency array
+  }, [missionId, i18n.language, t]); // Removed translateMissionData from dependency array
 
   return {
     missionData, // Return translated data
-    initialComments,
+    // initialComments, // Removed
     initialOpinion,
     initialLikes,
     initialDislikes,
