@@ -45,6 +45,7 @@ export interface Scene {
 // SceneType 별칭 추가 및 export
 export type SceneType = Scene["type"];
 
+// This seems unused, maybe remove later?
 export interface Script {
   [key: string]: Scene;
 }
@@ -171,7 +172,7 @@ export interface GameStateHook {
   loadGame: () => void;
 }
 
-// --- Types moved from useEpisodeLoader.ts ---
+// --- Types moved from useEpisodeLoader.ts --- (Now likely related to useScriptLoader)
 
 // 로컬 script.json 파일의 에피소드 데이터 구조 정의
 export interface EpisodeData {
@@ -181,3 +182,7 @@ export interface EpisodeData {
   ending_dialogues: ScriptLine[];
   mission_id: string; // 다음 댓글 미션 ID
 }
+
+// 전체 스크립트 데이터 구조 (useScriptLoader 반환 타입)
+// 에피소드 ID를 키로 가지고 EpisodeData를 값으로 가지는 객체
+export type AllEpisodeData = Record<string, EpisodeData>;

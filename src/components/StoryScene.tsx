@@ -12,8 +12,8 @@ import DialogueBox from "./DialogueBox";
 import Choices from "./Choices";
 import SettingsMenu from "./SettingsMenu";
 import PhoneChat from "./PhoneChat";
-// import useEpisodeLoader from "../hooks/useEpisodeLoader"; // Remove episode loader
-import useScriptLoader from "../hooks/useScriptLoader"; // Import script loader
+import useScriptLoader from "../hooks/useScriptLoader"; // Keep for allScriptData access if needed elsewhere
+import useCurrentEpisodeScript from "../hooks/useCurrentEpisodeScript"; // Import the new hook
 import { useGameState } from "../stores/gameStateStore";
 import { useStoryStore } from "../stores/storyStore";
 import useStoryUIState from "../hooks/useStoryUIState";
@@ -26,41 +26,24 @@ import roomBackground from "../assets/oneroom.png";
 
 const StoryScene: React.FC = () => {
   // --- Custom Hook 사용 ---
-  const { scriptData: allScriptData, isLoadingScript } = useScriptLoader(); // Use script loader
+  const { scriptData: allScriptData } = useScriptLoader(); // Keep access to allScriptData if needed for missionId etc.
   const navigate = useNavigate();
 
   // Zustand 스토어 사용
   const { gameFlags, setCurrentScene } = useGameState();
   const {
-    scriptData: currentEpisodeScript, // Rename state variable for clarity
+    scriptData: currentEpisodeScript, // Still get the actual script data from the store
     currentDialogueIndex,
-    setScriptData,
+    // setScriptData, // No longer needed here, handled by the new hook
     advanceDialogue,
   } = useStoryStore();
 
   // TODO: Get current episode ID dynamically (e.g., from route params or game state)
   const currentEpisodeId = "123e4567-e89b-12d3-a456-426614174000"; // Hardcoded for now
 
-  // Load current episode script into store when allScriptData is loaded/updated
-  useEffect(() => {
-    // Log received script data from the hook
-    console.log(
-      "StoryScene: Received allScriptData update:",
-      JSON.stringify(allScriptData).substring(0, 300) + "..."
-    );
-    if (allScriptData && allScriptData[currentEpisodeId]?.intro_dialogues) {
-      console.log(
-        `StoryScene: Setting script data in store for episode ${currentEpisodeId}`
-      );
-      setScriptData(allScriptData[currentEpisodeId].intro_dialogues);
-    } else if (!isLoadingScript) {
-      console.warn(
-        `StoryScene: Could not find intro_dialogues for episode ${currentEpisodeId} in loaded script data.`
-      );
-      // Optionally handle error state here, e.g., navigate back or show error message
-    }
-    // TODO: Handle loading other script parts (e.g., ending_dialogues) if necessary
-  }, [allScriptData, currentEpisodeId, setScriptData, isLoadingScript]);
+  // Use the new hook to handle loading the current episode script into the store
+  const { isLoadingCurrentScript, currentScriptError } =
+    useCurrentEpisodeScript(currentEpisodeId);
 
   // UI 상태 훅 호출 (기존 유지)
   const {
@@ -170,29 +153,28 @@ const StoryScene: React.FC = () => {
     };
   }, []);
 
-  // --- 로딩 상태 처리 ---
-  if (isLoadingScript) {
-    return <div>Loading script...</div>;
+  // --- 로딩 상태 처리 (Use state from the new hook) ---
+  if (isLoadingCurrentScript) {
+    return <div>Loading script...</div>; // Or a more sophisticated loading indicator
   }
 
-  // --- 현재 스크립트 라인 결정 (Zustand 스토어 사용) ---
+  // --- 오류 처리 (Use state from the new hook) ---
+  if (currentScriptError) {
+    return <div>Error: {currentScriptError}</div>;
+  }
+
+  // --- 현재 스크립트 라인 결정 (Zustand 스토어 사용 - Data is already set by the hook) ---
   const currentLine: ScriptLine | null =
     currentEpisodeScript && currentEpisodeScript.length > currentDialogueIndex
       ? currentEpisodeScript[currentDialogueIndex]
       : null;
 
-  // --- 스크립트 종료 또는 오류 처리 ---
+  // --- 스크립트 종료 처리 (Error case handled above) ---
   if (!currentLine) {
-    if (
-      !isLoadingScript &&
-      (!currentEpisodeScript || currentEpisodeScript.length === 0)
-    ) {
-      return (
-        <div>
-          Error: Failed to load script data for this episode or script is empty.
-        </div>
-      );
-    }
+    // This might indicate the end of the script if no error occurred
+    console.log("StoryScene: currentLine is null, possibly end of script.");
+    // Consider navigating away or showing an end message if appropriate
+    // For now, returning null might be okay if handlers navigate away
     return null;
   }
 
@@ -226,7 +208,7 @@ const StoryScene: React.FC = () => {
           onSettings={() => setShowSettings(true)}
           onTogglePhoneChat={togglePhoneChat}
           isPhoneChatVisible={showPhoneChat}
-          isLoading={isLoadingScript}
+          isLoading={isLoadingCurrentScript} // Use the new loading state
         />
 
         {notificationMessage && (
