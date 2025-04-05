@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { TFunction } from "i18next"; // Import TFunction type
+// import { TFunction } from "i18next"; // 사용하지 않으므로 제거
 import { useSettingsStore } from "../stores/settingsStore";
 import styles from "./SettingsMenu.module.css";
 // import { saveGame, loadGame } from '../utils/saveLoad'; // 저장/로드 유틸리티 함수 import 고려

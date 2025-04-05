@@ -1,5 +1,5 @@
 import { useCallback } from "react"; // useState, useEffect 제거
-import { Opinion } from "../types"; // Opinion 타입 import
+// import { Opinion } from "../types"; // 사용하지 않으므로 제거
 import { useMissionStore } from "../stores/missionStore"; // Import mission store
 
 interface UseArticleStateResult {

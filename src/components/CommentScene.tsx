@@ -37,7 +37,7 @@ const CommentScene: React.FC<CommentSceneProps> = ({ onMissionComplete }) => {
   const {
     missionData,
     initialComments,
-    initialOpinion, // 초기 opinion 값은 missionStore 초기화에 사용될 수 있음
+    // initialOpinion, // 사용하지 않으므로 제거 (초기 opinion 값은 missionStore 초기화에 사용될 수 있음)
     initialMonologue,
     totalAttempts,
     isLoading: isMissionLoading,

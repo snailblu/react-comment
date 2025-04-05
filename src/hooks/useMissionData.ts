@@ -170,7 +170,7 @@ const useMissionData = (
     };
 
     fetchMissionData();
-  }, [missionId, i18n.language, t]); // Add i18n.language and t to dependency array
+  }, [missionId, i18n.language, t, translateMissionData]); // Add translateMissionData to dependency array
 
   return {
     missionData, // Return translated data

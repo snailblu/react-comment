@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from "react"; // useState 다시 추가
+import React, { useState } from "react"; // useCallback 제거
 import { useTranslation } from "react-i18next"; // Import useTranslation
-import { Comment, Mission } from "../types";
+// import { Comment, Mission } from "../types"; // 사용하지 않으므로 제거
 // import InstagramCommentList from "./InstagramCommentList";
 // import InstagramPostInput from "./InstagramPostInput";
-import { useCommentStore } from "../stores/commentStore"; // 댓글 상태 가져오기 (필요시)
+// import { useCommentStore } from "../stores/commentStore"; // 사용하지 않으므로 제거
 import { useMissionStore } from "../stores/missionStore"; // 좋아요/싫어요 상태 가져오기
 import { useGameState } from "../stores/gameStateStore"; // 댓글 오버레이 액션 가져오기
 import useArticleState from "../hooks/useArticleState"; // 좋아요/싫어요 핸들러 가져오기 (임시)
@@ -37,11 +37,11 @@ const InstagramPost: React.FC<InstagramPostProps> = ({
 }) => {
   const { t } = useTranslation("instagramPost"); // Initialize useTranslation
   // const { comments, addReply } = useCommentStore();
-  const { articleLikes, articleDislikes } = useMissionStore();
+  const { articleLikes } = useMissionStore(); // articleDislikes 제거
   const { openCommentOverlay } = useGameState();
   // TODO: 좋아요/싫어요 핸들러를 missionStore 또는 별도 훅에서 가져오도록 수정 필요
   // 임시로 useArticleState 사용
-  const { handleLikeArticle, handleDislikeArticle } = useArticleState();
+  const { handleLikeArticle } = useArticleState(); // handleDislikeArticle 제거
 
   // 댓글 표시 상태 제거
   // const [showComments, setShowComments] = useState(false);

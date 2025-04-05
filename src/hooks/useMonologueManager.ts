@@ -46,7 +46,7 @@ UseMonologueManagerProps) => {
     } else {
       setMissionResultMonologue(""); // Reset when not over
     }
-  }, [isMissionOver, checkMissionCompletion]);
+  }, [isMissionOver, checkMissionCompletion, t]); // Add t to dependencies
 
   // Update current monologue based on various states
   useEffect(() => {
@@ -104,6 +104,7 @@ UseMonologueManagerProps) => {
     initialMonologue,
     isGeneratingComments,
     commentsLength,
+    t, // Add t to dependencies
     // currentMonologue // Avoid self-dependency loop if using setTimeout
   ]);
 

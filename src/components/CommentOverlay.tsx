@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react"; // useCallback 추가
+import React, { useCallback } from "react"; // useCallback 추가, useEffect 제거
 import { X } from "lucide-react"; // 닫기 아이콘
 import InstagramCommentList from "./InstagramCommentList";
 import InstagramPostInput from "./InstagramPostInput";
@@ -17,7 +17,7 @@ const CommentOverlay: React.FC = () => {
   const { t } = useTranslation("commentOverlay"); // Initialize useTranslation
   const { isCommentOverlayOpen, activePostIdForComments, closeCommentOverlay } =
     useGameState();
-  const missionId = activePostIdForComments;
+  // const missionId = activePostIdForComments; // 사용하지 않으므로 제거
 
   const { comments, addComment, addReply, setComments } = useCommentStore(); // addComment, setComments 추가
   const {
@@ -29,9 +29,9 @@ const CommentOverlay: React.FC = () => {
     articleLikes, // AI 연동에 필요
     articleDislikes, // AI 연동에 필요
     // missionStore에서 초기 독백 가져오기 (CommentScene과 동일하게)
-    currentMission,
+    // currentMission, // 사용하지 않으므로 제거
   } = useMissionStore();
-  const { isGeneratingComments, triggerGenerateComments } = useGeminiComments(); // aiMonologue 제거
+  const { triggerGenerateComments } = useGeminiComments(); // isGeneratingComments 제거, aiMonologue 제거
   const { setPredictedReactions } = useArticleState(); // 예측 반응 설정 함수
 
   // --- 독백 관리 훅 호출 제거 ---

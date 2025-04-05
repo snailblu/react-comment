@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react"; // useCallback 추가
+import React, { useEffect } from "react"; // useState, useRef, useCallback 제거
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./InstagramActivityScene.module.css"; // CSS 모듈 import 추가
 import gameStyles from "./StoryScene.module.css"; // 공통 스타일은 유지
 
 // 필요한 타입 import
-import { Comment, ArticleReactions as ArticleReactionsType } from "../types"; // Opinion 제거 (인스타그램 씬에서는 직접 사용 안 함)
+// import { Comment, ArticleReactions as ArticleReactionsType } from "../types"; // 사용하지 않으므로 제거
 
 // Custom Hooks import
 import useMissionData from "../hooks/useMissionData";
@@ -43,7 +43,7 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
   const {
     missionData,
     initialComments,
-    initialOpinion, // Opinion은 내부적으로 사용될 수 있으므로 유지
+    // initialOpinion, // 사용하지 않으므로 제거
     initialMonologue,
     totalAttempts,
     isLoading: isMissionLoading,
@@ -52,17 +52,18 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
 
   const {
     articleLikes, // 좋아요/싫어요는 인스타그램에서도 필요
-    articleDislikes,
+    // articleDislikes, // 사용하지 않으므로 제거
     remainingAttempts: attemptsLeft,
     isCompleted: isMissionOver,
-    decreaseAttempt: decrementAttempts,
+    // decreaseAttempt: decrementAttempts, // 사용하지 않으므로 제거
     setMission,
     missionSuccess, // missionSuccess 상태 추가
     opinion, // opinion 상태는 missionStore에서 직접 가져옴
   } = useMissionStore();
 
   // 좋아요/싫어요 관련 핸들러만 가져옴
-  const { handleLikeArticle, handleDislikeArticle } = useArticleState(); // setPredictedReactions 제거 (CommentOverlay에서 처리)
+  // const { handleLikeArticle, handleDislikeArticle } = useArticleState(); // 사용하지 않으므로 제거
+  useArticleState(); // Hook 호출은 유지 (내부 로직이 필요할 수 있음)
 
   const { comments, setComments } = useCommentStore(); // addComment, addReply 제거
 
@@ -87,7 +88,10 @@ const InstagramActivityScene: React.FC<InstagramActivitySceneProps> = ({
   const aiMonologue = null; // CommentOverlay에서 관리
 
   // --- 독백 관리 훅 사용 ---
-  const { currentMonologue, isMonologueVisible, toggleMonologueVisibility } =
+  const {
+    currentMonologue,
+    isMonologueVisible,
+  } = // toggleMonologueVisibility 제거
     useMonologueManager({
       isMissionLoading,
       missionError,

@@ -108,7 +108,15 @@ const ResultScene: React.FC = () => {
       setError(t("errorNoMissionId"));
       console.error("Mission ID not found in location state");
     }
-  }, [missionId, isSuccess, allComments, missionTitle, currentMission, t]); // Add t to dependencies
+  }, [
+    missionId,
+    isSuccess,
+    allComments,
+    missionTitle,
+    currentMission,
+    t,
+    i18n.language,
+  ]); // Add i18n.language to dependencies
 
   const handleProceed = async () => {
     if (isLastMission) {

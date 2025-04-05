@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react"; // Import useCallback
 import { useTranslation } from "react-i18next"; // Import useTranslation
 
 // Define a more specific type for script data if possible, using 'any' for now
@@ -13,55 +13,64 @@ const useScriptLoader = () => {
   const [scriptData, setScriptData] = useState<ScriptData>({}); // Initialize with an empty object or appropriate type
   const [isLoadingScript, setIsLoadingScript] = useState(true);
 
-  // Function to translate script data
-  const translateScriptData = (rawData: any): ScriptData => {
-    const translatedData = JSON.parse(JSON.stringify(rawData)); // Deep copy to avoid modifying original fetch cache
+  // Function to translate script data, wrapped in useCallback
+  const translateScriptData = useCallback(
+    (rawData: any): ScriptData => {
+      const translatedData = JSON.parse(JSON.stringify(rawData)); // Deep copy to avoid modifying original fetch cache
 
-    for (const episodeId in translatedData) {
-      if (Object.prototype.hasOwnProperty.call(translatedData, episodeId)) {
-        const episode = translatedData[episodeId];
+      for (const episodeId in translatedData) {
+        if (Object.prototype.hasOwnProperty.call(translatedData, episodeId)) {
+          const episode = translatedData[episodeId];
 
-        // Translate title
-        if (episode.title) {
-          episode.title = t(episode.title);
-        }
+          // Translate title
+          if (episode.title) {
+            episode.title = t(episode.title);
+          }
 
-        // Translate intro_dialogues
-        if (Array.isArray(episode.intro_dialogues)) {
-          episode.intro_dialogues.forEach((dialogue: any) => {
-            if (dialogue.text) {
-              dialogue.text = t(dialogue.text);
-            }
-            // Translate choices within dialogue
-            if (dialogue.type === "choice" && Array.isArray(dialogue.choices)) {
-              dialogue.choices.forEach((choice: any) => {
-                if (choice.text) {
-                  choice.text = t(choice.text);
-                }
-              });
-            }
-          });
-        }
+          // Translate intro_dialogues
+          if (Array.isArray(episode.intro_dialogues)) {
+            episode.intro_dialogues.forEach((dialogue: any) => {
+              if (dialogue.text) {
+                dialogue.text = t(dialogue.text);
+              }
+              // Translate choices within dialogue
+              if (
+                dialogue.type === "choice" &&
+                Array.isArray(dialogue.choices)
+              ) {
+                dialogue.choices.forEach((choice: any) => {
+                  if (choice.text) {
+                    choice.text = t(choice.text);
+                  }
+                });
+              }
+            });
+          }
 
-        // Translate ending_dialogues (if structure is similar)
-        if (Array.isArray(episode.ending_dialogues)) {
-          episode.ending_dialogues.forEach((dialogue: any) => {
-            if (dialogue.text) {
-              dialogue.text = t(dialogue.text);
-            }
-            if (dialogue.type === "choice" && Array.isArray(dialogue.choices)) {
-              dialogue.choices.forEach((choice: any) => {
-                if (choice.text) {
-                  choice.text = t(choice.text);
-                }
-              });
-            }
-          });
+          // Translate ending_dialogues (if structure is similar)
+          if (Array.isArray(episode.ending_dialogues)) {
+            episode.ending_dialogues.forEach((dialogue: any) => {
+              if (dialogue.text) {
+                dialogue.text = t(dialogue.text);
+              }
+              if (
+                dialogue.type === "choice" &&
+                Array.isArray(dialogue.choices)
+              ) {
+                dialogue.choices.forEach((choice: any) => {
+                  if (choice.text) {
+                    choice.text = t(choice.text);
+                  }
+                });
+              }
+            });
+          }
         }
       }
-    }
-    return translatedData;
-  };
+      return translatedData;
+    },
+    [t]
+  ); // Add t as a dependency for useCallback
 
   useEffect(() => {
     console.log(
@@ -90,7 +99,7 @@ const useScriptLoader = () => {
         console.error("useScriptLoader: 스크립트 로딩/번역 실패:", error);
         setIsLoadingScript(false); // 에러 발생 시에도 로딩 상태는 해제
       });
-  }, [i18n.language, t]); // Add i18n.language and t to dependency array
+  }, [i18n.language, t, translateScriptData]); // Add translateScriptData to dependency array
 
   return { scriptData, isLoadingScript };
 };

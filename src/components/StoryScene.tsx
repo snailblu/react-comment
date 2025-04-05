@@ -1,9 +1,9 @@
-import React, { useEffect, useCallback, useState } from "react"; // useState 추가
+import React, { useEffect, useCallback } from "react"; // useState 제거
 import { useNavigate } from "react-router-dom";
 import {
   playBgm,
   stopBgm,
-  playSfx,
+  // playSfx, // 사용하지 않으므로 제거
   signalInteraction,
 } from "../utils/audioManager";
 import Background from "./Background";
@@ -21,7 +21,7 @@ import StoryMenuBar from "./StoryMenuBar";
 import { getCharacterImageUrl } from "../config/characterSprites";
 import { ScriptLine } from "../types";
 import styles from "./StoryScene.module.css";
-import gameStyles from "./StoryScene.module.css"; // Re-add if needed, or use styles directly
+// import gameStyles from "./StoryScene.module.css"; // 사용하지 않으므로 제거
 import roomBackground from "../assets/oneroom.png";
 
 const StoryScene: React.FC = () => {
