@@ -21,7 +21,7 @@ interface Feedback {
 }
 
 const ResultScene: React.FC = () => {
-  const { t } = useTranslation("resultScene"); // Initialize useTranslation
+  const { t, i18n } = useTranslation("resultScene"); // Get i18n instance
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -77,7 +77,8 @@ const ResultScene: React.FC = () => {
           missionTitle,
           currentMission.articleContent ?? "",
           allComments,
-          isSuccess
+          isSuccess,
+          i18n.language // Pass current language
         );
         console.log("AI Feedback Result:", feedbackResult);
 

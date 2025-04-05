@@ -42,9 +42,10 @@ i18n
       "commentOverlay",
       "instagramPostInput",
       "instagramCommentList",
-      "resultScene", // Add resultScene namespace
+      "resultScene",
+      "common", // Add common namespace
     ],
-    defaultNS: "common", // Optional: Define a default namespace if you create common.json
+    defaultNS: "common", // Keep common as default
     detection: {
       // Order and from where user language should be detected
       order: ["localStorage", "navigator"],

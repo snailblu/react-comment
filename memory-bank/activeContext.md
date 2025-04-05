@@ -27,6 +27,12 @@ _이 문서는 현재 작업 초점, 최근 변경 사항, 다음 단계, 활성
   - `useScriptLoader`, `useMissionData` 훅에서 번역 로직 제거 (원본 데이터 반환).
   - `SettingsMenu`에 언어 선택 드롭다운 UI 구현.
   - 메모리 뱅크 파일 업데이트 (`systemPatterns.md`, `techContext.md`, `progress.md`).
+- **LLM 댓글 생성 시 언어 지정:**
+  - `useGeminiComments` 훅에서 현재 언어 정보를 가져와 `generateAiComments` 서비스 함수 호출 시 전달하도록 수정.
+  - `geminiService.ts`의 `generateAiComments` 함수가 언어 인수를 받도록 수정.
+  - `api/generate-comments.ts` 서버리스 함수가 요청 본문에서 언어 정보를 받도록 수정.
+  - `promptGenerator.ts`의 `generateCommentPrompt` 및 `generateFeedbackPrompt` 함수가 언어 인수를 받고, 프롬프트의 언어 지침을 강화하고 한국어 외 언어 요청 시 관련 지침을 조정하도록 수정.
+  - 관련 메모리 뱅크 파일 업데이트 (`systemPatterns.md`, `techContext.md`, `progress.md`).
 
 ## 다음 단계
 
@@ -63,4 +69,5 @@ _이 문서는 현재 작업 초점, 최근 변경 사항, 다음 단계, 활성
   - `webSecurity: false` 설정은 로컬 파일 로드 오류 해결에 도움이 될 수 있으나, 보안상 권장되지 않음. (현재는 이 설정 없이도 로드 성공)
 - 다국어 지원 구현 시, 원본 텍스트를 번역 키로 사용하는 방식은 리소스 파일 관리를 용이하게 하지만, 텍스트 내용 변경 시 모든 언어의 키를 수정해야 하는 단점이 있음. (현재 이 방식 유지)
 - `i18next-http-backend`를 사용하여 번역 파일을 비동기적으로 로드하므로 초기 로딩 시 약간의 지연이 발생할 수 있음 (`React.Suspense`로 처리).
-- 컴파일 오류(TS2554) 해결: 데이터 로딩 훅에서 번역 로직을 제거하고, 컴포넌트에서 `t` 함수 호출 시 네임스페이스 접두사(`namespace:key`)를 사용하도록 수정.
+- LLM 프롬프트에 언어 지정 지침을 추가하고 강화했지만, LLM의 특성상 다른 프롬프트 요소(예: 한국어 예시)의 영향을 받아 100% 정확하게 해당 언어로만 생성된다고 보장하기는 어려울 수 있음.
+- 컴파일 오류(TS2554) 해결: 데이터 로딩 훅에서 번역 로직을 제거하고, 컴포넌트에서 `t` 함수 호출 시 네임스페이스 접두사(`namespace:key`)를 사용하도록 수정했으나, 이후 재수정 과정에서 다시 문제가 발생하여 여러 번의 시도 끝에 해결함.

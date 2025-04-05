@@ -13,7 +13,8 @@ export const generateCommentPrompt = (
   articleTitle: string,
   articleContent: string,
   comments: Comment[],
-  reactions: ArticleReactions // reactions 파라미터 추가
+  reactions: ArticleReactions, // reactions 파라미터 추가
+  language: string // language 파라미터 추가
 ): string => {
   // 댓글 수 기반 최대 추가 반응 수 계산
   const maxAddedReactions = Math.floor(comments.length * 1.5);
@@ -61,12 +62,49 @@ export const generateCommentPrompt = (
     *   **핵심:** 사용자 댓글의 기사에 대한 명확한 찬성 또는 반대 입장이 다른 모든 요인보다 **압도적으로 중요**하며, **추가될 값** 예측에 **결정적인 영향**을 미쳐야 합니다.`
     : `*   **사용자 댓글 없음:** 사용자가 작성한 댓글이 없으므로, 다른 댓글들의 전반적인 분위기와 현재 추천/비추천 수(${reactions.likes}/${reactions.dislikes})를 바탕으로 **추가될 추천/비추천 값**을 생성해주세요. 단, **추가될 값의 합계는 ${maxAddedReactions}개를 초과할 수 없습니다.**`;
 
+  // 언어 코드에 따른 언어 이름 매핑
+  const languageMap: { [key: string]: string } = {
+    ko: "한국어",
+    en: "English",
+    zh: "中文",
+  };
+  const targetLanguage = languageMap[language] || "한국어"; // 기본값 한국어
+  const isKorean = language === "ko";
+
+  // 언어별 지침 조정
+  const languageSpecificInstructions = isKorean
+    ? `*   각 댓글과 대댓글은 짧고 자연스러워야 하며, 인터넷 커뮤니티 '디씨인사이드'에서 흔히 사용되는 말투(디씨체)로 작성해주세요.`
+    : `*   Each comment and reply should be short and natural, reflecting common online comment styles for the target language (${targetLanguage}). Avoid using Korean slang or internet culture references unless specifically relevant.`;
+
+  const nicknameInstruction = isKorean
+    ? `*   **닉네임 생성 규칙:**
+    *   각 댓글과 대댓글 앞에 닉네임을 생성해주세요. 닉네임은 다음 규칙을 따릅니다:
+    *   1.  **60% 확률**로 기본 닉네임 \`${defaultNickname}\`을 사용합니다.
+    *   2.  나머지 **40% 확률**로는 자유롭게 새로운 닉네임을 생성합니다.
+    *   닉네임 뒤에는 가상 IP 주소를 \`(xxx.xxx)\` 형식으로 붙여 \`닉네임(xxx.xxx)\` 형태로 만들어주세요. (예: 연갤러(123.456), 새로운닉(789.012))`
+    : `*   **Nickname Generation Rule:**
+    *   Generate a nickname for each comment and reply. Follow these rules:
+    *   1.  Use common online nicknames appropriate for the ${targetLanguage} language context. Avoid using the Korean default nickname '연갤러'.
+    *   2.  Append a fictional IP address in the format \`(xxx.xxx)\` after the nickname (e.g., CoolUser(123.456), AnonFan(789.012)).`;
+
+  const commentFormatInstruction = isKorean
+    ? `*   새로운 댓글은 **정확히** \`닉네임(xxx.xxx): [실제 댓글]\` 형식으로 생성해주세요. (예: 연갤러(123.456): ㅋㅋ 이게 맞지)`
+    : `*   Format new comments **exactly** as \`Nickname(xxx.xxx): [Actual Comment Text]\`. (e.g., CoolUser(123.456): lol this is right)`;
+
+  const replyFormatInstruction = isKorean
+    ? `*   **기존 댓글**이나 **새로 생성된 댓글**에 대한 **대댓글**도 최대 5개까지 포함해주세요. 대댓글은 답글을 달 대상 댓글의 ID를 사용하여 **정확히** \`-> [원댓글ID] 닉네임(xxx.xxx): [실제 대댓글]\` 형식으로 작성해주세요. (예: -> [tut-1] 반박러(987.654): 뭔 소리임?)
+    *   **중요:** 대댓글의 내용 부분에는 **절대로** 원 댓글 작성자의 닉네임이나 IP를 포함하지 마세요. 오직 대댓글 작성자의 정보와 실제 대댓글 텍스트만 포함해야 합니다. (예: \`-> [comment-123] 답글러(789.012): ㄹㅇㅋㅋ\` - **올바른 형식** / \`-> [comment-123] 답글러(789.012): 원댓글러(111.222): ㄹㅇㅋㅋ\` - **잘못된 형식**)`
+    : `*   Include up to 5 replies to existing or newly generated comments. Format replies **exactly** as \`-> [OriginalCommentID] Nickname(xxx.xxx): [Actual Reply Text]\`. (e.g., -> [tut-1] Debater(987.654): What are you talking about?)
+    *   **Important:** The reply content MUST NOT include the original commenter's nickname or IP. Only include the replier's info and the actual reply text. (e.g., \`-> [comment-123] Replier(789.012): lol ikr\` - **Correct Format** / \`-> [comment-123] Replier(789.012): OriginalPoster(111.222): lol ikr\` - **Incorrect Format**)`;
+
   // 프롬프트 템플릿 (대댓글 형식 수정 및 닉네임 생성 규칙 추가)
   const prompt = `
-당신은 주어진 뉴스 기사와 현재 댓글들을 분석하여, 새로운 댓글을 생성하는 AI입니다.
+You are an AI that analyzes news articles and existing comments to generate new, realistic online comments.
 
-**뉴스 기사 정보:**
-*   제목: ${articleTitle}
+**IMPORTANT INSTRUCTION: ALL generated text, including nicknames, comments, and replies, MUST be in ${targetLanguage}.**
+
+**News Article Information:**
+*   Title: ${articleTitle}
 *   본문 요약: ${articleContent.substring(
     0,
     200
@@ -76,25 +114,20 @@ export const generateCommentPrompt = (
 **현재 댓글 목록:**
 ${allCommentsText || "(댓글 없음)"}
 
-**요청:**
-*   위 정보를 바탕으로, 현재 대화의 맥락과 기사의 추천/비추천 수를 고려하여 새로운 온라인 댓글과 대댓글을 포함하여 총 8~10개를 생성해주세요.
-*   **닉네임 생성 규칙:**
-    *   각 댓글과 대댓글 앞에 닉네임을 생성해주세요. 닉네임은 다음 규칙을 따릅니다:
-    *   1.  **60% 확률**로 기본 닉네임 \`${defaultNickname}\`을 사용합니다.
-    *   2.  나머지 **40% 확률**로는 자유롭게 새로운 닉네임을 생성합니다.
-    *   닉네임 뒤에는 가상 IP 주소를 \`(xxx.xxx)\` 형식으로 붙여 \`닉네임(xxx.xxx)\` 형태로 만들어주세요. (예: 연갤러(123.456), 새로운닉(789.012))
-*   새로운 댓글은 **정확히** \`닉네임(xxx.xxx): [실제 댓글]\` 형식으로 생성해주세요. (예: 연갤러(123.456): ㅋㅋ 이게 맞지)
-*   **기존 댓글**이나 **새로 생성된 댓글**에 대한 **대댓글**도 최대 5개까지 포함해주세요. 대댓글은 답글을 달 대상 댓글의 ID를 사용하여 **정확히** \`-> [원댓글ID] 닉네임(xxx.xxx): [실제 대댓글]\` 형식으로 작성해주세요. (예: -> [tut-1] 반박러(987.654): 뭔 소리임?)
-    *   **중요:** 대댓글의 내용 부분에는 **절대로** 원 댓글 작성자의 닉네임이나 IP를 포함하지 마세요. 오직 대댓글 작성자의 정보와 실제 대댓글 텍스트만 포함해야 합니다. (예: \`-> [comment-123] 답글러(789.012): ㄹㅇㅋㅋ\` - **올바른 형식** / \`-> [comment-123] 답글러(789.012): 원댓글러(111.222): ㄹㅇㅋㅋ\` - **잘못된 형식**)
+**Request:**
+*   Based on the information above, considering the context of the current conversation and the article's like/dislike ratio, generate a total of 8-10 new online comments, including replies.
+${nicknameInstruction}
+${commentFormatInstruction}
+${replyFormatInstruction}
 ${lastPlayerCommentInfo}
-*   **댓글 생성 시 사용자 영향력:** 생성하는 댓글들의 내용과 분위기는 사용자의 마지막 댓글("[ID: ${
-    lastPlayerComment?.id || "없음"
-  }] ${lastPlayerComment?.nickname || "익명"}: ${
-    lastPlayerComment?.content || "내용 없음"
-  }")에 약 **60%** 정도 영향을 받아야 합니다. 사용자 댓글의 논조(긍정/부정)와 유사한 방향으로 댓글을 생성하되, 완전히 동일하지는 않게 다양성을 유지해주세요. (사용자 댓글이 없다면 이 지침은 무시합니다.) (중립 제거)
-*   각 댓글과 대댓글은 짧고 자연스러워야 하며, 인터넷 커뮤니티 '디씨인사이드'에서 흔히 사용되는 말투(디씨체)로 작성해주세요.
-*   댓글, 대댓글, 닉네임, IP, ID 외 다른 설명은 포함하지 마세요. 각 댓글/대댓글은 줄바꿈으로 구분해주세요.
-*   **추가될 예상 추천/비추천 생성 요청:**
+*   **User Comment Influence:** The content and tone of the generated comments should be approximately **60%** influenced by the user's last comment ("[ID: ${
+    lastPlayerComment?.id || "None"
+  }] ${lastPlayerComment?.nickname || "Anonymous"}: ${
+    lastPlayerComment?.content || "No content"
+  }"). Generate comments in a similar direction (positive/negative) to the user's comment, but maintain diversity and avoid exact repetition. (Ignore this instruction if the user hasn't commented.)
+${languageSpecificInstructions}
+*   Do not include any explanations other than the comments, replies, nicknames, IPs, and IDs. Separate each comment/reply with a newline.
+*   **Request for Predicted Added Likes/Dislikes:**
 ${playerCommentInfluenceInstruction}
     *   현재 기사의 추천/비추천 수(${reactions.likes}/${
     reactions.dislikes
@@ -120,7 +153,8 @@ export const generateFeedbackPrompt = (
   articleTitle: string,
   articleContent: string,
   allComments: Comment[],
-  missionSuccess: boolean
+  missionSuccess: boolean,
+  language: string // Add language parameter
 ): string => {
   const playerComments = allComments.filter((c) => c.is_player);
   const playerCommentsText =
@@ -134,10 +168,20 @@ export const generateFeedbackPrompt = (
     .map((c) => `- ${c.nickname || "익명"}: ${c.content}`)
     .join("\n");
 
-  const successText = missionSuccess ? "성공" : "실패";
+  const successText = missionSuccess ? "성공" : "실패"; // Keep this in Korean for now, or translate based on language? Let's keep it for context.
+
+  // Language mapping for feedback prompt
+  const languageMap: { [key: string]: string } = {
+    ko: "한국어",
+    en: "English",
+    zh: "中文",
+  };
+  const targetLanguage = languageMap[language] || "한국어"; // Default to Korean
 
   const prompt = `
-당신은 게임 마스터 NPC 'X'입니다. 플레이어가 방금 완료한 온라인 여론 조작 미션에 대한 피드백을 제공해야 합니다.
+You are the game master NPC 'X'. You need to provide feedback to the player on the online opinion manipulation mission they just completed.
+
+**IMPORTANT INSTRUCTION: Your entire feedback message MUST be in ${targetLanguage}.**
 
 **미션 정보:**
 *   기사 제목: ${articleTitle}
@@ -150,14 +194,14 @@ ${allCommentsText || "(댓글 없음)"}
 **플레이어 댓글 기록:**
 ${playerCommentsText}
 
-**요청:**
-*   당신(NPC 'X')의 입장에서 플레이어에게 피드백 메시지를 작성해주세요.
-*   **플레이어가 작성한 댓글(${
+**Request:**
+*   Write a feedback message to the player from your perspective (NPC 'X').
+*   **Specifically mention the player's comments (${
     playerComments.length
-  }개)을 직접적으로 언급하며 칭찬해주세요.** 플레이어 댓글의 어떤 점이 효과적이었는지, 또는 여론 형성에 어떻게 기여했는지 구체적으로 설명하면 좋습니다. (예: "특히 당신이 쓴 '...' 댓글 덕분에 긍정적인 분위기를 만들 수 있었어.")
-*   미션 결과(${successText})를 반영하여 전반적인 평가를 포함해주세요.
-*   메시지는 친근하면서도 약간은 신비로운 NPC 'X'의 말투를 사용해주세요.
-*   최종 응답은 **정확히** 다음 JSON 형식으로 작성해주세요:
+  } total) and praise them.** Explain what was effective about their comments or how they contributed to shaping public opinion. (e.g., "Especially the comment you wrote, '...', helped create a positive atmosphere.")
+*   Include an overall assessment reflecting the mission result (${successText}).
+*   Use a friendly yet slightly mysterious tone appropriate for NPC 'X'.
+*   Your final response MUST be **exactly** in the following JSON format:
     \`{"npc_name": "X", "message": "실제 피드백 메시지"}\`
 *   피드백 메시지 외 다른 설명은 절대 포함하지 마세요.
 

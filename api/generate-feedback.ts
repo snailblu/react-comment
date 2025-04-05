@@ -85,31 +85,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       articleContent,
       allComments,
       missionSuccess,
+      language, // Add language
     }: {
       articleTitle: string;
       articleContent: string;
       allComments: Comment[];
       missionSuccess: boolean;
+      language: string; // Add language type
     } = req.body;
 
-    // 입력값 검증
+    // 입력값 검증 (language 추가)
     if (
       !articleTitle ||
       !articleContent ||
       !allComments ||
-      missionSuccess === undefined
+      missionSuccess === undefined ||
+      !language // Add language check
     ) {
       return res
         .status(400)
-        .json({ error: "Missing required fields in request body" });
+        .json({
+          error: "Missing required fields in request body (including language)",
+        });
     }
 
-    // 프롬프트 생성
+    // 프롬프트 생성 (language 전달)
     const prompt = generateFeedbackPrompt(
       articleTitle,
       articleContent,
       allComments,
-      missionSuccess
+      missionSuccess,
+      language // Pass language
     );
     console.log("Generated Feedback Prompt:", prompt); // 디버깅용 로그
 

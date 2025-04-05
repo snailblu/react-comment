@@ -249,18 +249,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // 요청 본문에서 데이터 추출
-    const { missionData, currentComments, currentReactions } = req.body as {
-      missionData: Mission;
-      currentComments: Comment[];
-      currentReactions: ArticleReactionsType;
-    };
+    // 요청 본문에서 데이터 추출 (language 추가)
+    const { missionData, currentComments, currentReactions, language } =
+      req.body as {
+        missionData: Mission;
+        currentComments: Comment[];
+        currentReactions: ArticleReactionsType;
+        language: string; // language 타입 추가
+      };
 
-    // 필수 데이터 유효성 검사
-    if (!missionData || !currentComments || !currentReactions) {
+    // 필수 데이터 유효성 검사 (language 추가)
+    if (!missionData || !currentComments || !currentReactions || !language) {
       return res.status(400).json({
         error:
-          "Missing required data in request body (missionData, currentComments, currentReactions).",
+          "Missing required data in request body (missionData, currentComments, currentReactions, language).",
       });
     }
 
@@ -273,12 +275,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       missionData.articleTitle ?? "제목 없음",
       missionData.articleContent ?? "내용 없음",
       currentComments,
-      currentReactions
+      currentReactions,
+      language // Pass language to prompt generator
     );
-    console.log(
-      "Generated Prompt for Gemini:",
-      "[Prompt hidden for brevity in server logs]"
-    ); // 실제 프롬프트 로깅은 보안상 주의
+    // console.log("Generated Prompt for Gemini (Full):", prompt); // Remove full prompt log
 
     // Gemini API 호출
     const result: GenerateContentResult = await model.generateContent({

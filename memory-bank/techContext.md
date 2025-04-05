@@ -8,7 +8,7 @@ _이 문서는 사용된 기술, 개발 설정, 기술적 제약 조건, 종속�
 - **프레임워크/라이브러리 (프론트엔드):** React, React Router, Howler.js (오디오), i18next, react-i18next (국제화)
 - **UI 라이브러리/프레임워크:** Tailwind CSS, Radix UI (shadcn/ui 기반으로 추정), CSS Modules, Lucide Icons
 - **상태 관리:** React Context API, Custom Hooks, Zustand (`settingsStore`)
-- **백엔드/API:** Vercel Serverless Functions (Node.js), Google Gemini API
+- **백엔드/API:** Vercel Serverless Functions (Node.js), Google Gemini API (댓글 생성 시 언어 지정)
 - **데이터베이스:** 해당 없음 (데이터는 `public/` 내 JSON 파일로 관리)
 - **인프라/호스팅:** Vercel (Serverless Functions 및 프론트엔드 호스팅 가능성 높음)
 - **기타 주요 도구:** uuid

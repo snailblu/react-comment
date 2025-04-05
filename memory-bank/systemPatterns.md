@@ -27,7 +27,7 @@ _이 문서는 시스템 아키텍처, 주요 기술 결정, 사용 중인 디�
 - **UI 컴포넌트:** shadcn/ui (Radix UI + Tailwind CSS) - 재사용 가능하고 접근성 높은 UI 컴포넌트 라이브러리.
 - **상태 관리:** React Context API 및 Custom Hooks, Zustand (`settingsStore`) - 전역 상태 및 로직 재사용.
 - **비동기 통신:** Fetch API 또는 Axios (Gemini 서비스 확인 필요) - API 호출.
-- **AI:** Google Gemini - 댓글 생성 등 AI 기능 구현.
+- **AI:** Google Gemini - 댓글 생성 등 AI 기능 구현 (현재 설정된 언어 고려).
 - **국제화(i18n):** i18next, react-i18next - 다국어 지원 (한국어, 영어, 중국어).
 - **오디오:** Howler.js - 웹 오디오 관리.
 - **백엔드:** Vercel Serverless Functions - 간단한 백엔드 로직(API 프록시 등) 구현.
@@ -52,9 +52,9 @@ _이 문서는 시스템 아키텍처, 주요 기술 결정, 사용 중인 디�
 ## 중요한 구현 경로
 
 - **스토리 진행 로직:** `useStoryProgression` 훅 및 관련 컴포넌트 (`StoryScene`, `DialogueBox`, `Choices`) - 스크립트 로딩, 상태 업데이트, 사용자 선택 처리.
-- **댓글 시스템:** `CommentScene`, `CommentInput`, `CommentList`, `useCommentState`, `useGeminiComments`, `geminiService.ts`, `api/generate-comments.ts` - 사용자 입력 처리, AI 댓글 생성 요청 및 표시.
+- **댓글 시스템:** `CommentScene`, `CommentInput`, `CommentList`, `useCommentState`, `useGeminiComments`, `geminiService.ts`, `api/generate-comments.ts` - 사용자 입력 처리, AI 댓글 생성 요청(언어 정보 포함) 및 표시.
 - **상태 관리:** 게임의 전반적인 상태 (`useGameState`), 미션 상태 (`useMissionStatus`), 설정 (`SettingsContext`, `settingsStore`) 관리 방식.
-- **데이터 로딩:** `useScriptLoader`, `useEpisodeLoader`, `useMissionData` - `public/` 폴더의 JSON 파일에서 게임 데이터 비동기 로딩 (번역은 사용하는 컴포넌트에서 처리).
+- **데이터 로딩:** `useScriptLoader`, `useMissionData` - `public/` 폴더의 JSON 파일에서 게임 데이터 비동기 로딩 및 번역 처리. (`useEpisodeLoader` 제거됨)
 
 ## 게임 시스템
 

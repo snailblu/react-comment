@@ -38,7 +38,8 @@ export interface ParsedAiResponse {
 export const generateAiComments = async (
   missionData: Mission,
   currentComments: Comment[],
-  currentReactions: ArticleReactionsType
+  currentReactions: ArticleReactionsType,
+  language: string // Add language parameter
 ): Promise<ParsedAiResponse> => {
   // 클라이언트 측에서는 API 키 체크 불필요
   if (!missionData) {
@@ -58,17 +59,22 @@ export const generateAiComments = async (
     // Use relative path for API calls, works for both dev and prod
     const apiUrl = "/api/generate-comments";
 
+    // Log the request body including the language before sending
+    const requestBody = {
+      missionData,
+      currentComments,
+      currentReactions,
+      language, // Pass language in the body
+    };
+    // console.log("Sending request to /api/generate-comments with body:", JSON.stringify(requestBody)); // Remove request body log
+
     // Vercel Serverless Function 엔드포인트 호출
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        missionData,
-        currentComments,
-        currentReactions,
-      }),
+      body: JSON.stringify(requestBody), // Use the logged body
     });
 
     // 응답 상태 코드 확인
@@ -145,7 +151,8 @@ export const generateAiFeedback = async (
   articleTitle: string,
   articleContent: string,
   allComments: Comment[],
-  missionSuccess: boolean
+  missionSuccess: boolean,
+  language: string // Add language parameter
 ): Promise<FeedbackResponse> => {
   try {
     console.log(
@@ -165,6 +172,7 @@ export const generateAiFeedback = async (
         articleContent,
         allComments,
         missionSuccess,
+        language, // Pass language in the body
       }),
     });
 

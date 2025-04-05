@@ -13,6 +13,7 @@ _이 문서는 작동 중인 기능, 구축해야 할 기능, 현재 상태, 알
 - **AI 댓글 생성 백엔드:** Google Gemini API를 사용하는 서버리스 함수 (`api/generate-comments.ts`) 및 서비스 (`src/services/geminiService.ts`) 존재.
 - **오디오 관리자:** 오디오 재생을 위한 `audioManager.ts` 존재.
 - **기본 다국어 지원 시스템:** i18next 및 react-i18next 기반의 한국어, 영어, 중국어 지원 시스템 구현 완료. UI 텍스트 및 게임 데이터(스크립트, 미션) 번역 처리. 설정 메뉴에서 언어 변경 가능.
+- **LLM 댓글/피드백 언어 지정:** AI 댓글 및 피드백 생성 요청 시 현재 설정된 언어 정보를 전달하고, 프롬프트를 개선하여 해당 언어로 생성되도록 구현 (언어 지침 강조 및 한국어 외 언어 요청 시 관련 지침 조정).
 - **Electron 빌드:** `npm run electron:build` 명령어를 통해 macOS용 애플리케이션 패키징 가능.
 - **Electron 앱 실행:** 빌드된 앱 실행 및 초기 화면(`TitleScreen`) 표시 성공.
 
@@ -20,7 +21,7 @@ _이 문서는 작동 중인 기능, 구축해야 할 기능, 현재 상태, 알
 
 - **스토리 콘텐츠 로딩 및 표시:** `StoryScene` 내에서 스크립트 데이터를 실제로 로드하고 대화, 캐릭터, 배경 등을 표시하는 기능 구현.
 - **선택지 시스템 구현:** `Choices` 컴포넌트와 `useStoryProgression` 훅을 연동하여 사용자 선택 처리 및 분기 로직 구현.
-- **댓글 시스템 완성:** `CommentScene`에서 AI 댓글을 실제로 요청하고 표시하며, 사용자 댓글 입력 및 상태 관리(`useCommentState`, `useGeminiComments`) 기능 완성.
+- **댓글 시스템 완성:** `CommentScene`에서 AI 댓글을 실제로 요청(언어 지정 포함)하고 표시하며, 사용자 댓글 입력 및 상태 관리(`useCommentState`, `useGeminiComments`) 기능 완성.
 - **미션 시스템 연동:** `MissionPanel` 컴포넌트 표시 및 `useMissionStatus` 훅을 통한 미션 상태 추적 및 업데이트 로직 구현.
 - **결과 화면 로직:** `ResultScene`에서 게임 결과 또는 에피소드 완료 상태를 표시하는 로직 구현.
 - **설정 메뉴 기능:** `SettingsMenu` 컴포넌트와 `SettingsContext`를 연동하여 실제 설정(볼륨 조절 등) 기능 구현.
